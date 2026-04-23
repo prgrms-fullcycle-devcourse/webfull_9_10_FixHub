@@ -1,3 +1,5 @@
 node_modules
 dist
+.turbo
+.DS_Store
 .env

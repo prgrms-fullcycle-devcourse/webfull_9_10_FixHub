@@ -1,5 +1,6 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
+
 import { swaggerUiServe, swaggerUiSetup } from './docs/swagger.js';
 
 const app: Express = express();
@@ -11,7 +12,7 @@ app.use(express.json());
 app.use('/api-docs', swaggerUiServe, swaggerUiSetup);
 
 // 서버 상태 확인용 라우트
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ message: 'ok' });
 });
 
