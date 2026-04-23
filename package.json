@@ -13,5 +13,8 @@
   "license": "ISC",
   "devDependencies": {
     "turbo": "^2.9.6"
+  },
+  "dependencies": {
+    "uuidv7": "^1.2.1"
   }
 }
