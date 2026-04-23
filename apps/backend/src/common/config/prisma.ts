@@ -22,12 +22,20 @@ const prisma = basePrisma.$extends({
   query: {
     $allModels: {
       async create({ args, query }) {
-
-        // id 없을 경우 uuid v7 삽입 
-        const data = args.data as any;
-        if (!data.id) {
-          data.id = uuidv7();
+        // id 없을 경우 uuid v7 삽입
+        const data = args.data as Record<string, unknown>;
+        if (!('id' in data)) {
+          (data as Record<string, unknown>).id = uuidv7();
         }
+        return query(args);
+      },
+
+      async createMany({ args, query }) {
+        const records = Array.isArray(args.data) ? args.data : [args.data];
+        records.forEach((record) => {
+          if (!('id' in record))
+            (record as Record<string, unknown>).id = uuidv7();
+        });
         return query(args);
       },
     },

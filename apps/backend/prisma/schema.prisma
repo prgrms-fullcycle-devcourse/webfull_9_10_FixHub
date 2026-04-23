@@ -4,147 +4,113 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// ============================================================
-// 1. Auth & User Management
-// ============================================================
-
 model User {
-  id         String   @id @db.Uuid
-  email      String   @unique
-  password   String?
-  nickname   String?
-  profileImg String?  @map("profile_img")
-  provider   String   @default("local")
-  providerId String?  @map("provider_id")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  // Relations
-  teamMembers   TeamMember[]
-  errorIssues   ErrorIssue[]
+  id            String         @id @db.Uuid
+  name          String
+  email         String         @unique
+  password      String?
+  profileImg    String?        @map("profile_img")
+  provider      String         @default("local")
+  providerId    String?        @map("provider_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
   comments      Comment[]
+  errorIssues   ErrorIssue[]
   notifications Notification[]
+  teamMembers   TeamMember[]
 
   @@map("users")
 }
 
 model ScoreLog {
-  id           String   @id @db.Uuid
-  teamMemberId String   @map("team_member_id") @db.Uuid
+  id           String     @id @db.Uuid
+  teamMemberId String     @map("team_member_id") @db.Uuid
   amount       Int
-  reason       String
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  // Relations
-  teamMember TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
 
   @@map("score_logs")
 }
 
-// ============================================================
-// 2. Team
-// ============================================================
-
 model Team {
-  id              String   @id @db.Uuid
+  id              String       @id @db.Uuid
   name            String
   description     String?
-  slackWebhookUrl String?  @map("slack_webhook_url")
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  // Relations
-  teamMembers TeamMember[]
-  errorIssues ErrorIssue[]
+  slackWebhookUrl String?      @map("slack_webhook_url")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  errorIssues     ErrorIssue[]
+  teamMembers     TeamMember[]
 
   @@map("teams")
 }
 
 model TeamMember {
-  id       String   @id @db.Uuid
-  teamId   String   @map("team_id") @db.Uuid
-  userId   String   @map("user_id") @db.Uuid
-  role     String
-  status   String   @default("PENDING")
-  score    Int      @default(0)
-  joinedAt DateTime? @map("joined_at")
-
-  // Relations
+  id        String     @id @db.Uuid
+  teamId    String     @map("team_id") @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
+  role      String
+  status    String     @default("PENDING")
+  score     Int        @default(0)
+  joinedAt  DateTime?  @map("joined_at")
+  scoreLogs ScoreLog[]
   team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  scoreLogs ScoreLog[]
 
   @@map("team_members")
 }
 
-// ============================================================
-// 3. Issues
-// ============================================================
-
 model ErrorIssue {
-  id        String   @id @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  teamId    String   @map("team_id") @db.Uuid
+  id        String     @id @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
+  teamId    String     @map("team_id") @db.Uuid
   title     String
   content   String?
-  tag       String[] 
-  isPublic  Boolean  @default(false) @map("is_public")
-  status    String   @default("unsolved")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  errorLogs ErrorLog[]
+  tag       String[]
+  isPublic  Boolean    @default(false) @map("is_public")
+  status    String     @default("unsolved")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
   comments  Comment[]
+  team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  errorLogs ErrorLog[]
 
   @@map("error_issues")
 }
 
 model ErrorLog {
-  id           String    @id @db.Uuid
-  issueId      String    @map("issue_id") @db.Uuid
-  logType      String    @map("log_type")
+  id           String     @id @db.Uuid
+  issueId      String     @map("issue_id") @db.Uuid
+  logType      String     @map("log_type")
   source       String?
   message      String?
-  stackTrace   String?   @map("stack_trace")
-  requestData  Json?     @map("request_data")
-  responseData Json?     @map("response_data")
-  capturedAt   DateTime? @map("captured_at")
-
-  // Relations
-  issue ErrorIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  stackTrace   String?    @map("stack_trace")
+  requestData  Json?      @map("request_data")
+  responseData Json?      @map("response_data")
+  capturedAt   DateTime?  @map("captured_at")
+  issue        ErrorIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
   @@map("error_logs")
 }
 
-// ============================================================
-// 4. Comments
-// ============================================================
-
 model Comment {
-  id          String   @id @db.Uuid
-  issueId     String   @map("issue_id") @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  parentId    String?  @map("parent_id") @db.Uuid
+  id          String     @id @db.Uuid
+  issueId     String     @map("issue_id") @db.Uuid
+  userId      String     @map("user_id") @db.Uuid
+  parentId    String?    @map("parent_id") @db.Uuid
   content     String
-  isAdopted   Boolean  @default(false) @map("is_adopted")
-  rewardScore Int?     @map("reward_score")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  issue   ErrorIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent  Comment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies Comment[]  @relation("CommentReplies")
+  isAdopted   Boolean    @default(false) @map("is_adopted")
+  rewardScore Int?       @map("reward_score")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  issue       ErrorIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  parent      Comment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[]  @relation("CommentReplies")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
-
-// ============================================================
-// 5. Notifications
-// ============================================================
 
 model Notification {
   id         String   @id @db.Uuid
@@ -154,9 +120,7 @@ model Notification {
   content    String?
   isRead     Boolean  @default(false) @map("is_read")
   createdAt  DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }

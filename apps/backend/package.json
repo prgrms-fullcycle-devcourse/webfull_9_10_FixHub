@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
-    "@prisma/client": "^7.8.0",
+    "@prisma/client": "6.19.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -29,7 +29,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^10.2.1",
     "prettier": "^3.8.3",
-    "prisma": "^7.8.0",
+    "prisma": "^6.19.3",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
