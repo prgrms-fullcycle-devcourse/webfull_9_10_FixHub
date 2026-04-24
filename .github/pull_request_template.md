@@ -9,9 +9,10 @@
  
 ## 📝 작업 내용
 <!-- 구현한 기능에 대한 구체적인 내용을 작성해주세요 -->
-- Web
-- Server
-- Database
+### 🖥️ Web
+### ⚙️ Server
+### 🗄️ Database
+### 📄 Docs
  
  
 <br/>
