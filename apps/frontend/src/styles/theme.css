@@ -65,6 +65,34 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
+  /* Typography */
+  --font-body: 'Pretendard Variable', 'Pretendard', sans-serif;
+  --font-display: 'DungGeunMo', 'Neo둥근모', 'neodgm', monospace;
+
+  --text-medium-40-size: 40px;
+  --text-medium-40-line-height: 1;
+  --text-medium-40-weight: 400;
+
+  --text-regular-20-size: 20px;
+  --text-regular-20-line-height: 1;
+  --text-regular-20-weight: 400;
+
+  --text-semibold-18-size: 18px;
+  --text-semibold-18-line-height: 1.6;
+  --text-semibold-18-weight: 600;
+
+  --text-medium-16-size: 16px;
+  --text-medium-16-line-height: 1;
+  --text-medium-16-weight: 500;
+
+  --text-regular-16-size: 16px;
+  --text-regular-16-line-height: 1.6;
+  --text-regular-16-weight: 400;
+
+  --text-regular-14-size: 14px;
+  --text-regular-14-line-height: 1;
+  --text-regular-14-weight: 400;
+
   /* Legacy vars for existing CSS modules */
   --accent-bg: var(--palette-input-background);
   --accent-border: var(--palette-main-color);
@@ -82,6 +110,8 @@
   --color-unsaved-status: var(--palette-unsaved-status);
   --color-unselected: var(--palette-unselected);
   --color-comment-background: var(--palette-comment-background);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -102,4 +132,54 @@
   --color-destructive: var(--destructive);
   --color-success: var(--status-success);
   --color-success-foreground: var(--status-success-foreground);
+}
+
+@layer utilities {
+  .typo-medium-40 {
+    font-family: var(--font-display);
+    font-size: var(--text-medium-40-size);
+    line-height: var(--text-medium-40-line-height);
+    font-weight: var(--text-medium-40-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-regular-20 {
+    font-family: var(--font-body);
+    font-size: var(--text-regular-20-size);
+    line-height: var(--text-regular-20-line-height);
+    font-weight: var(--text-regular-20-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-semibold-18 {
+    font-family: var(--font-body);
+    font-size: var(--text-semibold-18-size);
+    line-height: var(--text-semibold-18-line-height);
+    font-weight: var(--text-semibold-18-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-medium-16 {
+    font-family: var(--font-body);
+    font-size: var(--text-medium-16-size);
+    line-height: var(--text-medium-16-line-height);
+    font-weight: var(--text-medium-16-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-regular-16 {
+    font-family: var(--font-body);
+    font-size: var(--text-regular-16-size);
+    line-height: var(--text-regular-16-line-height);
+    font-weight: var(--text-regular-16-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-regular-14 {
+    font-family: var(--font-body);
+    font-size: var(--text-regular-14-size);
+    line-height: var(--text-regular-14-line-height);
+    font-weight: var(--text-regular-14-weight);
+    letter-spacing: 0;
+  }
 }
