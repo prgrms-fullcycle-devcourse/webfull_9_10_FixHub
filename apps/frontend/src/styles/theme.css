@@ -1,0 +1,185 @@
+:root {
+  color-scheme: dark;
+
+  /* Palette tokens from Figma */
+  --palette-main-color: #fff835;
+  --palette-main-background: #161627;
+  --palette-input-background: #292947;
+  --palette-block-color: #2c2c4880;
+  --palette-solved-status: #3b9344;
+  --palette-unsaved-status: #e46365;
+  --palette-unselected: #464646;
+  --palette-comment-background: #5c5c7b80;
+
+  --color-gray-400: #9f9cbf;
+  --color-gray-300: #cdcbe0;
+  --color-white: #ffffff;
+  --color-black: #050505;
+
+  /* Semantic tokens */
+  --background: var(--palette-main-background);
+  --foreground: var(--color-white);
+  --card: var(--palette-block-color);
+  --card-foreground: var(--color-white);
+  --popover: var(--palette-main-background);
+  --popover-foreground: var(--color-white);
+  --muted: var(--palette-block-color);
+  --muted-foreground: var(--color-gray-300);
+  --border: var(--palette-unselected);
+  --input: var(--palette-input-background);
+  --ring: var(--palette-main-color);
+
+  --primary: var(--palette-main-color);
+  --primary-foreground: var(--color-black);
+  --secondary: var(--palette-main-background);
+  --secondary-foreground: var(--color-white);
+  --accent: var(--palette-comment-background);
+  --accent-foreground: var(--color-white);
+  --destructive: var(--palette-unsaved-status);
+
+  /* Product-specific tokens */
+  --surface-app: var(--palette-main-background);
+  --surface-sidebar: var(--palette-main-background);
+  --surface-panel: var(--palette-block-color);
+  --surface-input: var(--palette-input-background);
+  --surface-selected: var(--palette-comment-background);
+  --surface-tag: var(--palette-comment-background);
+  --surface-comment: var(--palette-comment-background);
+  --surface-overlay: rgba(22, 22, 39, 0.72);
+
+  --text-primary: var(--color-white);
+  --text-secondary: var(--color-gray-300);
+  --text-muted: var(--color-gray-400);
+  --text-inverse: var(--color-black);
+
+  --status-success: var(--palette-solved-status);
+  --status-success-foreground: var(--color-white);
+  --status-solved: var(--palette-solved-status);
+  --status-error: var(--palette-unsaved-status);
+  --status-error-foreground: var(--color-white);
+  --status-unsaved: var(--palette-unsaved-status);
+
+  --line-accent: var(--palette-main-color);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Typography */
+  --font-body: 'Pretendard Variable', 'Pretendard', sans-serif;
+  --font-display: 'DungGeunMo', 'Neo둥근모', 'neodgm', monospace;
+
+  --text-medium-40-size: 40px;
+  --text-medium-40-line-height: 1;
+  --text-medium-40-weight: 400;
+
+  --text-regular-20-size: 20px;
+  --text-regular-20-line-height: 1;
+  --text-regular-20-weight: 400;
+
+  --text-semibold-18-size: 18px;
+  --text-semibold-18-line-height: 1.6;
+  --text-semibold-18-weight: 600;
+
+  --text-medium-16-size: 16px;
+  --text-medium-16-line-height: 1;
+  --text-medium-16-weight: 500;
+
+  --text-regular-16-size: 16px;
+  --text-regular-16-line-height: 1.6;
+  --text-regular-16-weight: 400;
+
+  --text-regular-14-size: 14px;
+  --text-regular-14-line-height: 1;
+  --text-regular-14-weight: 400;
+
+  /* Legacy vars for existing CSS modules */
+  --accent-bg: var(--palette-input-background);
+  --accent-border: var(--palette-main-color);
+  --social-bg: var(--palette-main-background);
+  --text-h: var(--color-white);
+  --shadow: 0 0 24px rgba(255, 248, 53, 0.16);
+}
+
+@theme inline {
+  --color-main-color: var(--palette-main-color);
+  --color-main-background: var(--palette-main-background);
+  --color-input-background: var(--palette-input-background);
+  --color-block-color: var(--palette-block-color);
+  --color-solved-status: var(--palette-solved-status);
+  --color-unsaved-status: var(--palette-unsaved-status);
+  --color-unselected: var(--palette-unselected);
+  --color-comment-background: var(--palette-comment-background);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--status-success);
+  --color-success-foreground: var(--status-success-foreground);
+}
+
+@layer utilities {
+  .typo-medium-40 {
+    font-family: var(--font-display);
+    font-size: var(--text-medium-40-size);
+    line-height: var(--text-medium-40-line-height);
+    font-weight: var(--text-medium-40-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-regular-20 {
+    font-family: var(--font-body);
+    font-size: var(--text-regular-20-size);
+    line-height: var(--text-regular-20-line-height);
+    font-weight: var(--text-regular-20-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-semibold-18 {
+    font-family: var(--font-body);
+    font-size: var(--text-semibold-18-size);
+    line-height: var(--text-semibold-18-line-height);
+    font-weight: var(--text-semibold-18-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-medium-16 {
+    font-family: var(--font-body);
+    font-size: var(--text-medium-16-size);
+    line-height: var(--text-medium-16-line-height);
+    font-weight: var(--text-medium-16-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-regular-16 {
+    font-family: var(--font-body);
+    font-size: var(--text-regular-16-size);
+    line-height: var(--text-regular-16-line-height);
+    font-weight: var(--text-regular-16-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-regular-14 {
+    font-family: var(--font-body);
+    font-size: var(--text-regular-14-size);
+    line-height: var(--text-regular-14-line-height);
+    font-weight: var(--text-regular-14-weight);
+    letter-spacing: 0;
+  }
+}

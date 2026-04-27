@@ -1,16 +1,7 @@
+@import url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.css');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
 @import 'tailwindcss';
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --border: #e5e7eb;
-}
-
-.dark {
-  --background: #171717;
-  --foreground: #ffffff;
-  --border: #27272a;
-}
+@import './styles/theme.css';
 
 @layer base {
   * {
@@ -21,6 +12,6 @@
     margin: 0;
     background: var(--background);
     color: var(--foreground);
-    font-family: sans-serif;
+    font-family: var(--font-body);
   }
 }
