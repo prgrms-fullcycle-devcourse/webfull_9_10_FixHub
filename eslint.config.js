@@ -6,7 +6,7 @@ const tseslint = require('typescript-eslint');
 
 const reactRefresh = reactRefreshModule.default ?? reactRefreshModule;
 const INTERNAL_IMPORT_PATTERN = /^(@\/|\.)/u;
-const CAMEL_CASE_PATTERN = /^[a-z][a-zA-Z0-9]*$/u;
+const CAMEL_CASE_AND_PASCAL_CASE_PATTERN = /^[a-zA-Z][a-zA-Z0-9]*$/u;
 
 const fixhubPlugin = {
   rules: {
@@ -110,7 +110,10 @@ const fixhubPlugin = {
                 .replace(/\.d\.ts$/u, '')
                 .replace(/\.[^.]+$/u, '');
 
-              return name.length > 0 && !CAMEL_CASE_PATTERN.test(name);
+              return (
+                name.length > 0 &&
+                !CAMEL_CASE_AND_PASCAL_CASE_PATTERN.test(name)
+              );
             });
 
             if (!invalidPart) {
