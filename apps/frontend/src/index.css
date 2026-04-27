@@ -1,16 +1,5 @@
 @import 'tailwindcss';
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --border: #e5e7eb;
-}
-
-.dark {
-  --background: #171717;
-  --foreground: #ffffff;
-  --border: #27272a;
-}
+@import './styles/theme.css';
 
 @layer base {
   * {
