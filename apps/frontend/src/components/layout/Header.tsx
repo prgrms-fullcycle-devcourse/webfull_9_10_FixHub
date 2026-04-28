@@ -1,14 +1,12 @@
 import { Bell, Search } from 'lucide-react';
 
-import logo from '@/assets/logo.svg';
+import Logo from '@/assets/logo.svg';
 
 export default function Header() {
   return (
-    <header className="flex justify-between items-center w-full border-b border-ring bg-background py-4 px-15">
+    <header className="flex justify-between items-center w-full border-b border-ring bg-background py-4 px-15 sticky">
       {/* 로고 */}
-      <div>
-        <img src={logo} alt="FixHub" className="h-10" />
-      </div>
+      <Logo className="h-10 w-40" />
 
       {/* 검색 */}
       <div className="flex justify-start items-center bg-input w-111.5 h-14.5 rounded-[20px] py-3.5 px-5 gap-3">
