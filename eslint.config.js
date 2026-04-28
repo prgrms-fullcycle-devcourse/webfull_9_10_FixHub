@@ -108,7 +108,8 @@ const fixhubPlugin = {
             const invalidPart = pathParts.find((part) => {
               const name = part
                 .replace(/\.d\.ts$/u, '')
-                .replace(/\.[^.]+$/u, '');
+                .replace(/\.[^.]+$/u, '')
+                .split('.')[0];
 
               return (
                 name.length > 0 &&
