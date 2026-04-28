@@ -2,7 +2,8 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["prisma:generate"]
     },
     "build": {
       "dependsOn": ["^build", "prisma:generate"],
