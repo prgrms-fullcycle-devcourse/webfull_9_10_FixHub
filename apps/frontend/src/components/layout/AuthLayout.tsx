@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router-dom';
 
-import logo from '@/assets/Logo_Login.svg';
+import Logo from '@/assets/Logo_Login.svg';
 
 export default function AuthLayout() {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <div className="relative hidden flex-1 items-center justify-center lg:flex">
         <div className="relative z-10 flex flex-col items-center gap-4 text-center">
-          <img src={logo} alt="logo" />
+          <Logo />
         </div>
       </div>
 
