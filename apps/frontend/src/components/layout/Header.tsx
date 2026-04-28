@@ -23,7 +23,7 @@ export default function Header() {
       {/* 알림, 프로필 */}
       <div className="flex items-center gap-8">
         <div className="relative">
-          <span className="absolute inline-block rounded-full bg-destructive w-[1.1rem] h-[1.1rem] text-center text-secondary-foreground -right-0.75 -top-1.25 text-[12px]">
+          <span className="absolute inline-block rounded-full bg-destructive w-[1.1rem] h-[1.1rem] text-center text-secondary-foreground -right-0.75 -top-1.25 text-xs">
             1
           </span>
           <Bell className="w-8 h-8" />
