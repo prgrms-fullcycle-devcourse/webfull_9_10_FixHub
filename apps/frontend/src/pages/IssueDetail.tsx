@@ -58,8 +58,15 @@ function IssueDetail() {
   const visibleComments = showAllComments ? comments : comments.slice(0, 3);
 
   return (
-    <section className="flex min-h-[calc(100vh-90px)] -translate-y-12 gap-8 px-12 pt-0 pb-10 text-white">
-      <div className="w-182.5 shrink-0">
+    <section className="relative flex min-h-[calc(100vh-90px)] -translate-y-12 gap-8 overflow-hidden px-12 pt-0 pb-10 text-white">
+      {/* 별 배경 */}
+      <div className="stars-bg pointer-events-none absolute inset-0 z-0">
+        <span className="comet" />
+        <span className="comet comet-2" />
+        <span className="comet comet-3" />
+      </div>
+
+      <div className="relative z-10 w-182.5 shrink-0">
         <div className="mb-8 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-4">
@@ -187,7 +194,7 @@ function IssueDetail() {
         </div>
       </div>
 
-      <aside className="w-102.5 shrink-0 rounded-2xl bg-[#252447] p-5">
+      <aside className="relative z-10 w-102.5 shrink-0 rounded-2xl bg-[#252447] p-5">
         <h2 className="mb-6 font-bold">댓글수 {comments.length}</h2>
 
         <div className="space-y-5">
