@@ -30,9 +30,11 @@
     "prettier": "^3.8.3",
     "turbo": "^2.9.6",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.2"
+    "typescript-eslint": "^8.58.2",
+    "vite-plugin-svgr": "^5.2.0"
   },
   "dependencies": {
+    "react-router-dom": "^7.14.2",
     "uuidv7": "^1.2.1"
   }
 }
