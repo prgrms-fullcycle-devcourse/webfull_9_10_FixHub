@@ -5,7 +5,7 @@ import Sidebar from '../ui/sidebar';
 
 export default function AppLayout() {
   return (
-    <div className="min-h-screen bg-main-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <Header />
       <Sidebar />
 

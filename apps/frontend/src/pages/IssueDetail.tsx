@@ -59,13 +59,6 @@ function IssueDetail() {
 
   return (
     <section className="relative flex min-h-[calc(100vh-90px)] -translate-y-12 gap-8 overflow-hidden px-12 pt-0 pb-10 text-white">
-      {/* 별 배경 */}
-      <div className="stars-bg pointer-events-none absolute inset-0 z-0">
-        <span className="comet" />
-        <span className="comet comet-2" />
-        <span className="comet comet-3" />
-      </div>
-
       <div className="relative z-10 w-182.5 shrink-0">
         <div className="mb-8 flex items-start justify-between">
           <div>
