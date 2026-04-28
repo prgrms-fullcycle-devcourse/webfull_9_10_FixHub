@@ -62,13 +62,11 @@ function IssueFeed() {
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
-    <section className="mx-auto -ml-0 w-full max-w-[1170px] px-25 -mt-4 pt-0 pb-12 text-white">
+    <section className="mx-auto w-full max-w-292.5 px-25 -mt-4 pt-0 pb-12 text-(--text-primary)">
       <div className="mb-6">
-        <h1 className="font-mono text-4xl font-bold tracking-tight">
-          최신 이슈 피드
-        </h1>
+        <h1 className="typo-medium-40">최신 이슈 피드</h1>
 
-        <p className="mt-3 text-sm text-white/80">
+        <p className="mt-3 typo-regular-14 text-(--text-secondary)">
           모든 팀에 공개된 이슈를 확인하고, 함께 해결해보세요.
         </p>
       </div>
@@ -77,21 +75,21 @@ function IssueFeed() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            className="cursor-pointer rounded border border-white/60 px-5 py-2 text-sm text-white hover:bg-white/10"
+            className="cursor-pointer rounded-sm border border-border px-5 py-2 typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
           >
             상태⌃
           </button>
 
           <button
             type="button"
-            className="cursor-pointer rounded border border-white/60 px-5 py-2 text-sm text-white hover:bg-white/10"
+            className="cursor-pointer rounded-sm border border-border px-5 py-2 typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
           >
             상태⌃
           </button>
 
           <button
             type="button"
-            className="cursor-pointer rounded border border-white/60 px-5 py-2 text-sm text-white hover:bg-white/10"
+            className="cursor-pointer rounded-sm border border-border px-5 py-2 typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
           >
             언어 선택
           </button>
@@ -99,24 +97,24 @@ function IssueFeed() {
 
         <button
           type="button"
-          className="cursor-pointer rounded border border-white/60 px-5 py-2 text-sm text-white hover:bg-white/10"
+          className="cursor-pointer rounded-sm border border-border px-5 py-2 typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
         >
           정렬⌃
         </button>
       </div>
 
       <div className="mb-6 flex items-center gap-3">
-        <span className="rounded bg-[#6553a8] px-3 py-1.5 text-xs">
+        <span className="rounded-sm bg-(--surface-tag) px-3 py-1.5 text-xs text-(--text-primary)">
           JavaScript ×
         </span>
 
-        <span className="rounded bg-[#6553a8] px-3 py-1.5 text-xs">
+        <span className="rounded-sm bg-(--surface-tag) px-3 py-1.5 text-xs text-(--text-primary)">
           Axios ×
         </span>
 
         <button
           type="button"
-          className="cursor-pointer text-xs text-white/80 hover:text-white"
+          className="cursor-pointer text-xs text-(--text-secondary) hover:text-(--text-primary)"
         >
           ↻ 초기화
         </button>
@@ -126,7 +124,7 @@ function IssueFeed() {
         {issues.map((issue) => (
           <article
             key={issue.id}
-            className="cursor-pointer rounded-2xl bg-[#252447]/80 px-8 py-6 transition hover:bg-[#2c2b55]"
+            className="cursor-pointer rounded-lg bg-(--surface-panel) px-8 py-6 transition hover:bg-(--surface-selected)"
             onClick={() => {
               window.location.href = `/issues/${issue.id}`;
             }}
@@ -135,21 +133,21 @@ function IssueFeed() {
               <div className="min-w-0 flex-1">
                 <div className="mb-4 flex items-center gap-3">
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                    className={`rounded-full px-3 py-1 text-xs font-bold text-(--text-primary) ${
                       issue.status === '해결'
-                        ? 'bg-green-500 text-white'
-                        : 'bg-red-400 text-white'
+                        ? 'bg-(--status-solved)'
+                        : 'bg-(--status-unsaved)'
                     }`}
                   >
                     {issue.status}
                   </span>
 
-                  <h2 className="truncate text-base font-bold">
+                  <h2 className="truncate typo-semibold-18 text-(--text-primary)">
                     {issue.title}
                   </h2>
                 </div>
 
-                <p className="mb-4 truncate text-sm text-white/75">
+                <p className="mb-4 truncate typo-regular-14 text-(--text-secondary)">
                   {issue.description}
                 </p>
 
@@ -157,7 +155,7 @@ function IssueFeed() {
                   {issue.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded bg-[#6553a8] px-3 py-1.5 text-xs text-white"
+                      className="rounded-sm bg-(--surface-tag) px-3 py-1.5 text-xs text-(--text-primary)"
                     >
                       {tag}
                     </span>
@@ -165,7 +163,7 @@ function IssueFeed() {
                 </div>
               </div>
 
-              <div className="flex w-28 shrink-0 flex-col items-end gap-9 text-xs text-white/80">
+              <div className="flex w-28 shrink-0 flex-col items-end gap-9 text-xs text-(--text-secondary)">
                 <div>
                   답변 {issue.replies} &nbsp; 채택 {issue.selected}
                 </div>
@@ -180,7 +178,7 @@ function IssueFeed() {
       <div className="mt-10 flex items-center justify-center gap-2">
         <button
           type="button"
-          className="cursor-pointer rounded border border-white/20 px-3 py-2 text-sm text-white/70 hover:bg-white/10"
+          className="cursor-pointer rounded-sm border border-border px-3 py-2 text-sm text-(--text-secondary) hover:bg-(--surface-selected)"
         >
           ‹
         </button>
@@ -190,10 +188,10 @@ function IssueFeed() {
             key={page}
             type="button"
             onClick={() => setCurrentPage(page)}
-            className={`h-8 w-8 cursor-pointer rounded border text-sm ${
+            className={`h-8 w-8 cursor-pointer rounded-sm border text-sm ${
               currentPage === page
-                ? 'border-yellow-300 bg-yellow-300 text-black'
-                : 'border-white/40 text-white hover:bg-white/10'
+                ? 'border-primary bg-primary text-(--text-inverse)'
+                : 'border-border text-(--text-primary) hover:bg-(--surface-selected)'
             }`}
           >
             {page}
@@ -202,7 +200,7 @@ function IssueFeed() {
 
         <button
           type="button"
-          className="cursor-pointer rounded bg-yellow-300 px-3 py-2 text-sm text-black hover:bg-yellow-200"
+          className="cursor-pointer rounded-sm bg-primary px-3 py-2 text-sm text-(--text-inverse) hover:opacity-90"
         >
           ›
         </button>
