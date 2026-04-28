@@ -21,4 +21,4 @@ export async function healthCheck(req: Request, res: Response) {
     echo: parsed.data.input ?? null,
     db,
   });
-} // respone 스키마 어디감?
+}
