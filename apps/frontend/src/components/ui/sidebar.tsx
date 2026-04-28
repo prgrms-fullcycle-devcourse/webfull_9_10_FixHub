@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import HomeIcon from '@/assets/icons/home.svg';
 import CodingBoxIcon from '@/assets/icons/coding-box.svg';
@@ -99,7 +99,7 @@ function SidebarItem({
   label,
   active = false,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   active?: boolean;
 }) {
