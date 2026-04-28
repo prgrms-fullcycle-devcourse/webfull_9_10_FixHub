@@ -1,17 +1,17 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-// 로그인 전 (Auth)
+// 로그인 전
 import AuthLayout from '@/components/layout/AuthLayout';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 
-// 로그인 후 (App)
+// 로그인 후
 import AppLayout from '@/components/layout/appLayout';
 import IssueDetail from '@/pages/IssueDetail';
+import IssueFeed from '@/pages/IssueFeed';
 import CreateTeamPage from '@/pages/teams/createTeamPage';
 
 export const router = createBrowserRouter([
-  // 로그인 전
   {
     element: <AuthLayout />,
     children: [
@@ -20,11 +20,10 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // 로그인 후
   {
     element: <AppLayout />,
     children: [
-      { path: '/', element: <div>홈</div> },
+      { path: '/', element: <IssueFeed /> },
       { path: '/teams/new', element: <CreateTeamPage /> },
       { path: '/issues/:issueId', element: <IssueDetail /> },
     ],
