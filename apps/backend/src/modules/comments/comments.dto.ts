@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { zod as z } from '../../common/lib/zod.js';
 
 export const CreateCommentParamsSchema = z.object({
   id: z.string().min(1),
