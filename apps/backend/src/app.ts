@@ -1,5 +1,5 @@
-import express, { type Express } from 'express';
 import cors from 'cors';
+import express, { type Express } from 'express';
 
 import { errorHandler } from './common/errors/errorHandler.js';
 
@@ -21,6 +21,11 @@ app.use(express.json());
 app.use('/api-docs', swaggerUiServe, swaggerUiSetup);
 app.get('/openapi.json', (_req, res) => {
   res.json(openApiDocument);
+});
+
+// 서버 상태 확인용 라우트
+app.get('/health', (_req, res) => {
+  res.json({ message: 'ok' });
 });
 
 app.use('/', authRouter);
