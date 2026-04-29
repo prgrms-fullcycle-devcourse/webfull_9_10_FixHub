@@ -25,7 +25,14 @@ export const CreateCommentResponseSchema = z.object({
 });
 
 export const CommentErrorResponseSchema = z.object({
-  message: z.string(),
+  error: z.object({
+    code: z.string().openapi({
+      example: 'VALIDATION_ERROR',
+    }),
+    message: z.string().openapi({
+      example: '요청 본문이 올바르지 않습니다.',
+    }),
+  }),
 });
 
 export type CreateCommentParamsDto = z.infer<typeof CreateCommentParamsSchema>;

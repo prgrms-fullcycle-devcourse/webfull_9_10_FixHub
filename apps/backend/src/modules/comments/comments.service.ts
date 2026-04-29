@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { AppError } from '../../common/errors/AppError.js';
 import { formatKoreanDate } from '../../common/utils/formatDate.js';
 import type {
   CreateCommentBodyDto,
@@ -14,16 +15,6 @@ type SavedComment = {
 
 const issueComments = new Map<string, SavedComment[]>();
 
-export class CommentServiceError extends Error {
-  constructor(
-    readonly statusCode: number,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'CommentServiceError';
-  }
-}
-
 export function createComment(
   params: CreateCommentParamsDto,
   body: CreateCommentBodyDto,
@@ -36,13 +27,17 @@ export function createComment(
     );
 
     if (!parentComment) {
-      throw new CommentServiceError(404, '부모 댓글을 찾을 수 없습니다.');
+      throw new AppError(
+        'COMMENT_PARENT_NOT_FOUND',
+        '부모 댓글을 찾을 수 없습니다.',
+        404,
+      );
     }
   }
 
   const createdComment = {
     id: `comment-${randomUUID()}`,
-    author: '홍길동',
+    author: '홍길동', //TODO: user module 생성 후 연동 필요
     createdAt: formatKoreanDate(new Date()),
   };
 
