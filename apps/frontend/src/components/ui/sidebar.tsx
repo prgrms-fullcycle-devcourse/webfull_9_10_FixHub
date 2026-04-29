@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import HomeIcon from '@/assets/icons/home.svg';
 import CodingBoxIcon from '@/assets/icons/coding-box.svg';
@@ -13,6 +14,8 @@ const teams = ['팀 A', '팀 A', '팀 B'];
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // 추후 수정: header 높이에 따라 top-[90px], h-[calc(100vh-90px)] 조정 예정
   // 추후 수정: 'max-h-75 opacity-100' : 'max-h-0 opacity-0' 향후 팀 수에 따른 max-h 조정 필요
@@ -29,7 +32,12 @@ export default function Sidebar() {
       <nav className="flex h-full flex-col gap-4">
         {/* 상단 */}
         <SidebarItem icon={<HomeIcon />} label="홈" />
-        <SidebarItem icon={<CodingBoxIcon />} label="이슈 작성" />
+        <SidebarItem
+          icon={<CodingBoxIcon />}
+          label="이슈 작성"
+          active={location.pathname === '/issues/new'}
+          onClick={() => navigate('/issues/new')}
+        />
 
         <Divider />
 
@@ -98,13 +106,16 @@ function SidebarItem({
   icon,
   label,
   active = false,
+  onClick,
 }: {
   icon: ReactNode;
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       className={[
         'm-0',
         'flex w-full items-center gap-[10px]',
