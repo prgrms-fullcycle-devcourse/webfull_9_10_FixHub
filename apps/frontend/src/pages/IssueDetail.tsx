@@ -1,4 +1,5 @@
 import { CalendarDays, Globe2, SquarePen, Trash2 } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import IssueCommentComposer from '@/components/comments/IssueCommentComposer';
 import IssueCommentList, {
@@ -6,6 +7,9 @@ import IssueCommentList, {
 } from '@/components/comments/IssueCommentList';
 
 function IssueDetail() {
+  const navigate = useNavigate();
+  const { issueId } = useParams();
+
   const isPublic = false;
   const visibilityText = isPublic ? '전체공개' : '비공개';
 
@@ -90,7 +94,7 @@ function IssueDetail() {
 
             <button
               type="button"
-              onClick={() => alert('수정 버튼 클릭')}
+              onClick={() => navigate(`/issues/${issueId}/edit`)}
               className="flex h-16 w-20 cursor-pointer items-center justify-center rounded-md bg-(--surface-overlay) text-(--text-primary) shadow-(--shadow) hover:bg-(--surface-selected)"
               aria-label="수정"
             >
