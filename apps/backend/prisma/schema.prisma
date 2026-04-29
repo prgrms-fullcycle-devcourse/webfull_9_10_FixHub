@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id            String         @id @db.Uuid
+  id            String         @id @db.Uuid @default(uuid())
   name          String
   email         String         @unique
   password      String?
@@ -25,7 +25,7 @@ model User {
 }
 
 model ScoreLog {
-  id           String     @id @db.Uuid
+  id           String     @id @db.Uuid @default(uuid())
   teamMemberId String     @map("team_member_id") @db.Uuid
   amount       Int
   reason       String
@@ -36,7 +36,7 @@ model ScoreLog {
 }
 
 model Team {
-  id              String       @id @db.Uuid
+  id              String       @id @db.Uuid @default(uuid())
   name            String
   description     String?
   slackWebhookUrl String?      @map("slack_webhook_url")
@@ -48,7 +48,7 @@ model Team {
 }
 
 model TeamMember {
-  id        String     @id @db.Uuid
+  id        String     @id @db.Uuid @default(uuid())
   teamId    String     @map("team_id") @db.Uuid
   userId    String     @map("user_id") @db.Uuid
   role      String
@@ -63,7 +63,7 @@ model TeamMember {
 }
 
 model ErrorIssue {
-  id        String     @id @db.Uuid
+  id        String     @id @db.Uuid @default(uuid())
   userId    String     @map("user_id") @db.Uuid
   teamId    String     @map("team_id") @db.Uuid
   title     String
@@ -82,7 +82,7 @@ model ErrorIssue {
 }
 
 model ErrorLog {
-  id           String     @id @db.Uuid
+  id           String     @id @db.Uuid @default(uuid())
   issueId      String     @map("issue_id") @db.Uuid
   logType      String     @map("log_type")
   source       String?
@@ -97,7 +97,7 @@ model ErrorLog {
 }
 
 model Comment {
-  id          String     @id @db.Uuid
+  id          String     @id @db.Uuid @default(uuid())
   issueId     String     @map("issue_id") @db.Uuid
   userId      String     @map("user_id") @db.Uuid
   parentId    String?    @map("parent_id") @db.Uuid
@@ -114,7 +114,7 @@ model Comment {
 }
 
 model Notification {
-  id         String   @id @db.Uuid
+  id         String   @id @db.Uuid @default(uuid())
   userId     String   @map("user_id") @db.Uuid
   resourceId String?  @map("resource_id") @db.Uuid
   type       String
