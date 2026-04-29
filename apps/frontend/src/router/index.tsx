@@ -7,7 +7,9 @@ import SignupPage from '@/pages/SignupPage';
 
 // 로그인 후
 import AppLayout from '@/components/layout/appLayout';
+import IssueCreate from '@/pages/IssueCreate';
 import IssueDetail from '@/pages/IssueDetail';
+import IssueEdit from '@/pages/IssueEdit';
 import IssueFeed from '@/pages/IssueFeed';
 import CreateTeamPage from '@/pages/teams/createTeamPage';
 
@@ -24,8 +26,10 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: '/', element: <IssueFeed /> },
+      { path: '/issues/new', element: <IssueCreate /> },
       { path: '/teams/new', element: <CreateTeamPage /> },
       { path: '/issues/:issueId', element: <IssueDetail /> },
+      { path: '/issues/:issueId/edit', element: <IssueEdit /> },
     ],
   },
 ]);

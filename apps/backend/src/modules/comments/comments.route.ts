@@ -4,6 +4,6 @@ import { postComment } from './comments.controller.js';
 
 const router = Router();
 
-router.post('/', postComment);
+router.post('/issues/:id/comments', postComment);
 
 export default router;

@@ -1,9 +1,16 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
 
-import { openApiDocument } from './docs/openapi.js';
+import { errorHandler } from './common/errors/errorHandler.js';
+
 import { swaggerUiServe, swaggerUiSetup } from './docs/swagger.js';
+import authRouter from './modules/auth/auth.route.js';
 import commentsRouter from './modules/comments/comments.route.js';
+import errorsRouter from './modules/errors/errors.route.js';
+import healthRouter from './modules/health/health.route.js';
+import teamsRouter from './modules/teams/teams.route.js';
+import usersRouter from './modules/users/users.route.js';
+import { openApiDocument } from './docs/openapi.js';
 
 const app: Express = express();
 
@@ -21,6 +28,13 @@ app.get('/health', (_req, res) => {
   res.json({ message: 'ok' });
 });
 
-app.use('/issues/:id/comments', commentsRouter);
+app.use('/', authRouter);
+app.use('/', commentsRouter);
+app.use('/', errorsRouter);
+app.use('/', healthRouter);
+app.use('/', teamsRouter);
+app.use('/', usersRouter);
+
+app.use(errorHandler);
 
 export default app;
