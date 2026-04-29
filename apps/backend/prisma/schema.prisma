@@ -68,7 +68,6 @@ model ErrorIssue {
   teamId    String     @map("team_id") @db.Uuid
   title     String
   content   String?
-  tag       String[]
   isPublic  Boolean    @default(false) @map("is_public")
   status    String     @default("unsolved")
   createdAt DateTime   @default(now()) @map("created_at")
@@ -77,9 +76,21 @@ model ErrorIssue {
   team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   errorLogs ErrorLog[]
+  tags      ErrorIssueTag[]
 
   @@map("error_issues")
 }
+
+model ErrorIssueTag {
+  id           String     @id @db.Uuid @default(uuid())   
+  issueId      String     @map("issue_id") @db.Uuid
+  tagName      String     @map("tag_name")
+
+  errorIssue   ErrorIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@map("error_issue_tags")
+}
+
 
 model ErrorLog {
   id           String     @id @db.Uuid @default(uuid())
