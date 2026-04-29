@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, matchPath } from 'react-router-dom';
 
 import HomeIcon from '@/assets/icons/home.svg';
 import CodingBoxIcon from '@/assets/icons/coding-box.svg';
@@ -26,7 +26,10 @@ export default function Sidebar() {
     location.pathname === '/issues/new' ||
     /^\/issues\/[^/]+\/edit$/.test(location.pathname);
 
-  // 추후 수정: header 높이에 따라 top-[90px], h-[calc(100vh-90px)] 조정 예정
+  const isTeamCreationActive = Boolean(
+    matchPath('/teams/new', location.pathname),
+  );
+
   // 추후 수정: 'max-h-75 opacity-100' : 'max-h-0 opacity-0' 향후 팀 수에 따른 max-h 조정 필요
   return (
     <aside
@@ -100,7 +103,12 @@ export default function Sidebar() {
           </div>
 
           <div>
-            <SidebarItem icon={<PlusIcon />} label="팀 생성" />
+            <SidebarItem
+              icon={<PlusIcon />}
+              label="팀 생성"
+              active={isTeamCreationActive}
+              onClick={() => navigate('/teams/new')}
+            />
           </div>
         </section>
 
