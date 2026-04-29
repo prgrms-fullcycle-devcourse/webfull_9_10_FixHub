@@ -24,7 +24,7 @@ export const openApiDocument = generator.generateDocument({
   },
   servers: [
     {
-      url: 'http://localhost:3000',
+      url: process.env.OPENAPI_URL ?? 'http://localhost:3000',
     },
   ],
 });
