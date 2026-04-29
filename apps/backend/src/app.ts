@@ -1,6 +1,8 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
 
+import { errorHandler } from './common/errors/errorHandler.js';
+
 import { swaggerUiServe, swaggerUiSetup } from './docs/swagger.js';
 import authRouter from './modules/auth/auth.route.js';
 import commentsRouter from './modules/comments/comments.route.js';
@@ -27,5 +29,7 @@ app.use('/', errorsRouter);
 app.use('/', healthRouter);
 app.use('/', teamsRouter);
 app.use('/', usersRouter);
+
+app.use(errorHandler);
 
 export default app;
