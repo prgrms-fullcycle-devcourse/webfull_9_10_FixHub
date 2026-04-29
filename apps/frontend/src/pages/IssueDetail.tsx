@@ -52,7 +52,7 @@ function IssueDetail() {
   ];
 
   return (
-    <section className="grid gap-8 min-[1334px]:grid-cols-[minmax(0,1fr)_410px] relative min-h-[calc(100vh-90px)] overflow-hidden px-12 pt-4 pb-10 text-(--text-primary)">
+    <section className="grid gap-8 min-[1334px]:grid-cols-[minmax(0,1fr)_410px] relative min-h-[calc(100vh-90px)] overflow-hidden px-12 pt-10 pb-10 text-(--text-primary)">
       <div className="relative z-10">
         <div className="mb-8 flex items-start justify-between">
           <div>

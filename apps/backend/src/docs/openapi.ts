@@ -1,21 +1,17 @@
 import {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
-  extendZodWithOpenApi,
 } from '@asteasolutions/zod-to-openapi';
-import { z } from 'zod';
 
+import { registerCommentsSwagger } from '../modules/comments/comments.swagger.js';
 import { registerHealthSwagger } from '../modules/health/health.swagger.js';
 import { registerAuthSwagger } from '../modules/auth/auth.swagger.js';
-import { registerUsersSwagger } from '../modules/users/users.swagger.js';
 
-extendZodWithOpenApi(z);
+const registry = new OpenAPIRegistry();
 
-export const registry = new OpenAPIRegistry();
-
+registerCommentsSwagger(registry);
 registerHealthSwagger(registry);
 registerAuthSwagger(registry);
-registerUsersSwagger(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 

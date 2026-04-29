@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { zod as z } from '../../common/lib/zod.js';
 
 export const HealthCheckQuerySchema = z.object({
   input: z.string().min(1).optional(),

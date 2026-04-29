@@ -17,6 +17,15 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isHomeActive =
+    location.pathname === '/' ||
+    (/^\/issues\/[^/]+$/.test(location.pathname) &&
+      location.pathname !== '/issues/new');
+
+  const isIssueWriteActive =
+    location.pathname === '/issues/new' ||
+    /^\/issues\/[^/]+\/edit$/.test(location.pathname);
+
   // 추후 수정: header 높이에 따라 top-[90px], h-[calc(100vh-90px)] 조정 예정
   // 추후 수정: 'max-h-75 opacity-100' : 'max-h-0 opacity-0' 향후 팀 수에 따른 max-h 조정 필요
   return (
@@ -31,11 +40,16 @@ export default function Sidebar() {
     >
       <nav className="flex h-full flex-col gap-4">
         {/* 상단 */}
-        <SidebarItem icon={<HomeIcon />} label="홈" />
+        <SidebarItem
+          icon={<HomeIcon />}
+          label="홈"
+          active={isHomeActive}
+          onClick={() => navigate('/')}
+        />
         <SidebarItem
           icon={<CodingBoxIcon />}
           label="이슈 작성"
-          active={location.pathname === '/issues/new'}
+          active={isIssueWriteActive}
           onClick={() => navigate('/issues/new')}
         />
 
