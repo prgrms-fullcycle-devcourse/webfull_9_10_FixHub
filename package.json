@@ -20,6 +20,8 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.6.0",
     "commitlint": "^20.5.0",
     "eslint": "^10.2.1",
@@ -35,7 +37,10 @@
     "vite-plugin-svgr": "^5.2.0"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
     "react-router-dom": "^7.14.2",
-    "uuidv7": "^1.2.1"
+    "uuidv7": "^1.2.1",
+    "zod-to-openapi": "^0.2.1"
   }
 }
