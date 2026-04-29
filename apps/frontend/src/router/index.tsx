@@ -6,12 +6,12 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 
 // 로그인 후
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/layout/AppLayoutTemp';
 import IssueCreate from '@/pages/IssueCreate';
 import IssueDetail from '@/pages/IssueDetail';
 import IssueEdit from '@/pages/IssueEdit';
 import IssueFeed from '@/pages/IssueFeed';
-import CreateTeamPage from '@/pages/teams/CreateTeamPage';
+import CreateTeamPage from '@/pages/teams/CreateTeamPageTemp';
 // import AppLayout from '@/components/layout/appLayout';
 
 export const router = createBrowserRouter([
