@@ -5,11 +5,13 @@ import {
 
 import { registerCommentsSwagger } from '../modules/comments/comments.swagger.js';
 import { registerHealthSwagger } from '../modules/health/health.swagger.js';
+import { registerAuthSwagger } from '../modules/auth/auth.swagger.js';
 
 const registry = new OpenAPIRegistry();
 
 registerCommentsSwagger(registry);
 registerHealthSwagger(registry);
+registerAuthSwagger(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
@@ -22,7 +24,7 @@ export const openApiDocument = generator.generateDocument({
   },
   servers: [
     {
-      url: 'http://localhost:3000',
+      url: process.env.OPENAPI_URL ?? 'http://localhost:3000',
     },
   ],
 });
