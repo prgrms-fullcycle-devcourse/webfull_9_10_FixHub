@@ -12,7 +12,8 @@
     "check": "pnpm lint && pnpm format:check",
     "commitlint": "commitlint",
     "commitlint:edit": "commitlint --edit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "orval": "pnpm --filter frontend orval"
   },
   "keywords": [],
   "author": "",

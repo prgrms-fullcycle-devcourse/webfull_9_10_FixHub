@@ -8,6 +8,7 @@ import errorsRouter from './modules/errors/errors.route.js';
 import healthRouter from './modules/health/health.route.js';
 import teamsRouter from './modules/teams/teams.route.js';
 import usersRouter from './modules/users/users.route.js';
+import { openApiDocument } from './docs/openapi.js';
 
 const app: Express = express();
 
@@ -16,6 +17,9 @@ app.use(express.json());
 
 // swagger 문서 경로
 app.use('/api-docs', swaggerUiServe, swaggerUiSetup);
+app.get('/openapi.json', (_req, res) => {
+  res.json(openApiDocument);
+});
 
 app.use('/', authRouter);
 app.use('/', commentsRouter);
