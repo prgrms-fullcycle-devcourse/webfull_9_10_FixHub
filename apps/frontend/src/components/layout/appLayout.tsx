@@ -9,7 +9,7 @@ export default function AppLayout() {
       <Header />
       <Sidebar />
 
-      <main className="ml-[315px] pt-[90px] min-h-screen">
+      <main className="pl-[315px] pt-[91px] min-h-screen">
         <Outlet />
       </main>
     </div>
