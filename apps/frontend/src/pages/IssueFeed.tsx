@@ -62,7 +62,7 @@ function IssueFeed() {
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
-    <section className="mx-auto w-full max-w-292.5 px-25 -mt-4 pt-0 pb-12 text-(--text-primary)">
+    <section className="mx-auto w-full max-w-292.5 px-25 pt-20 pb-12 text-(--text-primary)">
       <div className="mb-6">
         <h1 className="typo-medium-40">최신 이슈 피드</h1>
 
