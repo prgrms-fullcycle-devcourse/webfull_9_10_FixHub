@@ -31,7 +31,7 @@ export default function Sidebar() {
   return (
     <aside
       className="fixed left-0 top-[90px] h-[calc(100vh-90px)] w-[315px]
-      bg-main-background text-foreground
+      bg-main-background/30 text-foreground backdrop-blur-[9px]
       border-r border-white
       py-6
       flex flex-col gap-4
