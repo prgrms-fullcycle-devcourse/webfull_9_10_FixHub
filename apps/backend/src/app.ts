@@ -31,10 +31,10 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/auth', authRouter);
-app.use('/', commentsRouter);
+app.use('/issues', commentsRouter);
 app.use('/', errorsRouter);
 app.use('/', healthRouter);
-app.use('/', teamsRouter);
+app.use('/teams', teamsRouter);
 app.use('/', usersRouter);
 
 app.use(errorHandler);

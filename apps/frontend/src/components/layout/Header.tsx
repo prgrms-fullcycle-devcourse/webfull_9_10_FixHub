@@ -4,7 +4,7 @@ import Logo from '@/assets/logo.svg';
 
 export default function Header() {
   return (
-    <header className="flex justify-between items-center w-full border-b border-ring py-4 px-15 fixed z-50">
+    <header className="flex justify-between items-center w-full border-b border-ring py-4 px-15 fixed bg-main-background/50 text-foreground backdrop-blur-[12px] z-50">
       {/* 로고 */}
       <Logo className="h-10 w-40" />
 
