@@ -12,10 +12,13 @@ function IssueDetail() {
 
   const isPublic = false;
   const visibilityText = isPublic ? '전체공개' : '비공개';
+  const issueAuthorId = 'user-issue-author'; // TODO: 채택 뷰 테스트용 이슈 작성자 id
+  const currentUserId = 'user-issue-author'; // TODO: 채택 뷰 테스트용 로그인된 사용자 id
 
   const comments: IssueCommentItem[] = [
     {
       id: 1,
+      authorId: 'user-commenter-1',
       name: '김하늘',
       selected: true,
       isReply: false,
@@ -23,6 +26,7 @@ function IssueDetail() {
     },
     {
       id: 2,
+      authorId: 'user-issue-author',
       name: '김이름',
       selected: false,
       isReply: true,
@@ -30,6 +34,7 @@ function IssueDetail() {
     },
     {
       id: 3,
+      authorId: 'user-commenter-1',
       name: '김하늘',
       selected: false,
       isReply: false,
@@ -37,6 +42,7 @@ function IssueDetail() {
     },
     {
       id: 4,
+      authorId: 'user-commenter-1',
       name: '김하늘',
       selected: false,
       isReply: false,
@@ -44,6 +50,7 @@ function IssueDetail() {
     },
     {
       id: 5,
+      authorId: 'user-commenter-1',
       name: '김하늘',
       selected: false,
       isReply: false,
@@ -149,7 +156,11 @@ function IssueDetail() {
       </div>
 
       <div className="min-[1334px]:col-start-2 min-[1334px]:row-span-2">
-        <IssueCommentList comments={comments} />
+        <IssueCommentList
+          comments={comments}
+          currentUserId={currentUserId}
+          issueAuthorId={issueAuthorId}
+        />
       </div>
 
       <div className="min-[1334px]:col-start-1">
