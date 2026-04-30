@@ -15,7 +15,7 @@ export const authController = {
       const { user, accessToken } = await authService.signup(req.body);
 
       res.cookie('token', accessToken, COOKIE_OPTIONS);
-      res.status(201).json({ user });
+      res.status(201).json({ message: '회원가입 성공', user });
     } catch (err) {
       next(err);
     }
@@ -26,7 +26,7 @@ export const authController = {
       const { user, accessToken } = await authService.login(req.body);
 
       res.cookie('token', accessToken, COOKIE_OPTIONS);
-      res.status(200).json({ user });
+      res.status(200).json({ message: '로그인 성공', user });
     } catch (err) {
       next(err);
     }

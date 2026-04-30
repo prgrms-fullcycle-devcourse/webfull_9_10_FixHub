@@ -31,7 +31,7 @@ export const authService = {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    return { user, accessToken };
+    return { user: { id: user.id, name: user.name }, accessToken };
   },
 
   async login(body: LoginBody) {
@@ -57,6 +57,9 @@ export const authService = {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    return { user, accessToken };
+    return {
+      user: { id: user.id, name: user.name },
+      accessToken,
+    };
   },
 };

@@ -17,13 +17,10 @@ export const LoginBodySchema = z.object({
 export const UserResponseSchema = z.object({
   id: z.string().uuid().openapi({ example: 'uuid-1234-5678' }),
   name: z.string().openapi({ example: '홍길동' }),
-  email: z.string().email().openapi({ example: 'user@example.com' }),
-  profileImg: z.string().nullable().openapi({ example: null }),
-  provider: z.string().openapi({ example: 'local' }),
-  createdAt: z.string().datetime().openapi({ example: '2026-04-29T12:00:00Z' }),
 });
 
 export const AuthResponseSchema = z.object({
+  message: z.string().openapi({ example: '로그인 성공' }),
   user: UserResponseSchema,
 });
 
