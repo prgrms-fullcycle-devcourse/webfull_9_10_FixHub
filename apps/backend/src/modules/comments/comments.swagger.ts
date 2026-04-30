@@ -42,6 +42,14 @@ export function registerCommentsSwagger(registry: OpenAPIRegistry) {
           },
         },
       },
+      401: {
+        description: '인증 실패',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
       404: {
         description: '부모 댓글을 찾을 수 없음',
         content: {
