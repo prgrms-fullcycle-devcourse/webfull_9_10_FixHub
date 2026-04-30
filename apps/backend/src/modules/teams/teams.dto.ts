@@ -21,7 +21,7 @@ export const SearchTeamsCommentsResponseSchema = z.object({
       id: z.uuidv7(),
       title: z.string(),
       author: z.string(),
-      tag: z.string(),
+      tag: z.array(z.string()),
       status: z.enum(['UNSOLVED', 'SOLVED']),
       commentCount: z.number(),
     }),
