@@ -34,7 +34,7 @@ app.use('/auth', authRouter);
 app.use('/', commentsRouter);
 app.use('/', errorsRouter);
 app.use('/', healthRouter);
-app.use('/', teamsRouter);
+app.use('/teams', teamsRouter);
 app.use('/', usersRouter);
 
 app.use(errorHandler);
