@@ -1,11 +1,12 @@
 import { useState } from 'react';
 
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Rocket } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 export type IssueCommentItem = {
   id: number;
+  authorId: string;
   name: string;
   selected: boolean;
   isReply: boolean;
@@ -14,13 +15,20 @@ export type IssueCommentItem = {
 
 type IssueCommentListProps = {
   comments: IssueCommentItem[];
+  currentUserId: string;
+  issueAuthorId: string;
 };
 
-function IssueCommentList({ comments }: IssueCommentListProps) {
+function IssueCommentList({
+  comments,
+  currentUserId,
+  issueAuthorId,
+}: IssueCommentListProps) {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [showAllComments, setShowAllComments] = useState(false);
 
   const visibleComments = showAllComments ? comments : comments.slice(0, 3);
+  const canAdoptComments = currentUserId === issueAuthorId;
 
   return (
     <aside className="relative z-10 rounded-lg bg-(--surface-panel) p-5">
@@ -60,11 +68,22 @@ function IssueCommentList({ comments }: IssueCommentListProps) {
                 </div>
 
                 <div className="relative flex items-center gap-3">
-                  {comment.selected && (
-                    <span className="rounded-full bg-(--status-unsaved) px-4 py-2 text-xs font-bold text-(--status-error-foreground)">
+                  {comment.selected ? (
+                    <span className="rounded-full border-transparent border bg-(--status-unsaved) px-4 py-2 text-xs font-bold text-(--status-error-foreground)">
                       채택 +5
                     </span>
-                  )}
+                  ) : canAdoptComments && comment.authorId !== currentUserId ? (
+                    <button
+                      type="button"
+                      className="flex gap-1 rounded-full border-1 px-4 py-2 text-xs font-bold transition duration-300 hover:bg-(--status-unsaved) hover:border-transparent cursor-pointer"
+                      onClick={() => {
+                        alert('채택하기 클릭');
+                      }}
+                    >
+                      채택
+                      <Rocket size={18} />
+                    </button>
+                  ) : null}
 
                   <Button
                     type="button"
@@ -103,17 +122,6 @@ function IssueCommentList({ comments }: IssueCommentListProps) {
                         className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
                       >
                         삭제
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          alert('채택하기 클릭');
-                          setOpenMenuId(null);
-                        }}
-                        className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
-                      >
-                        채택하기
                       </button>
                     </div>
                   )}
