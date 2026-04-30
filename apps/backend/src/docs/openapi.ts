@@ -6,12 +6,14 @@ import {
 import { registerCommentsSwagger } from '../modules/comments/comments.swagger.js';
 import { registerHealthSwagger } from '../modules/health/health.swagger.js';
 import { registerAuthSwagger } from '../modules/auth/auth.swagger.js';
+import { registerTeamsSwagger } from '../modules/teams/teams.swagger.js';
 
 const registry = new OpenAPIRegistry();
 
 registerCommentsSwagger(registry);
 registerHealthSwagger(registry);
 registerAuthSwagger(registry);
+registerTeamsSwagger(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
