@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import { AppError } from '../../common/errors/AppError.js';
+import type { AuthRequest } from '../../common/middlewares/authenticate.js';
 
 import {
   CreateCommentBodySchema,
@@ -8,7 +9,11 @@ import {
 } from './comments.dto.js';
 import { createComment } from './comments.service.js';
 
-export function postComment(req: Request, res: Response, next: NextFunction) {
+export async function postComment(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   const parsedParams = CreateCommentParamsSchema.safeParse(req.params);
 
   if (!parsedParams.success) {
@@ -26,7 +31,11 @@ export function postComment(req: Request, res: Response, next: NextFunction) {
   }
 
   try {
-    const comment = createComment(parsedParams.data, parsedBody.data);
+    const comment = await createComment(
+      parsedParams.data,
+      parsedBody.data,
+      (req as AuthRequest).userId,
+    );
 
     return res.status(201).json(comment);
   } catch (error) {

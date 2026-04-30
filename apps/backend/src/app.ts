@@ -31,7 +31,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/auth', authRouter);
-app.use('/', commentsRouter);
+app.use('/issues', commentsRouter);
 app.use('/', errorsRouter);
 app.use('/', healthRouter);
 app.use('/', teamsRouter);

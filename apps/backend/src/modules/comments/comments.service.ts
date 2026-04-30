@@ -1,6 +1,5 @@
-import { randomUUID } from 'node:crypto';
-
 import { AppError } from '../../common/errors/AppError.js';
+import prisma from '../../common/config/prisma.js';
 import { formatKoreanDate } from '../../common/utils/formatDate.js';
 import type {
   CreateCommentBodyDto,
@@ -8,23 +7,34 @@ import type {
   CreateCommentResponseDto,
 } from './comments.dto.js';
 
-type SavedComment = {
-  id: string;
-  parentId: string | null;
-};
-
-const issueComments = new Map<string, SavedComment[]>();
-
-export function createComment(
+export async function createComment(
   params: CreateCommentParamsDto,
   body: CreateCommentBodyDto,
-): CreateCommentResponseDto {
-  const savedComments = issueComments.get(params.id) ?? [];
+  userId: string,
+): Promise<CreateCommentResponseDto> {
+  const issue = await prisma.errorIssue.findUnique({
+    where: {
+      id: params.id,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!issue) {
+    throw new AppError('ISSUE_NOT_FOUND', '이슈를 찾을 수 없습니다.', 404);
+  }
 
   if (body.parentId !== null) {
-    const parentComment = savedComments.find(
-      (comment) => comment.id === body.parentId,
-    );
+    const parentComment = await prisma.comment.findFirst({
+      where: {
+        id: body.parentId,
+        issueId: params.id,
+      },
+      select: {
+        id: true,
+      },
+    });
 
     if (!parentComment) {
       throw new AppError(
@@ -35,19 +45,43 @@ export function createComment(
     }
   }
 
-  const createdComment = {
-    id: `comment-${randomUUID()}`,
-    author: '홍길동', //TODO: user module 생성 후 연동 필요
-    createdAt: formatKoreanDate(new Date()),
-  };
-
-  issueComments.set(params.id, [
-    ...savedComments,
-    {
-      id: createdComment.id,
-      parentId: body.parentId,
+  const createdComment = await prisma.comment.create({
+    data: {
+      content: body.content,
+      issue: {
+        connect: {
+          id: params.id,
+        },
+      },
+      user: {
+        connect: {
+          id: userId,
+        },
+      },
+      ...(body.parentId === null
+        ? {}
+        : {
+            parent: {
+              connect: {
+                id: body.parentId,
+              },
+            },
+          }),
     },
-  ]);
+    select: {
+      id: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
 
-  return createdComment;
+  return {
+    id: createdComment.id,
+    author: createdComment.user.name,
+    createdAt: formatKoreanDate(createdComment.createdAt),
+  };
 }
