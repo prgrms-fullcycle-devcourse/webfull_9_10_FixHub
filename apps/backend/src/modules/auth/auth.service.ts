@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import axios from 'axios';
 
 import prisma from '../../common/config/prisma.js';
 import type { SignupBody, LoginBody } from './auth.dto.js';
@@ -60,6 +61,57 @@ export const authService = {
     return {
       user: { id: user.id, name: user.name },
       accessToken,
+    };
+  },
+
+  async githubLogin(code: string) {
+    // 1. GitHub Access Token 요청
+    const tokenResponse = await axios.post(
+      'https://github.com/login/oauth/access_token',
+      {
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code,
+      },
+      { headers: { Accept: 'application/json' } },
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+
+    // 2. GitHub 유저 정보 요청
+    const userResponse = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const { id, login, avatar_url: profileImg, email } = userResponse.data;
+
+    // 3. DB 저장 시 변경된 변수명 사용
+    let user = await prisma.user.findFirst({
+      where: { provider: 'github', providerId: String(id) },
+    });
+
+    let isNewUser = false;
+
+    if (!user) {
+      isNewUser = true;
+      user = await prisma.user.create({
+        data: {
+          email: email || `${login}@github.com`,
+          name: login,
+          profileImg: profileImg,
+          provider: 'github',
+          providerId: String(id),
+        },
+      });
+    }
+    const serviceToken = jwt.sign({ userId: user.id }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
+
+    return {
+      user: { id: user.id, name: user.name },
+      accessToken: serviceToken,
+      isNewUser,
     };
   },
 };

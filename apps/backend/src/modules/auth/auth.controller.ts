@@ -40,4 +40,22 @@ export const authController = {
       next(err);
     }
   },
+
+  async githubCallback(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.query;
+      const { isNewUser, accessToken } = await authService.githubLogin(
+        code as string,
+      );
+
+      res.cookie('token', accessToken, COOKIE_OPTIONS);
+      if (isNewUser) {
+        res.redirect('http://localhost:5173/signup/name');
+      } else {
+        res.redirect('http://localhost:5173/');
+      }
+    } catch (err) {
+      next(err);
+    }
+  },
 };
