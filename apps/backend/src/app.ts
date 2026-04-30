@@ -8,6 +8,7 @@ import { swaggerUiServe, swaggerUiSetup } from './docs/swagger.js';
 import { authRouter } from './modules/auth/auth.route.js';
 import commentsRouter from './modules/comments/comments.route.js';
 import errorsRouter from './modules/errors/errors.route.js';
+import issuesRouter from './modules/issues/issues.route.js';
 import healthRouter from './modules/health/health.route.js';
 import teamsRouter from './modules/teams/teams.route.js';
 import usersRouter from './modules/users/users.route.js';
@@ -15,7 +16,14 @@ import { openApiDocument } from './docs/openapi.js';
 
 const app: Express = express();
 
-app.use(cors());
+// 프론트 주소만 허용 + 쿠키 허용
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  }),
+);
+
 app.use(cookieParser());
 app.use(express.json());
 
@@ -36,6 +44,7 @@ app.use('/', errorsRouter);
 app.use('/', healthRouter);
 app.use('/teams', teamsRouter);
 app.use('/', usersRouter);
+app.use('/', issuesRouter);
 
 app.use(errorHandler);
 

@@ -52,10 +52,10 @@ function IssueDetail() {
   ];
 
   return (
-    <section className="grid gap-8 min-[1334px]:grid-cols-[minmax(0,1fr)_410px] relative min-h-[calc(100vh-90px)] overflow-hidden px-12 pt-10 pb-10 text-(--text-primary)">
-      <div className="relative z-10">
-        <div className="mb-8 flex items-start justify-between">
-          <div>
+    <section className="relative grid min-h-[calc(100vh-90px)] w-full flex-1 gap-[60px] overflow-hidden px-[60px] pt-[60px] pb-[60px] text-(--text-primary) min-[1334px]:grid-cols-[minmax(0,1fr)_410px]">
+      <div className="relative z-10 flex flex-col gap-[60px]">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex flex-col gap-8">
             <div className="flex items-center gap-4">
               <h1 className="typo-semibold-18 text-(--text-primary)">
                 로그인 시 500 에러 발생
@@ -66,7 +66,7 @@ function IssueDetail() {
               </span>
             </div>
 
-            <div className="mt-8 flex gap-3">
+            <div className="flex gap-3">
               <span className="rounded-sm bg-(--surface-tag) px-5 py-2.5 typo-regular-14 text-(--text-primary)">
                 Axios
               </span>
@@ -76,7 +76,7 @@ function IssueDetail() {
               </span>
             </div>
 
-            <div className="mt-5 flex items-center gap-3 typo-regular-14 text-(--text-primary)">
+            <div className="flex items-center gap-3 typo-regular-14 text-(--text-primary)">
               <Globe2 size={24} />
               <span>{visibilityText}</span>
             </div>
@@ -103,7 +103,7 @@ function IssueDetail() {
           </div>
         </div>
 
-        <div className="mb-6 flex justify-between typo-regular-14 text-(--text-secondary)">
+        <div className="flex justify-between typo-regular-14 text-(--text-secondary)">
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 rounded-full bg-white" />
             <span>김이름</span>
@@ -123,7 +123,7 @@ function IssueDetail() {
           발생합니다. 내용입니다. TTT
         </div>
 
-        <div className="mt-9 grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-5">
           <div>
             <h2 className="mb-3 typo-semibold-18 text-(--text-primary)">
               에러 로그
