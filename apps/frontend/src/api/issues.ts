@@ -1,4 +1,4 @@
-import axios from 'axios';
+import type { IssueStatus } from '../types/issue';
 
 export interface PublicIssueItem {
   id: string;
@@ -9,6 +9,7 @@ export interface PublicIssueItem {
   summary: string;
   commentCount: number;
   createdAt: string;
+  status?: IssueStatus;
 }
 
 export interface GetPublicIssuesResponse {
@@ -22,17 +23,29 @@ export interface GetPublicIssuesResponse {
   data: PublicIssueItem[];
 }
 
-export const getPublicIssues = async (page = 1, limit = 20) => {
-  const response = await axios.get<GetPublicIssuesResponse>(
-    `${import.meta.env.VITE_API_BASE_URL}/issues/public`,
+export const getPublicIssues = async (page = 1, limit = 10) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+  if (!baseUrl) {
+    throw new Error('VITE_API_BASE_URL 값이 없습니다.');
+  }
+
+  const response = await fetch(
+    `${baseUrl}/issues/public?page=${page}&limit=${limit}`,
     {
-      params: {
-        page,
-        limit,
-      },
-      withCredentials: true,
+      credentials: 'include',
     },
   );
 
-  return response.data;
+  if (!response.ok) {
+    throw new Error(`최신 이슈 피드 조회 실패: ${response.status}`);
+  }
+
+  const contentType = response.headers.get('content-type');
+
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new Error('백엔드에서 JSON이 아닌 응답을 반환했습니다.');
+  }
+
+  return response.json() as Promise<GetPublicIssuesResponse>;
 };
