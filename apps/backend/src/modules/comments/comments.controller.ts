@@ -4,6 +4,7 @@ import type { AuthRequest } from '../../common/middlewares/authenticate.js';
 
 import type { CreateCommentBodyDto } from './comments.dto.js';
 import {
+  adoptComment,
   createComment,
   getComments as getCommentsService,
 } from './comments.service.js';
@@ -19,6 +20,26 @@ export async function getComments(
     });
 
     return res.status(200).json(comments);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function postAdoptComment(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const adoptedComment = await adoptComment(
+      {
+        id: req.params.id as string,
+        commentId: req.params.commentId as string,
+      },
+      (req as AuthRequest).userId,
+    );
+
+    return res.status(200).json(adoptedComment);
   } catch (error) {
     return next(error);
   }
