@@ -10,3 +10,4 @@ export const authRouter = Router();
 authRouter.post('/signup', validate(SignupBodySchema), authController.signup);
 authRouter.post('/login', validate(LoginBodySchema), authController.login);
 authRouter.post('/logout', authenticate, authController.logout);
+authRouter.get('/github/callback', authController.githubCallback);

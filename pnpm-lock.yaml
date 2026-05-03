@@ -81,6 +81,9 @@ importers:
       '@prisma/client':
         specifier: 6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@6.0.3))(typescript@6.0.3)
+      axios:
+        specifier: ^1.15.2
+        version: 1.15.2
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
