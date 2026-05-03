@@ -7,9 +7,41 @@ import {
   CreateCommentBodySchema,
   CreateCommentParamsSchema,
   CreateCommentResponseSchema,
+  GetCommentsParamsSchema,
+  GetCommentsResponseSchema,
 } from './comments.dto.js';
 
 export function registerCommentsSwagger(registry: OpenAPIRegistry) {
+  registry.registerPath({
+    method: 'get',
+    path: '/issues/{id}/comments',
+    operationId: 'getComments',
+    tags: ['Comments'],
+    summary: '댓글 목록 조회',
+    description: '이슈에 작성된 일반 댓글과 대댓글 목록을 조회합니다.',
+    request: {
+      params: GetCommentsParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '댓글 목록 조회 성공',
+        content: {
+          'application/json': {
+            schema: GetCommentsResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '이슈를 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
   registry.registerPath({
     method: 'post',
     path: '/issues/{id}/comments/{commentId}/adopt',

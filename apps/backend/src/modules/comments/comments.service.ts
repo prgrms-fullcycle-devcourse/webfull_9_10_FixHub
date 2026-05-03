@@ -7,6 +7,8 @@ import type {
   CreateCommentBodyDto,
   CreateCommentParamsDto,
   CreateCommentResponseDto,
+  GetCommentsParamsDto,
+  GetCommentsResponseDto,
 } from './comments.dto.js';
 
 const ADOPT_COMMENT_REWARDED_SCORE = 50;
@@ -89,6 +91,82 @@ export async function createComment(
     id: createdComment.id,
     author: createdComment.user.name,
     createdAt: formatKoreanDate(createdComment.createdAt),
+  };
+}
+
+export async function getComments(
+  params: GetCommentsParamsDto,
+): Promise<GetCommentsResponseDto> {
+  const issue = await prisma.errorIssue.findUnique({
+    where: {
+      id: params.id,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!issue) {
+    throw new AppError('ISSUE_NOT_FOUND', '이슈를 찾을 수 없습니다.', 404);
+  }
+
+  const comments = await prisma.comment.findMany({
+    where: {
+      issueId: params.id,
+      parentId: null,
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+    select: {
+      id: true,
+      content: true,
+      parentId: true,
+      isAdopted: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      replies: {
+        orderBy: {
+          createdAt: 'asc',
+        },
+        select: {
+          id: true,
+          content: true,
+          parentId: true,
+          isAdopted: true,
+          createdAt: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return {
+    data: comments.map((comment) => ({
+      id: comment.id,
+      content: comment.content,
+      author: comment.user.name,
+      parentId: comment.parentId,
+      isAdopted: comment.isAdopted,
+      createdAt: comment.createdAt.toISOString(),
+      replies: comment.replies.map((reply) => ({
+        id: reply.id,
+        content: reply.content,
+        author: reply.user.name,
+        parentId: reply.parentId,
+        isAdopted: reply.isAdopted,
+        createdAt: reply.createdAt.toISOString(),
+        replies: [],
+      })),
+    })),
   };
 }
 
