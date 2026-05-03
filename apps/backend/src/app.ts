@@ -7,7 +7,7 @@ import { errorHandler } from './common/errors/errorHandler.js';
 import { swaggerUiServe, swaggerUiSetup } from './docs/swagger.js';
 import { authRouter } from './modules/auth/auth.route.js';
 import commentsRouter from './modules/comments/comments.route.js';
-import errorsRouter from './modules/errors/errors.route.js';
+import issuesRouter from './modules/issues/issues.route.js';
 import healthRouter from './modules/health/health.route.js';
 import teamsRouter from './modules/teams/teams.route.js';
 import usersRouter from './modules/users/users.route.js';
@@ -31,8 +31,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/auth', authRouter);
-app.use('/issues', commentsRouter);
-app.use('/', errorsRouter);
+app.use('/comments', commentsRouter);
+app.use('/issues', issuesRouter);
 app.use('/', healthRouter);
 app.use('/teams', teamsRouter);
 app.use('/', usersRouter);
