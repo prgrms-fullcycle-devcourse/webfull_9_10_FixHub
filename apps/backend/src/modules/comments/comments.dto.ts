@@ -24,6 +24,45 @@ export const CreateCommentResponseSchema = z.object({
     }),
 });
 
+const CommentResponseBaseSchema = z.object({
+  id: z.string().openapi({
+    example: 'comment-uuid-001',
+  }),
+  content: z.string().openapi({
+    example: '환경변수에서 Redis 호스트 설정을 확인해보세요.',
+  }),
+  author: z.string().openapi({
+    example: '김철수',
+  }),
+  parentId: z.string().nullable().openapi({
+    example: null,
+  }),
+  isAdopted: z.boolean().openapi({
+    example: false,
+  }),
+  createdAt: z.string().openapi({
+    example: '2025-04-22T10:30:00.000Z',
+  }),
+});
+
+const CommentReplyResponseSchema = CommentResponseBaseSchema.extend({
+  replies: z.array(z.object({})).openapi({
+    example: [],
+  }),
+});
+
+export const GetCommentsParamsSchema = z.object({
+  id: z.string().min(1),
+});
+
+export const GetCommentsResponseSchema = z.object({
+  data: z.array(
+    CommentResponseBaseSchema.extend({
+      replies: z.array(CommentReplyResponseSchema),
+    }),
+  ),
+});
+
 export const CommentErrorResponseSchema = z.object({
   error: z.object({
     code: z.string().openapi({
@@ -40,3 +79,5 @@ export type CreateCommentBodyDto = z.infer<typeof CreateCommentBodySchema>;
 export type CreateCommentResponseDto = z.infer<
   typeof CreateCommentResponseSchema
 >;
+export type GetCommentsParamsDto = z.infer<typeof GetCommentsParamsSchema>;
+export type GetCommentsResponseDto = z.infer<typeof GetCommentsResponseSchema>;
