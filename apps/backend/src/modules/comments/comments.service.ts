@@ -11,8 +11,7 @@ import type {
   GetCommentsResponseDto,
 } from './comments.dto.js';
 
-const ADOPT_COMMENT_REWARDED_SCORE = 50;
-const ADOPT_COMMENT_REASON = '댓글 채택 보상';
+const ADOPT_COMMENT_REWARDED_SCORE = 5;
 const SOLVED_STATUS = 'SOLVED' as const;
 
 export async function createComment(
@@ -199,34 +198,17 @@ export async function adoptComment(
       throw new AppError('COMMENT_NOT_FOUND', '댓글을 찾을 수 없습니다.', 404);
     }
 
+    // 채택하려는 댓글이 이미 채택된 댓글인경우
+    if (comment.isAdopted) {
+      throw new AppError(
+        'COMMENT_ALREADY_ADOPTED',
+        '이미 채택된 댓글 입니다.',
+        400,
+      );
+    }
+
     if (comment.issue.userId !== userId) {
       throw new AppError('FORBIDDEN', '이슈 작성자만 채택할 수 있습니다.', 403);
-    }
-
-    if (comment.issue.status === SOLVED_STATUS || comment.isAdopted) {
-      throw new AppError(
-        'COMMENT_ALREADY_ADOPTED',
-        '이미 채택된 댓글이 있습니다.',
-        409,
-      );
-    }
-
-    const adoptedComment = await tx.comment.findFirst({
-      where: {
-        issueId: params.id,
-        isAdopted: true,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (adoptedComment) {
-      throw new AppError(
-        'COMMENT_ALREADY_ADOPTED',
-        '이미 채택된 댓글이 있습니다.',
-        409,
-      );
     }
 
     const teamMember = await tx.teamMember.findUnique({
@@ -278,6 +260,8 @@ export async function adoptComment(
         },
       },
     });
+
+    const ADOPT_COMMENT_REASON = `이슈 해결 기여 - ${params.id}`;
 
     await tx.scoreLog.create({
       data: {
