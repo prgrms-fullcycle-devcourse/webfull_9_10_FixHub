@@ -96,7 +96,7 @@ function IssueFeed() {
           )}
 
           {isError && (
-            <div className="py-10 text-center typo-regular-14 text-red-500">
+            <div className="py-10 text-center typo-regular-14 text-(--status-error)">
               최신 이슈 피드를 불러오지 못했습니다.
             </div>
           )}

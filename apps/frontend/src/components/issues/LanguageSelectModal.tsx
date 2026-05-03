@@ -56,12 +56,12 @@ function LanguageSelectModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-[420px] rounded-2xl bg-white p-6 text-black shadow-2xl">
-        <div className="mb-4 flex items-start justify-between gap-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-(--surface-overlay) px-4">
+      <div className="w-full max-w-105 rounded-[16px] border border-border bg-(--surface-panel) p-6 text-(--text-primary) shadow-(--shadow)">
+        <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold">언어 선택</h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <h2 className="typo-medium-40 text-(--text-primary)">언어 선택</h2>
+            <p className="mt-3 typo-regular-14 text-(--text-secondary)">
               관심 있는 언어/기술 태그를 선택하세요.
             </p>
           </div>
@@ -69,13 +69,24 @@ function LanguageSelectModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-2xl text-gray-500 hover:text-black"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm typo-medium-16 text-(--text-secondary) hover:bg-(--surface-selected) hover:text-(--text-primary)"
           >
             ×
           </button>
         </div>
 
-        <div className="mb-5 flex flex-wrap gap-2">
+        <div className="mb-6">
+          <p className="mb-3 typo-medium-16 text-(--text-primary)">검색</p>
+
+          <input
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            placeholder="검색"
+            className="h-12 w-full rounded-sm border border-border bg-(--surface-input) px-4 typo-regular-14 text-(--text-primary) outline-none placeholder:text-(--text-muted)"
+          />
+        </div>
+
+        <div className="mb-6 flex max-h-[240px] flex-wrap gap-2 overflow-y-auto">
           {filteredLanguages.map((language) => {
             const isSelected = selectedLanguages.includes(language);
 
@@ -84,10 +95,10 @@ function LanguageSelectModal({
                 key={language}
                 type="button"
                 onClick={() => onToggleLanguage(language)}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
+                className={`cursor-pointer rounded-sm px-3 py-2 typo-regular-14 transition ${
                   isSelected
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'bg-primary text-(--text-inverse)'
+                    : 'bg-(--surface-tag) text-(--text-primary) hover:bg-(--surface-selected)'
                 }`}
               >
                 {language}
@@ -96,21 +107,10 @@ function LanguageSelectModal({
           })}
         </div>
 
-        <div className="mb-5">
-          <p className="mb-2 text-sm text-gray-600">검색</p>
-
-          <input
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            placeholder="Search"
-            className="h-12 w-full rounded-md border border-gray-300 px-4 outline-none"
-          />
-        </div>
-
         <button
           type="button"
           onClick={onClose}
-          className="h-12 w-full rounded-md bg-blue-400 text-base font-semibold text-white hover:bg-blue-500"
+          className="h-12 w-full cursor-pointer rounded-sm bg-primary typo-medium-16 text-(--text-inverse) hover:opacity-90"
         >
           완료
         </button>
