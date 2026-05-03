@@ -17,20 +17,16 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isHomeActive =
-    location.pathname === '/' ||
-    (/^\/issues\/[^/]+$/.test(location.pathname) &&
-      location.pathname !== '/issues/new');
+  const isMatch = (path: string) => Boolean(matchPath(path, location.pathname));
 
   const isIssueWriteActive =
-    location.pathname === '/issues/new' ||
-    /^\/issues\/[^/]+\/edit$/.test(location.pathname);
+    isMatch('/issues/new') || isMatch('/issues/:issueId/edit');
 
-  const isTeamCreationActive = Boolean(
-    matchPath('/teams/new', location.pathname),
-  );
+  const isHomeActive =
+    isMatch('/') || (!isIssueWriteActive && isMatch('/issues/:issueId'));
 
-  // 추후 수정: 'max-h-75 opacity-100' : 'max-h-0 opacity-0' 향후 팀 수에 따른 max-h 조정 필요
+  const isTeamCreationActive = isMatch('/teams/new');
+
   return (
     <aside
       className="fixed left-0 top-[90px] h-[calc(100vh-90px)] w-[315px]
@@ -42,7 +38,6 @@ export default function Sidebar() {
     "
     >
       <nav className="flex h-full flex-col gap-4">
-        {/* 상단 */}
         <SidebarItem
           icon={<HomeIcon />}
           label="홈"
@@ -58,7 +53,6 @@ export default function Sidebar() {
 
         <Divider />
 
-        {/* 팀 영역 */}
         <section className="flex flex-col gap-[10px]">
           <button
             onClick={() => setIsOpen((prev) => !prev)}
@@ -145,7 +139,6 @@ function SidebarItem({
         'rounded-sm',
         'typo-medium-16 transition-all',
         'cursor-pointer',
-
         active
           ? 'bg-accent text-foreground font-semibold'
           : 'text-foreground hover:bg-accent hover:text-foreground',

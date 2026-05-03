@@ -1,7 +1,10 @@
-import { Prisma } from '@prisma/client';
+import { IssueStatus, Prisma } from '@prisma/client';
 
 import prisma from '../../common/config/prisma.js';
-import { SearchIssuesQueryObjectDto } from './issues.dto.js';
+import type {
+  SearchIssuesQueryObjectDto,
+  GetPublicIssuesQuery,
+} from './issues.dto.js';
 
 const KEYS = [
   'title',
@@ -39,7 +42,7 @@ function parseSearchQuery(input: string) {
       } else if (key === 'content') {
         result.content.push(value);
       } else if (key === 'status') {
-        if (value === 'UNSOLVED' || value === 'SOLVED') {
+        if (value === IssueStatus.UNSOLVED || value === IssueStatus.SOLVED) {
           result.status = value;
         }
       } else if (key === 'author') {
@@ -99,7 +102,7 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
   // status
   if (dto.status) {
     andConditions.push({
-      status: dto.status.toLowerCase(),
+      status: dto.status,
     });
   }
 
@@ -169,4 +172,46 @@ export async function searchIssues(input: string) {
   };
 
   return response;
+}
+
+export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
+  const skip = (page - 1) * limit;
+
+  const [totalItemCount, issues] = await Promise.all([
+    prisma.errorIssue.count({
+      where: {
+        isPublic: true,
+      },
+    }),
+    prisma.errorIssue.findMany({
+      where: {
+        isPublic: true,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    }),
+  ]);
+
+  return {
+    meta: {
+      totalItemCount,
+      currentItemCount: issues.length,
+      itemsPerPage: limit,
+      currentPage: page,
+      totalPages: Math.ceil(totalItemCount / limit) || 1,
+    },
+    data: issues.map((issue) => ({
+      id: issue.id,
+      title: issue.title,
+      teamName: '',
+      author: '',
+      tags: [],
+      summary: issue.content ?? '',
+      commentCount: 0,
+      createdAt: issue.createdAt.toISOString(),
+    })),
+  };
 }
