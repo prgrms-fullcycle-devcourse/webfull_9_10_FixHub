@@ -1,10 +1,10 @@
-import {
-  OpenAPIRegistry,
-  extendZodWithOpenApi,
-} from '@asteasolutions/zod-to-openapi';
-import { z } from 'zod';
+import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
-extendZodWithOpenApi(z);
+import {
+  SearchIssuesQuerySchema,
+  SearchIssuesResponseSchema,
+} from './issues.dto.js';
+import { zod as z } from '../../common/lib/zod.js';
 
 const publicIssueItemSchema = z
   .object({
@@ -44,6 +44,30 @@ const errorResponseSchema = z
   .openapi('IssueErrorResponse');
 
 export function registerIssuesSwagger(registry: OpenAPIRegistry) {
+  registry.registerPath({
+    method: 'get',
+    path: '/issues/search',
+    tags: ['Issues'],
+
+    summary: '이슈 검색',
+    description: '검색 태그를 이용해 이슈를 검색합니다.',
+
+    request: {
+      query: SearchIssuesQuerySchema,
+    },
+
+    responses: {
+      200: {
+        description: '검색 목록 조회 성공',
+        content: {
+          'application/json': {
+            schema: SearchIssuesResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
   registry.registerPath({
     method: 'get',
     path: '/issues/public',

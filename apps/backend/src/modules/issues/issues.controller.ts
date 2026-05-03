@@ -1,25 +1,50 @@
-import type { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
-import { getPublicIssuesQuerySchema } from './issues.dto.js';
-import issuesService from './issues.service.js';
+import {
+  SearchIssuesQuerySchema,
+  getPublicIssuesQuerySchema,
+} from './issues.dto.js';
+import { AppError } from '../../common/errors/AppError.js';
+import {
+  searchIssues,
+  getPublicIssues as getPublicIssuesService,
+} from './issues.service.js';
 
-const issuesController = {
-  async getPublicIssues(req: Request, res: Response) {
-    const queryResult = getPublicIssuesQuerySchema.safeParse(req.query);
+export async function getIssues(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedQuery = SearchIssuesQuerySchema.safeParse(req.query);
 
-    if (!queryResult.success) {
-      return res.status(400).json({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '잘못된 쿼리 파라미터입니다.',
-        },
-      });
-    }
+  if (!parsedQuery.success) {
+    return next(
+      new AppError('VALIDATION_ERROR', JSON.stringify(parsedQuery.error), 400),
+    );
+  }
 
-    const result = await issuesService.getPublicIssues(queryResult.data);
+  try {
+    const response = await searchIssues(parsedQuery.data.search ?? '');
 
-    return res.status(200).json(result);
-  },
-};
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
 
-export default issuesController;
+export async function getPublicIssues(req: Request, res: Response) {
+  const queryResult = getPublicIssuesQuerySchema.safeParse(req.query);
+
+  if (!queryResult.success) {
+    return res.status(400).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: '잘못된 쿼리 파라미터입니다.',
+      },
+    });
+  }
+
+  const result = await getPublicIssuesService(queryResult.data);
+
+  return res.status(200).json(result);
+}

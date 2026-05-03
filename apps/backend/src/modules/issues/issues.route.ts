@@ -1,9 +1,10 @@
 import { Router } from 'express';
 
-import issuesController from './issues.controller.js';
+import { getIssues, getPublicIssues } from './issues.controller.js';
 
-const issuesRouter = Router();
+const router = Router();
 
-issuesRouter.get('/issues/public', issuesController.getPublicIssues);
+router.get('/search', getIssues);
+router.get('/public', getPublicIssues);
 
-export default issuesRouter;
+export default router;
