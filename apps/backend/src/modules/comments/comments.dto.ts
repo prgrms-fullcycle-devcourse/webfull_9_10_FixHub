@@ -24,6 +24,29 @@ export const CreateCommentResponseSchema = z.object({
     }),
 });
 
+export const AdoptCommentParamsSchema = z.object({
+  id: z.string().min(1),
+  commentId: z.string().min(1),
+});
+
+export const AdoptCommentResponseSchema = z.object({
+  issueId: z.string().openapi({
+    example: 'issue-uuid-010',
+  }),
+  commentId: z.string().openapi({
+    example: 'comment-uuid-003',
+  }),
+  rewardedScore: z.number().openapi({
+    example: 50,
+  }),
+  reason: z.string().openapi({
+    example: '댓글 채택 보상',
+  }),
+  status: z.enum(['SOLVED']).openapi({
+    example: 'SOLVED',
+  }),
+});
+
 export const CommentErrorResponseSchema = z.object({
   error: z.object({
     code: z.string().openapi({
@@ -35,6 +58,10 @@ export const CommentErrorResponseSchema = z.object({
   }),
 });
 
+export type AdoptCommentParamsDto = z.infer<typeof AdoptCommentParamsSchema>;
+export type AdoptCommentResponseDto = z.infer<
+  typeof AdoptCommentResponseSchema
+>;
 export type CreateCommentParamsDto = z.infer<typeof CreateCommentParamsSchema>;
 export type CreateCommentBodyDto = z.infer<typeof CreateCommentBodySchema>;
 export type CreateCommentResponseDto = z.infer<

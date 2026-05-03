@@ -1,6 +1,8 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 import {
+  AdoptCommentParamsSchema,
+  AdoptCommentResponseSchema,
   CommentErrorResponseSchema,
   CreateCommentBodySchema,
   CreateCommentParamsSchema,
@@ -8,6 +10,60 @@ import {
 } from './comments.dto.js';
 
 export function registerCommentsSwagger(registry: OpenAPIRegistry) {
+  registry.registerPath({
+    method: 'post',
+    path: '/issues/{id}/comments/{commentId}/adopt',
+    operationId: 'adoptComment',
+    tags: ['Comments'],
+    summary: '댓글 채택',
+    description: '이슈 작성자가 해결 제안 댓글을 채택합니다.',
+    request: {
+      params: AdoptCommentParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '댓글 채택 성공',
+        content: {
+          'application/json': {
+            schema: AdoptCommentResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 실패',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '이슈 작성자 권한 없음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '댓글 또는 팀 멤버를 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      409: {
+        description: '이미 채택된 댓글이 있음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
   registry.registerPath({
     method: 'post',
     path: '/issues/{id}/comments',
