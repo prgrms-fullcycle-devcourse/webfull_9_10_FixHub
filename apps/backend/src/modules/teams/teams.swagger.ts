@@ -1,7 +1,11 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { CreateTeamBodySchema, CreateTeamResponseSchema } from './teams.dto.js';
+import {
+  CreateTeamBodySchema,
+  CreateTeamResponseSchema,
+  GetMyTeamsResponseSchema,
+} from './teams.dto.js';
 
 export const ErrorResponseSchema = z.object({
   error: z.object({
@@ -48,6 +52,32 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
         },
       },
 
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/teams',
+    tags: ['Teams'],
+    summary: '내가 속한 팀 조회',
+    description: '현재 로그인한 사용자가 속한 팀 목록을 조회합니다.',
+    responses: {
+      200: {
+        description: '내가 속한 팀 목록 조회 성공',
+        content: {
+          'application/json': {
+            schema: GetMyTeamsResponseSchema,
+          },
+        },
+      },
       401: {
         description: '인증 필요',
         content: {
