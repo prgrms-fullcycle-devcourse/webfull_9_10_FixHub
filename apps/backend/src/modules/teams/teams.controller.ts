@@ -1,40 +1,26 @@
 import { NextFunction, Request, Response } from 'express';
 
-import {
-  SearchTeamsCommentsParamsSchema,
-  SearchTeamsCommentsQuerySchema,
-} from './teams.dto.js';
-import { AppError } from '../../common/errors/AppError.js';
-import { searchTeamsComments } from './teams.service.js';
+import { CreateTeamBodySchema } from './teams.dto.js';
+import { Errors } from '../../common/errors/AppError.js';
+import { createTeam } from './teams.service.js';
+import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
-export async function getTeamsComments(
+export async function postTeam(
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
-  const parsedParams = SearchTeamsCommentsParamsSchema.safeParse(req.params);
+  const parsedBody = CreateTeamBodySchema.safeParse(req.body);
 
-  if (!parsedParams.success) {
-    return next(
-      new AppError('VALIDATION_ERROR', JSON.stringify(parsedParams.error), 400),
-    );
-  }
-
-  const parsedQuery = SearchTeamsCommentsQuerySchema.safeParse(req.query);
-
-  if (!parsedQuery.success) {
-    return next(
-      new AppError('VALIDATION_ERROR', JSON.stringify(parsedQuery.error), 400),
-    );
+  if (!parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
   }
 
   try {
-    const response = await searchTeamsComments(
-      parsedParams.data.id,
-      parsedQuery.data.search ?? '',
-    );
+    const userId = (req as AuthRequest).userId;
+    const response = await createTeam(userId, parsedBody.data);
 
-    return res.status(200).json(response);
+    return res.status(201).json(response);
   } catch (error) {
     return next(error);
   }

@@ -1,4 +1,4 @@
-import { AppError } from '../../common/errors/AppError.js';
+import { Errors } from '../../common/errors/AppError.js';
 import prisma from '../../common/config/prisma.js';
 import { formatKoreanDate } from '../../common/utils/formatDate.js';
 import type {
@@ -29,7 +29,8 @@ export async function createComment(
   });
 
   if (!issue) {
-    throw new AppError('ISSUE_NOT_FOUND', '이슈를 찾을 수 없습니다.', 404);
+    console.error('createComment() - 이슈를 찾을 수 없습니다.');
+    throw Errors.NOT_FOUND;
   }
 
   if (body.parentId !== null) {
@@ -44,11 +45,8 @@ export async function createComment(
     });
 
     if (!parentComment) {
-      throw new AppError(
-        'COMMENT_PARENT_NOT_FOUND',
-        '부모 댓글을 찾을 수 없습니다.',
-        404,
-      );
+      console.error('createComment() - 부모 댓글을 찾을 수 없습니다.');
+      throw Errors.NOT_FOUND;
     }
   }
 
@@ -106,7 +104,8 @@ export async function getComments(
   });
 
   if (!issue) {
-    throw new AppError('ISSUE_NOT_FOUND', '이슈를 찾을 수 없습니다.', 404);
+    console.error('getComment() - 이슈를 찾을 수 없습니다.');
+    throw Errors.NOT_FOUND;
   }
 
   const comments = await prisma.comment.findMany({
@@ -195,20 +194,19 @@ export async function adoptComment(
     });
 
     if (!comment) {
-      throw new AppError('COMMENT_NOT_FOUND', '댓글을 찾을 수 없습니다.', 404);
+      console.error('adoptComment() - 댓글을 찾을 수 없습니다.');
+      throw Errors.NOT_FOUND;
     }
 
     // 채택하려는 댓글이 이미 채택된 댓글인경우
     if (comment.isAdopted) {
-      throw new AppError(
-        'COMMENT_ALREADY_ADOPTED',
-        '이미 채택된 댓글 입니다.',
-        400,
-      );
+      console.error('adoptComment() - 이미 채택된 댓글 입니다.');
+      throw Errors.VALIDATION_ERROR;
     }
 
     if (comment.issue.userId !== userId) {
-      throw new AppError('FORBIDDEN', '이슈 작성자만 채택할 수 있습니다.', 403);
+      console.error('adoptComment() - 이슈 작성자만 채택할 수 있습니다.');
+      throw Errors.FORBIDDEN;
     }
 
     const teamMember = await tx.teamMember.findUnique({
@@ -224,11 +222,10 @@ export async function adoptComment(
     });
 
     if (!teamMember) {
-      throw new AppError(
-        'TEAM_MEMBER_NOT_FOUND',
-        '댓글 작성자의 팀 정보를 찾을 수 없습니다.',
-        404,
+      console.error(
+        'adoptComment() - 댓글 작성자의 팀 정보를 찾을 수 없습니다.',
       );
+      throw Errors.NOT_FOUND;
     }
 
     await tx.comment.update({

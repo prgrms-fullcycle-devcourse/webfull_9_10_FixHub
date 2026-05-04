@@ -5,7 +5,7 @@ export default defineConfig({
     input: 'http://localhost:3000/openapi.json',
     output: {
       target: './src/api/generated.ts',
-      client: 'axios',
+      client: 'react-query',
     },
   },
 });

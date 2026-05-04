@@ -1,9 +1,10 @@
 import { Router } from 'express';
 
-import { getTeamsComments } from './teams.controller.js';
+import { postTeam } from './teams.controller.js';
+import { authenticate } from '../../common/middlewares/authenticate.js';
 
 const router = Router();
 
-router.get('/:id/comments', getTeamsComments);
+router.post('/', authenticate, postTeam);
 
 export default router;

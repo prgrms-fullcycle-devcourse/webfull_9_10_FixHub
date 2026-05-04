@@ -188,6 +188,7 @@ module.exports = [
       '**/build/**',
       '**/coverage/**',
       '**/node_modules/**',
+      'apps/frontend/src/api/generated.ts',
     ],
   },
   js.configs.recommended,
