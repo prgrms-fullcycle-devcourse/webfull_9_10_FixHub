@@ -1,10 +1,22 @@
 import { Router } from 'express';
 
-import { getIssues, getPublicIssues } from './issues.controller.js';
+import {
+  getIssues,
+  getPublicIssues,
+  getIssueDetail,
+  postIssue,
+} from './issues.controller.js';
+import { authenticate } from '../../common/middlewares/authenticate.js';
 
 const router = Router();
 
 router.get('/search', getIssues);
 router.get('/public', getPublicIssues);
+
+/* 이슈 상세 조회 */
+router.get('/teams/:teamId/issues/:issueId', getIssueDetail);
+
+/* 이슈 등록 */
+router.post('/teams/:teamId/issues', authenticate, postIssue);
 
 export default router;
