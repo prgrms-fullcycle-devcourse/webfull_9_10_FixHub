@@ -1,9 +1,14 @@
 import { useState } from 'react';
-// import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AxiosError } from 'axios';
 
-import { usePostTeams } from '@/api/generated';
+import {
+  getGetTeamsQueryKey,
+  usePostTeams,
+  type PostTeamsBody,
+  type postTeamsResponse,
+} from '@/api/generated';
 
 export default function CreateTeamPage() {
   const [teamName, setTeamName] = useState('');
@@ -11,15 +16,33 @@ export default function CreateTeamPage() {
   const [email, setEmail] = useState('');
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // 팀 생성 mutation
   const { mutate: createTeam, isPending } = usePostTeams({
     mutation: {
-      onSuccess: () => {
-        // const team = res.data;
+      mutationFn: async (variables: {
+        data?: PostTeamsBody;
+      }): Promise<postTeamsResponse> => {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teams`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(variables.data),
+        });
 
-        // TODO: 팀 목록 다시 가져오기 (아직 팀 목록 가져오는 기능이 구현되지 않음)
-        // queryClient.invalidateQueries({ queryKey: ['teams'] });
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({}));
+          throw error;
+        }
+
+        return res.json();
+      },
+
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetTeamsQueryKey() });
 
         // TODO: 생성된 팀 페이지로 이동
         // navigate(`/teams/${team.teamId}`);
