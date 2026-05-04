@@ -4,22 +4,27 @@ import { authenticate } from '../../common/middlewares/authenticate.js';
 import { validate } from '../../common/middlewares/validator.js';
 import {
   getComments,
+  patchComment,
   postAdoptComment,
   postComment,
 } from './comments.controller.js';
-import { CreateCommentBodySchema } from './comments.dto.js';
+import {
+  CreateCommentBodySchema,
+  UpdateCommentBodySchema,
+} from './comments.dto.js';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
-router.get('/:id/comments', getComments);
+router.get('/', getComments);
 
-router.post('/:id/comments/:commentId/adopt', authenticate, postAdoptComment);
+router.post('/', authenticate, validate(CreateCommentBodySchema), postComment);
+router.post('/:commentId/adopt', authenticate, postAdoptComment);
 
-router.post(
-  '/:id/comments',
+router.patch(
+  '/:commentId',
   authenticate,
-  validate(CreateCommentBodySchema),
-  postComment,
+  validate(UpdateCommentBodySchema),
+  patchComment,
 );
 
 export default router;
