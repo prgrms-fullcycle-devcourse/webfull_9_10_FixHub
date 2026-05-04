@@ -50,7 +50,7 @@ export default function CreateTeamPage() {
   };
 
   return (
-    <main className="w-full px-10 py-8">
+    <main className="w-full p-[60px]">
       <section className="flex flex-col mx-auto max-w-292.5 gap-[102px]">
         <div className="flex flex-col w-full gap-13">
           {/* 헤더 */}
@@ -125,7 +125,7 @@ export default function CreateTeamPage() {
 
                 <button
                   type="button"
-                  className="px-[32px] py-[18px] rounded-sm border typo-regular-20"
+                  className="px-[32px] py-[18px] rounded-sm border typo-regular-20 cursor-pointer"
                   style={{
                     borderColor: 'var(--color-white)',
                   }}
