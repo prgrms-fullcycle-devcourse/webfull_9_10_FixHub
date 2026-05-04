@@ -9,6 +9,9 @@ import type {
   CreateCommentResponseDto,
   GetCommentsParamsDto,
   GetCommentsResponseDto,
+  UpdateCommentBodyDto,
+  UpdateCommentParamsDto,
+  UpdateCommentResponseDto,
 } from './comments.dto.js';
 
 const ADOPT_COMMENT_REWARDED_SCORE = 5;
@@ -165,6 +168,53 @@ export async function getComments(
         replies: [],
       })),
     })),
+  };
+}
+
+export async function editComment(
+  params: UpdateCommentParamsDto,
+  body: UpdateCommentBodyDto,
+  userId: string,
+): Promise<UpdateCommentResponseDto> {
+  const comment = await prisma.comment.findFirst({
+    where: {
+      id: params.commentId,
+      issueId: params.id,
+    },
+    select: {
+      id: true,
+      userId: true,
+    },
+  });
+
+  if (!comment) {
+    console.error('editComment() - 댓글을 찾을 수 없습니다.');
+    throw Errors.NOT_FOUND;
+  }
+
+  if (comment.userId !== userId) {
+    console.error('editComment() - 댓글 작성자만 수정할 수 있습니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  const updatedComment = await prisma.comment.update({
+    where: {
+      id: comment.id,
+    },
+    data: {
+      content: body.content,
+    },
+    select: {
+      id: true,
+      content: true,
+      updatedAt: true,
+    },
+  });
+
+  return {
+    id: updatedComment.id,
+    content: updatedComment.content,
+    updatedAt: updatedComment.updatedAt.toISOString(),
   };
 }
 
