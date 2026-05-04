@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx src/server.ts",
     "build": "prisma generate && tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "db:generate": "prisma generate",
