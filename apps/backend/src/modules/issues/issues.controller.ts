@@ -3,11 +3,17 @@ import { NextFunction, Request, Response } from 'express';
 import {
   SearchIssuesQuerySchema,
   getPublicIssuesQuerySchema,
+  GetIssueDetailParamsSchema,
+  CreateIssueParamsSchema,
+  CreateIssueBodySchema,
 } from './issues.dto.js';
-import { AppError } from '../../common/errors/AppError.js';
+import { AppError, Errors } from '../../common/errors/AppError.js';
+import { AuthRequest } from '../../common/middlewares/authenticate.js';
 import {
   searchIssues,
   getPublicIssues as getPublicIssuesService,
+  getIssueDetail as getIssueDetailService,
+  createIssue as createIssueService,
 } from './issues.service.js';
 
 export async function getIssues(
@@ -39,7 +45,7 @@ export async function getPublicIssues(req: Request, res: Response) {
     return res.status(400).json({
       error: {
         code: 'VALIDATION_ERROR',
-        message: '잘못된 쿼리 파라미터입니다.',
+        message: '요청 값이 올바르지 않습니다.',
       },
     });
   }
@@ -47,4 +53,52 @@ export async function getPublicIssues(req: Request, res: Response) {
   const result = await getPublicIssuesService(queryResult.data);
 
   return res.status(200).json(result);
+}
+
+/* 이슈 상세 조회 */
+export async function getIssueDetail(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedParams = GetIssueDetailParamsSchema.safeParse(req.params);
+
+  if (!parsedParams.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const response = await getIssueDetailService(parsedParams.data);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/* 이슈 등록 */
+export async function postIssue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedParams = CreateIssueParamsSchema.safeParse(req.params);
+  const parsedBody = CreateIssueBodySchema.safeParse(req.body);
+
+  if (!parsedParams.success || !parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const response = await createIssueService(
+      userId,
+      parsedParams.data,
+      parsedBody.data,
+    );
+
+    return res.status(201).json(response);
+  } catch (error) {
+    return next(error);
+  }
 }
