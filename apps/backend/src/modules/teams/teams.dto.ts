@@ -47,3 +47,18 @@ export type SearchTeamsCommentsQueryObjectDto = {
   content: string[];
   page?: number;
 };
+
+export const CreateTeamBodySchema = z.object({
+  name: z.string().min(1).max(50),
+  description: z.string().max(500).optional(),
+});
+
+export const CreateTeamResponseSchema = z.object({
+  teamId: z.uuidv7(),
+  name: z.string(),
+  description: z.string().nullable(),
+  inviteCode: z.string(),
+});
+
+export type CreateTeamBodyDto = z.infer<typeof CreateTeamBodySchema>;
+export type CreateTeamResponseDto = z.infer<typeof CreateTeamResponseSchema>;

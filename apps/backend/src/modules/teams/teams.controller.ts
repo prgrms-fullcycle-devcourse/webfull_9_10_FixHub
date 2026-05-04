@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 
 import {
+  CreateTeamBodySchema,
   SearchTeamsCommentsParamsSchema,
   SearchTeamsCommentsQuerySchema,
 } from './teams.dto.js';
-import { AppError } from '../../common/errors/AppError.js';
-import { searchTeamsComments } from './teams.service.js';
+import { AppError, Errors } from '../../common/errors/AppError.js';
+import { createTeam, searchTeamsComments } from './teams.service.js';
+import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
 export async function getTeamsComments(
   req: Request,
@@ -35,6 +37,27 @@ export async function getTeamsComments(
     );
 
     return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function postTeam(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedBody = CreateTeamBodySchema.safeParse(req.body);
+
+  if (!parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const response = await createTeam(userId, parsedBody.data);
+
+    return res.status(201).json(response);
   } catch (error) {
     return next(error);
   }

@@ -1,6 +1,9 @@
 import { Prisma } from '@prisma/client';
 
-import { SearchTeamsCommentsQueryObjectDto } from './teams.dto.js';
+import {
+  CreateTeamBodyDto,
+  SearchTeamsCommentsQueryObjectDto,
+} from './teams.dto.js';
 import prisma from '../../common/config/prisma.js';
 
 const KEYS = ['title', 'author', 'tag', 'status', 'content', 'page'] as const;
@@ -160,4 +163,28 @@ export async function searchTeamsComments(teamId: string, input: string) {
   };
 
   return response;
+}
+
+export async function createTeam(userId: string, body: CreateTeamBodyDto) {
+  const team = await prisma.team.create({
+    data: {
+      name: body.name,
+      description: body.description,
+      teamMembers: {
+        create: {
+          userId,
+          role: 'LEADER',
+          status: 'ACTIVE',
+          joinedAt: new Date(),
+        },
+      },
+    },
+  });
+
+  return {
+    teamId: team.id,
+    name: team.name,
+    description: team.description,
+    inviteCode: team.id,
+  };
 }
