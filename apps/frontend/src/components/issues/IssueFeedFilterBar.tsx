@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 import type { IssueSort, IssueStatusFilter } from '@/types/issue';
@@ -23,6 +24,10 @@ function IssueFeedFilterBar({
   onRemoveLanguage,
   onReset,
 }: IssueFeedFilterBarProps) {
+  const [isStatusFocused, setIsStatusFocused] = useState(false);
+  const [isSortFocused, setIsSortFocused] = useState(false);
+  const [isSortTouched, setIsSortTouched] = useState(false);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
@@ -30,10 +35,21 @@ function IssueFeedFilterBar({
           <div className="relative">
             <select
               value={selectedStatus}
+              onFocus={() => setIsStatusFocused(true)}
+              onBlur={() => setIsStatusFocused(false)}
               onChange={(e) =>
                 onChangeStatus(e.target.value as IssueStatusFilter)
               }
-              className="h-12 min-w-[104px] cursor-pointer appearance-none rounded-sm border border-border bg-(--surface-panel) pl-5 pr-10 typo-regular-14 text-(--text-primary) outline-none"
+              className={[
+                'h-12 min-w-[104px] cursor-pointer appearance-none rounded-sm pl-5 pr-10 typo-regular-14 outline-none transition-all duration-300',
+                isStatusFocused
+                  ? 'shadow-[0_0_12px_rgba(255,255,255,0.4)]'
+                  : '',
+              ].join(' ')}
+              style={{
+                background: 'var(--surface-panel)',
+                color: 'var(--text-primary)',
+              }}
             >
               <option value="ALL" hidden>
                 상태
@@ -70,8 +86,22 @@ function IssueFeedFilterBar({
         <div className="relative">
           <select
             value={sort}
-            onChange={(e) => onChangeSort(e.target.value as IssueSort)}
-            className="h-12 min-w-[112px] cursor-pointer appearance-none rounded-sm border border-border bg-(--surface-panel) pl-5 pr-10 typo-regular-14 text-(--text-primary) outline-none"
+            onFocus={() => setIsSortFocused(true)}
+            onBlur={() => setIsSortFocused(false)}
+            onChange={(e) => {
+              setIsSortTouched(true);
+              onChangeSort(e.target.value as IssueSort);
+            }}
+            className={[
+              'h-12 min-w-[112px] cursor-pointer appearance-none rounded-sm pl-5 pr-10 typo-regular-14 outline-none transition-all duration-300',
+              isSortFocused || isSortTouched
+                ? 'shadow-[0_0_12px_rgba(255,255,255,0.4)]'
+                : '',
+            ].join(' ')}
+            style={{
+              background: 'var(--surface-panel)',
+              color: 'var(--text-primary)',
+            }}
           >
             <option
               value="latest"
