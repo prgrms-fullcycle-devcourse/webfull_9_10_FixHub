@@ -2,11 +2,15 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["prisma:generate"]
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "prisma:generate"],
       "outputs": ["dist/**", "build/**"]
+    },
+    "prisma:generate": {
+      "cache": false
     },
     "lint": {},
     "format": {}

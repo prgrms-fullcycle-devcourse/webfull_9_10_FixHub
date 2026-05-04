@@ -1,16 +1,7 @@
+@import url('https://cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@1.601/neodgm/style.css');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
 @import 'tailwindcss';
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --border: #e5e7eb;
-}
-
-.dark {
-  --background: #171717;
-  --foreground: #ffffff;
-  --border: #27272a;
-}
+@import './styles/theme.css';
 
 @layer base {
   * {
@@ -21,6 +12,36 @@
     margin: 0;
     background: var(--background);
     color: var(--foreground);
-    font-family: sans-serif;
+    font-family: var(--font-body);
   }
+}
+/* src/index.css */
+@keyframes twinkle {
+  25% {
+    opacity: 0;
+  }
+}
+
+@keyframes comet {
+  0%,
+  40% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    transform: translateX(-100vmax);
+    opacity: 0;
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+.animate-comet {
+  animation: comet 10s linear infinite;
 }
