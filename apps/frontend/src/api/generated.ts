@@ -5,8 +5,21 @@
  * FixHub backend API docs
  * OpenAPI spec version: 1.0.0
  */
-import * as axios from 'axios';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  MutationFunction,
+  QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult,
+} from '@tanstack/react-query';
 
 export type GetPublicIssuesResponseMeta = {
   totalItemCount: number;
@@ -317,43 +330,6 @@ export type PostTeams401 = {
   error: PostTeams401Error;
 };
 
-export type GetTeamsIdCommentsParams = {
-  /**
-   * @minLength 1
-   */
-  search?: string;
-};
-
-export type GetTeamsIdComments200Meta = {
-  totalItemCount: number;
-  currentItemCount: number;
-  itemsPerPage: number;
-  currentPage: number;
-  totalPages: number;
-};
-
-export type GetTeamsIdComments200DataItemStatus =
-  (typeof GetTeamsIdComments200DataItemStatus)[keyof typeof GetTeamsIdComments200DataItemStatus];
-
-export const GetTeamsIdComments200DataItemStatus = {
-  UNSOLVED: 'UNSOLVED',
-  SOLVED: 'SOLVED',
-} as const;
-
-export type GetTeamsIdComments200DataItem = {
-  id: string;
-  title: string;
-  author: string;
-  tag: string[];
-  status: GetTeamsIdComments200DataItemStatus;
-  commentCount: number;
-};
-
-export type GetTeamsIdComments200 = {
-  meta: GetTeamsIdComments200Meta;
-  data: GetTeamsIdComments200DataItem[];
-};
-
 export type GetIssuesSearchParams = {
   /**
    * @minLength 1
@@ -398,167 +374,1543 @@ export type GetIssuesPublicParams = {
   limit?: number;
 };
 
-export const getFixHubAPI = (axiosInstance: AxiosInstance = axios.default) => {
-  /**
-   * 이슈에 작성된 일반 댓글과 대댓글 목록을 조회합니다.
-   * @summary 댓글 목록 조회
-   */
-  const getComments = (
-    id: string,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<GetComments200>> => {
-    return axiosInstance.get(`/issues/${id}/comments`, options);
-  };
+/**
+ * 이슈에 작성된 일반 댓글과 대댓글 목록을 조회합니다.
+ * @summary 댓글 목록 조회
+ */
+export type getCommentsResponse200 = {
+  data: GetComments200;
+  status: 200;
+};
 
-  /**
-   * 일반 댓글 또는 대댓글을 생성합니다.
-   * @summary 댓글 생성
-   */
-  const postIssuesIdComments = (
-    id: string,
-    postIssuesIdCommentsBody: PostIssuesIdCommentsBody,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<PostIssuesIdComments201>> => {
-    return axiosInstance.post(
-      `/issues/${id}/comments`,
-      postIssuesIdCommentsBody,
-      options,
-    );
-  };
+export type getCommentsResponse404 = {
+  data: GetComments404;
+  status: 404;
+};
 
-  /**
-   * 이슈 작성자가 해결 제안 댓글을 채택합니다.
-   * @summary 댓글 채택
-   */
-  const adoptComment = (
-    id: string,
-    commentId: string,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<AdoptComment200>> => {
-    return axiosInstance.post(
-      `/issues/${id}/comments/${commentId}/adopt`,
-      undefined,
-      options,
-    );
-  };
+export type getCommentsResponseSuccess = getCommentsResponse200 & {
+  headers: Headers;
+};
+export type getCommentsResponseError = getCommentsResponse404 & {
+  headers: Headers;
+};
 
-  /**
-   * Health check API
-   */
-  const get = (
-    params?: GetParams,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<Get200>> => {
-    return axiosInstance.get(`/`, {
-      ...options,
-      params: { ...params, ...options?.params },
-    });
-  };
+export type getCommentsResponse =
+  | getCommentsResponseSuccess
+  | getCommentsResponseError;
 
-  /**
-   * @summary 회원가입
-   */
-  const postAuthSignup = (
-    postAuthSignupBody?: PostAuthSignupBody,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<PostAuthSignup201>> => {
-    return axiosInstance.post(`/auth/signup`, postAuthSignupBody, options);
-  };
+export const getGetCommentsUrl = (id: string) => {
+  return `/issues/${id}/comments`;
+};
 
-  /**
-   * @summary 로그인
-   */
-  const postAuthLogin = (
-    postAuthLoginBody?: PostAuthLoginBody,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<PostAuthLogin200>> => {
-    return axiosInstance.post(`/auth/login`, postAuthLoginBody, options);
-  };
+export const getComments = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getCommentsResponse> => {
+  const res = await fetch(getGetCommentsUrl(id), {
+    ...options,
+    method: 'GET',
+  });
 
-  /**
-   * @summary 로그아웃
-   */
-  const postAuthLogout = (
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<void>> => {
-    return axiosInstance.post(`/auth/logout`, undefined, options);
-  };
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-  /**
-   * 새로운 팀을 생성합니다.
-   * @summary 팀 생성
-   */
-  const postTeams = (
-    postTeamsBody?: PostTeamsBody,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<PostTeams201>> => {
-    return axiosInstance.post(`/teams`, postTeamsBody, options);
-  };
+  const data: getCommentsResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getCommentsResponse;
+};
 
-  /**
-   * 팀 내 이슈 댓글을 검색합니다.
-   * @summary 팀 댓글 검색
-   */
-  const getTeamsIdComments = (
-    id: string,
-    params?: GetTeamsIdCommentsParams,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<GetTeamsIdComments200>> => {
-    return axiosInstance.get(`/teams/${id}/comments`, {
-      ...options,
-      params: { ...params, ...options?.params },
-    });
-  };
+export const getGetCommentsQueryKey = (id: string) => {
+  return [`/issues/${id}/comments`] as const;
+};
 
-  /**
-   * 검색 태그를 이용해 이슈를 검색합니다.
-   * @summary 이슈 검색
-   */
-  const getIssuesSearch = (
-    params?: GetIssuesSearchParams,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<GetIssuesSearch200>> => {
-    return axiosInstance.get(`/issues/search`, {
-      ...options,
-      params: { ...params, ...options?.params },
-    });
-  };
+export const getGetCommentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getComments>>,
+  TError = GetComments404,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
-  /**
-   * @summary 최신 이슈 피드 조회
-   */
-  const getIssuesPublic = (
-    params?: GetIssuesPublicParams,
-    options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<GetPublicIssuesResponse>> => {
-    return axiosInstance.get(`/issues/public`, {
-      ...options,
-      params: { ...params, ...options?.params },
-    });
-  };
+  const queryKey = queryOptions?.queryKey ?? getGetCommentsQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getComments>>> = ({
+    signal,
+  }) => getComments(id, { signal, ...fetchOptions });
 
   return {
-    getComments,
-    postIssuesIdComments,
-    adoptComment,
-    get,
-    postAuthSignup,
-    postAuthLogin,
-    postAuthLogout,
-    postTeams,
-    getTeamsIdComments,
-    getIssuesSearch,
-    getIssuesPublic,
-  };
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getComments>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
-export type GetCommentsResult = AxiosResponse<GetComments200>;
-export type PostIssuesIdCommentsResult = AxiosResponse<PostIssuesIdComments201>;
-export type AdoptCommentResult = AxiosResponse<AdoptComment200>;
-export type GetResult = AxiosResponse<Get200>;
-export type PostAuthSignupResult = AxiosResponse<PostAuthSignup201>;
-export type PostAuthLoginResult = AxiosResponse<PostAuthLogin200>;
-export type PostAuthLogoutResult = AxiosResponse<void>;
-export type PostTeamsResult = AxiosResponse<PostTeams201>;
-export type GetTeamsIdCommentsResult = AxiosResponse<GetTeamsIdComments200>;
-export type GetIssuesSearchResult = AxiosResponse<GetIssuesSearch200>;
-export type GetIssuesPublicResult = AxiosResponse<GetPublicIssuesResponse>;
+
+export type GetCommentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getComments>>
+>;
+export type GetCommentsQueryError = GetComments404;
+
+export function useGetComments<
+  TData = Awaited<ReturnType<typeof getComments>>,
+  TError = GetComments404,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getComments>>,
+          TError,
+          Awaited<ReturnType<typeof getComments>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetComments<
+  TData = Awaited<ReturnType<typeof getComments>>,
+  TError = GetComments404,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getComments>>,
+          TError,
+          Awaited<ReturnType<typeof getComments>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetComments<
+  TData = Awaited<ReturnType<typeof getComments>>,
+  TError = GetComments404,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 댓글 목록 조회
+ */
+
+export function useGetComments<
+  TData = Awaited<ReturnType<typeof getComments>>,
+  TError = GetComments404,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetCommentsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 일반 댓글 또는 대댓글을 생성합니다.
+ * @summary 댓글 생성
+ */
+export type postIssuesIdCommentsResponse201 = {
+  data: PostIssuesIdComments201;
+  status: 201;
+};
+
+export type postIssuesIdCommentsResponse400 = {
+  data: PostIssuesIdComments400;
+  status: 400;
+};
+
+export type postIssuesIdCommentsResponse401 = {
+  data: PostIssuesIdComments401;
+  status: 401;
+};
+
+export type postIssuesIdCommentsResponse404 = {
+  data: PostIssuesIdComments404;
+  status: 404;
+};
+
+export type postIssuesIdCommentsResponseSuccess =
+  postIssuesIdCommentsResponse201 & {
+    headers: Headers;
+  };
+export type postIssuesIdCommentsResponseError = (
+  | postIssuesIdCommentsResponse400
+  | postIssuesIdCommentsResponse401
+  | postIssuesIdCommentsResponse404
+) & {
+  headers: Headers;
+};
+
+export type postIssuesIdCommentsResponse =
+  | postIssuesIdCommentsResponseSuccess
+  | postIssuesIdCommentsResponseError;
+
+export const getPostIssuesIdCommentsUrl = (id: string) => {
+  return `/issues/${id}/comments`;
+};
+
+export const postIssuesIdComments = async (
+  id: string,
+  postIssuesIdCommentsBody: PostIssuesIdCommentsBody,
+  options?: RequestInit,
+): Promise<postIssuesIdCommentsResponse> => {
+  const res = await fetch(getPostIssuesIdCommentsUrl(id), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(postIssuesIdCommentsBody),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postIssuesIdCommentsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as postIssuesIdCommentsResponse;
+};
+
+export const getPostIssuesIdCommentsMutationOptions = <
+  TError =
+    | PostIssuesIdComments400
+    | PostIssuesIdComments401
+    | PostIssuesIdComments404,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIssuesIdComments>>,
+    TError,
+    { id: string; data: PostIssuesIdCommentsBody },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postIssuesIdComments>>,
+  TError,
+  { id: string; data: PostIssuesIdCommentsBody },
+  TContext
+> => {
+  const mutationKey = ['postIssuesIdComments'];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postIssuesIdComments>>,
+    { id: string; data: PostIssuesIdCommentsBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return postIssuesIdComments(id, data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostIssuesIdCommentsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postIssuesIdComments>>
+>;
+export type PostIssuesIdCommentsMutationBody = PostIssuesIdCommentsBody;
+export type PostIssuesIdCommentsMutationError =
+  | PostIssuesIdComments400
+  | PostIssuesIdComments401
+  | PostIssuesIdComments404;
+
+/**
+ * @summary 댓글 생성
+ */
+export const usePostIssuesIdComments = <
+  TError =
+    | PostIssuesIdComments400
+    | PostIssuesIdComments401
+    | PostIssuesIdComments404,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postIssuesIdComments>>,
+      TError,
+      { id: string; data: PostIssuesIdCommentsBody },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postIssuesIdComments>>,
+  TError,
+  { id: string; data: PostIssuesIdCommentsBody },
+  TContext
+> => {
+  return useMutation(
+    getPostIssuesIdCommentsMutationOptions(options),
+    queryClient,
+  );
+};
+
+/**
+ * 이슈 작성자가 해결 제안 댓글을 채택합니다.
+ * @summary 댓글 채택
+ */
+export type adoptCommentResponse200 = {
+  data: AdoptComment200;
+  status: 200;
+};
+
+export type adoptCommentResponse401 = {
+  data: AdoptComment401;
+  status: 401;
+};
+
+export type adoptCommentResponse403 = {
+  data: AdoptComment403;
+  status: 403;
+};
+
+export type adoptCommentResponse404 = {
+  data: AdoptComment404;
+  status: 404;
+};
+
+export type adoptCommentResponse409 = {
+  data: AdoptComment409;
+  status: 409;
+};
+
+export type adoptCommentResponseSuccess = adoptCommentResponse200 & {
+  headers: Headers;
+};
+export type adoptCommentResponseError = (
+  | adoptCommentResponse401
+  | adoptCommentResponse403
+  | adoptCommentResponse404
+  | adoptCommentResponse409
+) & {
+  headers: Headers;
+};
+
+export type adoptCommentResponse =
+  | adoptCommentResponseSuccess
+  | adoptCommentResponseError;
+
+export const getAdoptCommentUrl = (id: string, commentId: string) => {
+  return `/issues/${id}/comments/${commentId}/adopt`;
+};
+
+export const adoptComment = async (
+  id: string,
+  commentId: string,
+  options?: RequestInit,
+): Promise<adoptCommentResponse> => {
+  const res = await fetch(getAdoptCommentUrl(id, commentId), {
+    ...options,
+    method: 'POST',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: adoptCommentResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as adoptCommentResponse;
+};
+
+export const getAdoptCommentMutationOptions = <
+  TError =
+    | AdoptComment401
+    | AdoptComment403
+    | AdoptComment404
+    | AdoptComment409,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adoptComment>>,
+    TError,
+    { id: string; commentId: string },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adoptComment>>,
+  TError,
+  { id: string; commentId: string },
+  TContext
+> => {
+  const mutationKey = ['adoptComment'];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adoptComment>>,
+    { id: string; commentId: string }
+  > = (props) => {
+    const { id, commentId } = props ?? {};
+
+    return adoptComment(id, commentId, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdoptCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adoptComment>>
+>;
+
+export type AdoptCommentMutationError =
+  | AdoptComment401
+  | AdoptComment403
+  | AdoptComment404
+  | AdoptComment409;
+
+/**
+ * @summary 댓글 채택
+ */
+export const useAdoptComment = <
+  TError =
+    | AdoptComment401
+    | AdoptComment403
+    | AdoptComment404
+    | AdoptComment409,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adoptComment>>,
+      TError,
+      { id: string; commentId: string },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof adoptComment>>,
+  TError,
+  { id: string; commentId: string },
+  TContext
+> => {
+  return useMutation(getAdoptCommentMutationOptions(options), queryClient);
+};
+
+/**
+ * Health check API
+ */
+export type getResponse200 = {
+  data: Get200;
+  status: 200;
+};
+
+export type getResponseSuccess = getResponse200 & {
+  headers: Headers;
+};
+export type getResponse = getResponseSuccess;
+
+export const getGetUrl = (params?: GetParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/?${stringifiedParams}` : `/`;
+};
+
+export const get = async (
+  params?: GetParams,
+  options?: RequestInit,
+): Promise<getResponse> => {
+  const res = await fetch(getGetUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getResponse['data'] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getResponse;
+};
+
+export const getGetQueryKey = (params?: GetParams) => {
+  return [`/`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof get>>,
+  TError = unknown,
+>(
+  params?: GetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof get>>> = ({
+    signal,
+  }) => get(params, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof get>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetQueryResult = NonNullable<Awaited<ReturnType<typeof get>>>;
+export type GetQueryError = unknown;
+
+export function useGet<
+  TData = Awaited<ReturnType<typeof get>>,
+  TError = unknown,
+>(
+  params: undefined | GetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof get>>,
+          TError,
+          Awaited<ReturnType<typeof get>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGet<
+  TData = Awaited<ReturnType<typeof get>>,
+  TError = unknown,
+>(
+  params?: GetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof get>>,
+          TError,
+          Awaited<ReturnType<typeof get>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGet<
+  TData = Awaited<ReturnType<typeof get>>,
+  TError = unknown,
+>(
+  params?: GetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGet<
+  TData = Awaited<ReturnType<typeof get>>,
+  TError = unknown,
+>(
+  params?: GetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary 회원가입
+ */
+export type postAuthSignupResponse201 = {
+  data: PostAuthSignup201;
+  status: 201;
+};
+
+export type postAuthSignupResponse400 = {
+  data: PostAuthSignup400;
+  status: 400;
+};
+
+export type postAuthSignupResponse409 = {
+  data: PostAuthSignup409;
+  status: 409;
+};
+
+export type postAuthSignupResponseSuccess = postAuthSignupResponse201 & {
+  headers: Headers;
+};
+export type postAuthSignupResponseError = (
+  | postAuthSignupResponse400
+  | postAuthSignupResponse409
+) & {
+  headers: Headers;
+};
+
+export type postAuthSignupResponse =
+  | postAuthSignupResponseSuccess
+  | postAuthSignupResponseError;
+
+export const getPostAuthSignupUrl = () => {
+  return `/auth/signup`;
+};
+
+export const postAuthSignup = async (
+  postAuthSignupBody?: PostAuthSignupBody,
+  options?: RequestInit,
+): Promise<postAuthSignupResponse> => {
+  const res = await fetch(getPostAuthSignupUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(postAuthSignupBody),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postAuthSignupResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as postAuthSignupResponse;
+};
+
+export const getPostAuthSignupMutationOptions = <
+  TError = PostAuthSignup400 | PostAuthSignup409,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAuthSignup>>,
+    TError,
+    { data?: PostAuthSignupBody },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAuthSignup>>,
+  TError,
+  { data?: PostAuthSignupBody },
+  TContext
+> => {
+  const mutationKey = ['postAuthSignup'];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAuthSignup>>,
+    { data?: PostAuthSignupBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAuthSignup(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAuthSignupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAuthSignup>>
+>;
+export type PostAuthSignupMutationBody = PostAuthSignupBody | undefined;
+export type PostAuthSignupMutationError = PostAuthSignup400 | PostAuthSignup409;
+
+/**
+ * @summary 회원가입
+ */
+export const usePostAuthSignup = <
+  TError = PostAuthSignup400 | PostAuthSignup409,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postAuthSignup>>,
+      TError,
+      { data?: PostAuthSignupBody },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postAuthSignup>>,
+  TError,
+  { data?: PostAuthSignupBody },
+  TContext
+> => {
+  return useMutation(getPostAuthSignupMutationOptions(options), queryClient);
+};
+
+/**
+ * @summary 로그인
+ */
+export type postAuthLoginResponse200 = {
+  data: PostAuthLogin200;
+  status: 200;
+};
+
+export type postAuthLoginResponse400 = {
+  data: PostAuthLogin400;
+  status: 400;
+};
+
+export type postAuthLoginResponse401 = {
+  data: PostAuthLogin401;
+  status: 401;
+};
+
+export type postAuthLoginResponseSuccess = postAuthLoginResponse200 & {
+  headers: Headers;
+};
+export type postAuthLoginResponseError = (
+  | postAuthLoginResponse400
+  | postAuthLoginResponse401
+) & {
+  headers: Headers;
+};
+
+export type postAuthLoginResponse =
+  | postAuthLoginResponseSuccess
+  | postAuthLoginResponseError;
+
+export const getPostAuthLoginUrl = () => {
+  return `/auth/login`;
+};
+
+export const postAuthLogin = async (
+  postAuthLoginBody?: PostAuthLoginBody,
+  options?: RequestInit,
+): Promise<postAuthLoginResponse> => {
+  const res = await fetch(getPostAuthLoginUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(postAuthLoginBody),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postAuthLoginResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as postAuthLoginResponse;
+};
+
+export const getPostAuthLoginMutationOptions = <
+  TError = PostAuthLogin400 | PostAuthLogin401,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAuthLogin>>,
+    TError,
+    { data?: PostAuthLoginBody },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAuthLogin>>,
+  TError,
+  { data?: PostAuthLoginBody },
+  TContext
+> => {
+  const mutationKey = ['postAuthLogin'];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAuthLogin>>,
+    { data?: PostAuthLoginBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAuthLogin(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAuthLoginMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAuthLogin>>
+>;
+export type PostAuthLoginMutationBody = PostAuthLoginBody | undefined;
+export type PostAuthLoginMutationError = PostAuthLogin400 | PostAuthLogin401;
+
+/**
+ * @summary 로그인
+ */
+export const usePostAuthLogin = <
+  TError = PostAuthLogin400 | PostAuthLogin401,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postAuthLogin>>,
+      TError,
+      { data?: PostAuthLoginBody },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postAuthLogin>>,
+  TError,
+  { data?: PostAuthLoginBody },
+  TContext
+> => {
+  return useMutation(getPostAuthLoginMutationOptions(options), queryClient);
+};
+
+/**
+ * @summary 로그아웃
+ */
+export type postAuthLogoutResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type postAuthLogoutResponse401 = {
+  data: PostAuthLogout401;
+  status: 401;
+};
+
+export type postAuthLogoutResponseSuccess = postAuthLogoutResponse200 & {
+  headers: Headers;
+};
+export type postAuthLogoutResponseError = postAuthLogoutResponse401 & {
+  headers: Headers;
+};
+
+export type postAuthLogoutResponse =
+  | postAuthLogoutResponseSuccess
+  | postAuthLogoutResponseError;
+
+export const getPostAuthLogoutUrl = () => {
+  return `/auth/logout`;
+};
+
+export const postAuthLogout = async (
+  options?: RequestInit,
+): Promise<postAuthLogoutResponse> => {
+  const res = await fetch(getPostAuthLogoutUrl(), {
+    ...options,
+    method: 'POST',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postAuthLogoutResponse['data'] = body
+    ? JSON.parse(body)
+    : undefined;
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as postAuthLogoutResponse;
+};
+
+export const getPostAuthLogoutMutationOptions = <
+  TError = PostAuthLogout401,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAuthLogout>>,
+    TError,
+    void,
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAuthLogout>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ['postAuthLogout'];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAuthLogout>>,
+    void
+  > = () => {
+    return postAuthLogout(fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAuthLogoutMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAuthLogout>>
+>;
+
+export type PostAuthLogoutMutationError = PostAuthLogout401;
+
+/**
+ * @summary 로그아웃
+ */
+export const usePostAuthLogout = <
+  TError = PostAuthLogout401,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postAuthLogout>>,
+      TError,
+      void,
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postAuthLogout>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getPostAuthLogoutMutationOptions(options), queryClient);
+};
+
+/**
+ * 새로운 팀을 생성합니다.
+ * @summary 팀 생성
+ */
+export type postTeamsResponse201 = {
+  data: PostTeams201;
+  status: 201;
+};
+
+export type postTeamsResponse400 = {
+  data: PostTeams400;
+  status: 400;
+};
+
+export type postTeamsResponse401 = {
+  data: PostTeams401;
+  status: 401;
+};
+
+export type postTeamsResponseSuccess = postTeamsResponse201 & {
+  headers: Headers;
+};
+export type postTeamsResponseError = (
+  | postTeamsResponse400
+  | postTeamsResponse401
+) & {
+  headers: Headers;
+};
+
+export type postTeamsResponse =
+  | postTeamsResponseSuccess
+  | postTeamsResponseError;
+
+export const getPostTeamsUrl = () => {
+  return `/teams`;
+};
+
+export const postTeams = async (
+  postTeamsBody?: PostTeamsBody,
+  options?: RequestInit,
+): Promise<postTeamsResponse> => {
+  const res = await fetch(getPostTeamsUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(postTeamsBody),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: postTeamsResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as postTeamsResponse;
+};
+
+export const getPostTeamsMutationOptions = <
+  TError = PostTeams400 | PostTeams401,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postTeams>>,
+    TError,
+    { data?: PostTeamsBody },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postTeams>>,
+  TError,
+  { data?: PostTeamsBody },
+  TContext
+> => {
+  const mutationKey = ['postTeams'];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postTeams>>,
+    { data?: PostTeamsBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postTeams(data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostTeamsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postTeams>>
+>;
+export type PostTeamsMutationBody = PostTeamsBody | undefined;
+export type PostTeamsMutationError = PostTeams400 | PostTeams401;
+
+/**
+ * @summary 팀 생성
+ */
+export const usePostTeams = <
+  TError = PostTeams400 | PostTeams401,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postTeams>>,
+      TError,
+      { data?: PostTeamsBody },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postTeams>>,
+  TError,
+  { data?: PostTeamsBody },
+  TContext
+> => {
+  return useMutation(getPostTeamsMutationOptions(options), queryClient);
+};
+
+/**
+ * 검색 태그를 이용해 이슈를 검색합니다.
+ * @summary 이슈 검색
+ */
+export type getIssuesSearchResponse200 = {
+  data: GetIssuesSearch200;
+  status: 200;
+};
+
+export type getIssuesSearchResponseSuccess = getIssuesSearchResponse200 & {
+  headers: Headers;
+};
+export type getIssuesSearchResponse = getIssuesSearchResponseSuccess;
+
+export const getGetIssuesSearchUrl = (params?: GetIssuesSearchParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/issues/search?${stringifiedParams}`
+    : `/issues/search`;
+};
+
+export const getIssuesSearch = async (
+  params?: GetIssuesSearchParams,
+  options?: RequestInit,
+): Promise<getIssuesSearchResponse> => {
+  const res = await fetch(getGetIssuesSearchUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getIssuesSearchResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getIssuesSearchResponse;
+};
+
+export const getGetIssuesSearchQueryKey = (params?: GetIssuesSearchParams) => {
+  return [`/issues/search`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetIssuesSearchQueryOptions = <
+  TData = Awaited<ReturnType<typeof getIssuesSearch>>,
+  TError = unknown,
+>(
+  params?: GetIssuesSearchParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesSearch>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetIssuesSearchQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getIssuesSearch>>> = ({
+    signal,
+  }) => getIssuesSearch(params, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getIssuesSearch>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetIssuesSearchQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getIssuesSearch>>
+>;
+export type GetIssuesSearchQueryError = unknown;
+
+export function useGetIssuesSearch<
+  TData = Awaited<ReturnType<typeof getIssuesSearch>>,
+  TError = unknown,
+>(
+  params: undefined | GetIssuesSearchParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesSearch>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesSearch>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesSearch>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesSearch<
+  TData = Awaited<ReturnType<typeof getIssuesSearch>>,
+  TError = unknown,
+>(
+  params?: GetIssuesSearchParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesSearch>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesSearch>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesSearch>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesSearch<
+  TData = Awaited<ReturnType<typeof getIssuesSearch>>,
+  TError = unknown,
+>(
+  params?: GetIssuesSearchParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesSearch>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 이슈 검색
+ */
+
+export function useGetIssuesSearch<
+  TData = Awaited<ReturnType<typeof getIssuesSearch>>,
+  TError = unknown,
+>(
+  params?: GetIssuesSearchParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesSearch>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetIssuesSearchQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary 최신 이슈 피드 조회
+ */
+export type getIssuesPublicResponse200 = {
+  data: GetPublicIssuesResponse;
+  status: 200;
+};
+
+export type getIssuesPublicResponse400 = {
+  data: IssueErrorResponse;
+  status: 400;
+};
+
+export type getIssuesPublicResponseSuccess = getIssuesPublicResponse200 & {
+  headers: Headers;
+};
+export type getIssuesPublicResponseError = getIssuesPublicResponse400 & {
+  headers: Headers;
+};
+
+export type getIssuesPublicResponse =
+  | getIssuesPublicResponseSuccess
+  | getIssuesPublicResponseError;
+
+export const getGetIssuesPublicUrl = (params?: GetIssuesPublicParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/issues/public?${stringifiedParams}`
+    : `/issues/public`;
+};
+
+export const getIssuesPublic = async (
+  params?: GetIssuesPublicParams,
+  options?: RequestInit,
+): Promise<getIssuesPublicResponse> => {
+  const res = await fetch(getGetIssuesPublicUrl(params), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getIssuesPublicResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as getIssuesPublicResponse;
+};
+
+export const getGetIssuesPublicQueryKey = (params?: GetIssuesPublicParams) => {
+  return [`/issues/public`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetIssuesPublicQueryOptions = <
+  TData = Awaited<ReturnType<typeof getIssuesPublic>>,
+  TError = IssueErrorResponse,
+>(
+  params?: GetIssuesPublicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesPublic>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetIssuesPublicQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getIssuesPublic>>> = ({
+    signal,
+  }) => getIssuesPublic(params, { signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getIssuesPublic>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetIssuesPublicQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getIssuesPublic>>
+>;
+export type GetIssuesPublicQueryError = IssueErrorResponse;
+
+export function useGetIssuesPublic<
+  TData = Awaited<ReturnType<typeof getIssuesPublic>>,
+  TError = IssueErrorResponse,
+>(
+  params: undefined | GetIssuesPublicParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesPublic>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesPublic>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesPublic>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesPublic<
+  TData = Awaited<ReturnType<typeof getIssuesPublic>>,
+  TError = IssueErrorResponse,
+>(
+  params?: GetIssuesPublicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesPublic>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesPublic>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesPublic>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesPublic<
+  TData = Awaited<ReturnType<typeof getIssuesPublic>>,
+  TError = IssueErrorResponse,
+>(
+  params?: GetIssuesPublicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesPublic>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 최신 이슈 피드 조회
+ */
+
+export function useGetIssuesPublic<
+  TData = Awaited<ReturnType<typeof getIssuesPublic>>,
+  TError = IssueErrorResponse,
+>(
+  params?: GetIssuesPublicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesPublic>>,
+        TError,
+        TData
+      >
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetIssuesPublicQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

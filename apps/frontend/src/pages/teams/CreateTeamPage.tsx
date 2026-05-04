@@ -1,13 +1,9 @@
 import { useState } from 'react';
 // import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AxiosError } from 'axios';
 
-import { getFixHubAPI } from '@/api/generated';
-import { axiosInstance } from '@/api/axios';
-
-const api = getFixHubAPI(axiosInstance);
+import { usePostTeams } from '@/api/generated';
 
 export default function CreateTeamPage() {
   const [teamName, setTeamName] = useState('');
@@ -15,33 +11,26 @@ export default function CreateTeamPage() {
   const [email, setEmail] = useState('');
 
   const navigate = useNavigate();
-  // const queryClient = useQueryClient();
 
   // 팀 생성 mutation
-  const createTeamMutation = useMutation({
-    mutationFn: () =>
-      api.postTeams({
-        name: teamName,
-        description: description || undefined,
-      }),
+  const { mutate: createTeam, isPending } = usePostTeams({
+    mutation: {
+      onSuccess: () => {
+        // const team = res.data;
 
-    // onSuccess: (res) => {
-    onSuccess: () => {
-      // const team = res.data;
+        // TODO: 팀 목록 다시 가져오기 (아직 팀 목록 가져오는 기능이 구현되지 않음)
+        // queryClient.invalidateQueries({ queryKey: ['teams'] });
 
-      // TODO: 팀 목록 다시 가져오기 (아직 팀 목록 가져오는 기능이 구현되지 않음)
-      // queryClient.invalidateQueries({ queryKey: ['teams'] });
-
-      // TODO: 생성된 팀 페이지로 이동
-      // navigate(`/teams/${team.teamId}`);
-      alert(`팀 생성이 완료되었습니다.`);
-      navigate(`/`);
-    },
-
-    onError: (error: AxiosError<{ error: { message: string } }>) => {
-      const message =
-        error?.response?.data?.error?.message ?? '팀 생성에 실패했습니다.';
-      alert(message);
+        // TODO: 생성된 팀 페이지로 이동
+        // navigate(`/teams/${team.teamId}`);
+        alert(`팀 생성이 완료되었습니다.`);
+        navigate(`/`);
+      },
+      onError: (error: AxiosError<{ error: { message: string } }>) => {
+        const message =
+          error?.response?.data?.error?.message ?? '팀 생성에 실패했습니다.';
+        alert(message);
+      },
     },
   });
 
@@ -52,7 +41,12 @@ export default function CreateTeamPage() {
       return;
     }
 
-    createTeamMutation.mutate();
+    createTeam({
+      data: {
+        name: teamName,
+        description: description || undefined,
+      },
+    });
   };
 
   return (
@@ -161,7 +155,7 @@ export default function CreateTeamPage() {
 
             <button
               onClick={handleSubmit}
-              disabled={createTeamMutation.isPending}
+              disabled={isPending}
               className="py-[18px] px-[32px] h-15 rounded-sm typo-regular-20 
                 cursor-pointer
                 transition-all duration-200 ease-out
@@ -171,7 +165,7 @@ export default function CreateTeamPage() {
                 color: 'var(--text-inverse)',
               }}
             >
-              {createTeamMutation.isPending ? '생성 중...' : '생성하기'}
+              {isPending ? '생성 중...' : '생성하기'}
             </button>
           </div>
         </div>
