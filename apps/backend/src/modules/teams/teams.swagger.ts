@@ -44,6 +44,7 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
           },
         },
       },
+
       400: {
         description: '입력 값 오류',
         content: {

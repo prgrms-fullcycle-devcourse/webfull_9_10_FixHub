@@ -8,6 +8,176 @@
 import * as axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
+export type GetPublicIssuesResponseMeta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export interface PublicIssueItem {
+  id: string;
+  title: string;
+  teamName: string;
+  author: string;
+  tags: string[];
+  summary: string;
+  commentCount: number;
+  createdAt: string;
+}
+
+export interface GetPublicIssuesResponse {
+  meta: GetPublicIssuesResponseMeta;
+  data: PublicIssueItem[];
+}
+
+export type IssueErrorResponseError = {
+  code: string;
+  message: string;
+};
+
+export interface IssueErrorResponse {
+  error: IssueErrorResponseError;
+}
+
+export type GetComments200DataItemRepliesItemRepliesItem = {
+  [key: string]: unknown;
+};
+
+export type GetComments200DataItemRepliesItem = {
+  id: string;
+  content: string;
+  author: string;
+  /** @nullable */
+  parentId: string | null;
+  isAdopted: boolean;
+  createdAt: string;
+  replies: GetComments200DataItemRepliesItemRepliesItem[];
+};
+
+export type GetComments200DataItem = {
+  id: string;
+  content: string;
+  author: string;
+  /** @nullable */
+  parentId: string | null;
+  isAdopted: boolean;
+  createdAt: string;
+  replies: GetComments200DataItemRepliesItem[];
+};
+
+export type GetComments200 = {
+  data: GetComments200DataItem[];
+};
+
+export type GetComments404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetComments404 = {
+  error: GetComments404Error;
+};
+
+export type PostIssuesIdCommentsBody = {
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  content: string;
+  /**
+   * @minLength 1
+   * @nullable
+   */
+  parentId: string | null;
+};
+
+export type PostIssuesIdComments201 = {
+  id: string;
+  author: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}\([일월화수목금토]\)$ */
+  createdAt: string;
+};
+
+export type PostIssuesIdComments400Error = {
+  code: string;
+  message: string;
+};
+
+export type PostIssuesIdComments400 = {
+  error: PostIssuesIdComments400Error;
+};
+
+export type PostIssuesIdComments401Error = {
+  code: string;
+  message: string;
+};
+
+export type PostIssuesIdComments401 = {
+  error: PostIssuesIdComments401Error;
+};
+
+export type PostIssuesIdComments404Error = {
+  code: string;
+  message: string;
+};
+
+export type PostIssuesIdComments404 = {
+  error: PostIssuesIdComments404Error;
+};
+
+export type AdoptComment200Status =
+  (typeof AdoptComment200Status)[keyof typeof AdoptComment200Status];
+
+export const AdoptComment200Status = {
+  SOLVED: 'SOLVED',
+} as const;
+
+export type AdoptComment200 = {
+  issueId: string;
+  commentId: string;
+  rewardedScore: number;
+  reason: string;
+  status: AdoptComment200Status;
+};
+
+export type AdoptComment401Error = {
+  code: string;
+  message: string;
+};
+
+export type AdoptComment401 = {
+  error: AdoptComment401Error;
+};
+
+export type AdoptComment403Error = {
+  code: string;
+  message: string;
+};
+
+export type AdoptComment403 = {
+  error: AdoptComment403Error;
+};
+
+export type AdoptComment404Error = {
+  code: string;
+  message: string;
+};
+
+export type AdoptComment404 = {
+  error: AdoptComment404Error;
+};
+
+export type AdoptComment409Error = {
+  code: string;
+  message: string;
+};
+
+export type AdoptComment409 = {
+  error: AdoptComment409Error;
+};
+
 export type GetParams = {
   /**
    * @minLength 1
@@ -23,7 +193,255 @@ export type Get200 = {
   db: boolean;
 };
 
+export type PostAuthSignupBody = {
+  /** @minLength 2 */
+  name: string;
+  email: string;
+  /** @minLength 8 */
+  password: string;
+};
+
+export type PostAuthSignup201User = {
+  id: string;
+  name: string;
+};
+
+export type PostAuthSignup201 = {
+  message: string;
+  user: PostAuthSignup201User;
+};
+
+export type PostAuthSignup400Error = {
+  /** 에러 코드 (CONFLICT, UNAUTHORIZED, BAD_REQUEST 등) */
+  code: string;
+  /** 에러 상세 메시지 */
+  message: string;
+};
+
+export type PostAuthSignup400 = {
+  error: PostAuthSignup400Error;
+};
+
+export type PostAuthSignup409Error = {
+  /** 에러 코드 (CONFLICT, UNAUTHORIZED, BAD_REQUEST 등) */
+  code: string;
+  /** 에러 상세 메시지 */
+  message: string;
+};
+
+export type PostAuthSignup409 = {
+  error: PostAuthSignup409Error;
+};
+
+export type PostAuthLoginBody = {
+  email: string;
+  password: string;
+};
+
+export type PostAuthLogin200User = {
+  id: string;
+  name: string;
+};
+
+export type PostAuthLogin200 = {
+  message: string;
+  user: PostAuthLogin200User;
+};
+
+export type PostAuthLogin400Error = {
+  /** 에러 코드 (CONFLICT, UNAUTHORIZED, BAD_REQUEST 등) */
+  code: string;
+  /** 에러 상세 메시지 */
+  message: string;
+};
+
+export type PostAuthLogin400 = {
+  error: PostAuthLogin400Error;
+};
+
+export type PostAuthLogin401Error = {
+  /** 에러 코드 (CONFLICT, UNAUTHORIZED, BAD_REQUEST 등) */
+  code: string;
+  /** 에러 상세 메시지 */
+  message: string;
+};
+
+export type PostAuthLogin401 = {
+  error: PostAuthLogin401Error;
+};
+
+export type PostAuthLogout401Error = {
+  /** 에러 코드 (CONFLICT, UNAUTHORIZED, BAD_REQUEST 등) */
+  code: string;
+  /** 에러 상세 메시지 */
+  message: string;
+};
+
+export type PostAuthLogout401 = {
+  error: PostAuthLogout401Error;
+};
+
+export type PostTeamsBody = {
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
+  name: string;
+  /** @maxLength 500 */
+  description?: string;
+};
+
+export type PostTeams201 = {
+  teamId: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  inviteCode: string;
+};
+
+export type PostTeams400Error = {
+  code: string;
+  message: string;
+};
+
+export type PostTeams400 = {
+  error: PostTeams400Error;
+};
+
+export type PostTeams401Error = {
+  code: string;
+  message: string;
+};
+
+export type PostTeams401 = {
+  error: PostTeams401Error;
+};
+
+export type GetTeamsIdCommentsParams = {
+  /**
+   * @minLength 1
+   */
+  search?: string;
+};
+
+export type GetTeamsIdComments200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetTeamsIdComments200DataItemStatus =
+  (typeof GetTeamsIdComments200DataItemStatus)[keyof typeof GetTeamsIdComments200DataItemStatus];
+
+export const GetTeamsIdComments200DataItemStatus = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
+export type GetTeamsIdComments200DataItem = {
+  id: string;
+  title: string;
+  author: string;
+  tag: string[];
+  status: GetTeamsIdComments200DataItemStatus;
+  commentCount: number;
+};
+
+export type GetTeamsIdComments200 = {
+  meta: GetTeamsIdComments200Meta;
+  data: GetTeamsIdComments200DataItem[];
+};
+
+export type GetIssuesSearchParams = {
+  /**
+   * @minLength 1
+   */
+  search?: string;
+};
+
+export type GetIssuesSearch200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetIssuesSearch200DataItemStatus =
+  (typeof GetIssuesSearch200DataItemStatus)[keyof typeof GetIssuesSearch200DataItemStatus];
+
+export const GetIssuesSearch200DataItemStatus = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
+export type GetIssuesSearch200DataItem = {
+  id: string;
+  title: string;
+  teamName: string;
+  author: string;
+  tag: string[];
+  status: GetIssuesSearch200DataItemStatus;
+  commentCount: number;
+  createdAt: string;
+};
+
+export type GetIssuesSearch200 = {
+  meta: GetIssuesSearch200Meta;
+  data: GetIssuesSearch200DataItem[];
+};
+
+export type GetIssuesPublicParams = {
+  page?: number;
+  limit?: number;
+};
+
 export const getFixHubAPI = (axiosInstance: AxiosInstance = axios.default) => {
+  /**
+   * 이슈에 작성된 일반 댓글과 대댓글 목록을 조회합니다.
+   * @summary 댓글 목록 조회
+   */
+  const getComments = (
+    id: string,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<GetComments200>> => {
+    return axiosInstance.get(`/issues/${id}/comments`, options);
+  };
+
+  /**
+   * 일반 댓글 또는 대댓글을 생성합니다.
+   * @summary 댓글 생성
+   */
+  const postIssuesIdComments = (
+    id: string,
+    postIssuesIdCommentsBody: PostIssuesIdCommentsBody,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<PostIssuesIdComments201>> => {
+    return axiosInstance.post(
+      `/issues/${id}/comments`,
+      postIssuesIdCommentsBody,
+      options,
+    );
+  };
+
+  /**
+   * 이슈 작성자가 해결 제안 댓글을 채택합니다.
+   * @summary 댓글 채택
+   */
+  const adoptComment = (
+    id: string,
+    commentId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<AdoptComment200>> => {
+    return axiosInstance.post(
+      `/issues/${id}/comments/${commentId}/adopt`,
+      undefined,
+      options,
+    );
+  };
+
   /**
    * Health check API
    */
@@ -37,6 +455,110 @@ export const getFixHubAPI = (axiosInstance: AxiosInstance = axios.default) => {
     });
   };
 
-  return { get };
+  /**
+   * @summary 회원가입
+   */
+  const postAuthSignup = (
+    postAuthSignupBody?: PostAuthSignupBody,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<PostAuthSignup201>> => {
+    return axiosInstance.post(`/auth/signup`, postAuthSignupBody, options);
+  };
+
+  /**
+   * @summary 로그인
+   */
+  const postAuthLogin = (
+    postAuthLoginBody?: PostAuthLoginBody,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<PostAuthLogin200>> => {
+    return axiosInstance.post(`/auth/login`, postAuthLoginBody, options);
+  };
+
+  /**
+   * @summary 로그아웃
+   */
+  const postAuthLogout = (
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<void>> => {
+    return axiosInstance.post(`/auth/logout`, undefined, options);
+  };
+
+  /**
+   * 새로운 팀을 생성합니다.
+   * @summary 팀 생성
+   */
+  const postTeams = (
+    postTeamsBody?: PostTeamsBody,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<PostTeams201>> => {
+    return axiosInstance.post(`/teams`, postTeamsBody, options);
+  };
+
+  /**
+   * 팀 내 이슈 댓글을 검색합니다.
+   * @summary 팀 댓글 검색
+   */
+  const getTeamsIdComments = (
+    id: string,
+    params?: GetTeamsIdCommentsParams,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<GetTeamsIdComments200>> => {
+    return axiosInstance.get(`/teams/${id}/comments`, {
+      ...options,
+      params: { ...params, ...options?.params },
+    });
+  };
+
+  /**
+   * 검색 태그를 이용해 이슈를 검색합니다.
+   * @summary 이슈 검색
+   */
+  const getIssuesSearch = (
+    params?: GetIssuesSearchParams,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<GetIssuesSearch200>> => {
+    return axiosInstance.get(`/issues/search`, {
+      ...options,
+      params: { ...params, ...options?.params },
+    });
+  };
+
+  /**
+   * @summary 최신 이슈 피드 조회
+   */
+  const getIssuesPublic = (
+    params?: GetIssuesPublicParams,
+    options?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<GetPublicIssuesResponse>> => {
+    return axiosInstance.get(`/issues/public`, {
+      ...options,
+      params: { ...params, ...options?.params },
+    });
+  };
+
+  return {
+    getComments,
+    postIssuesIdComments,
+    adoptComment,
+    get,
+    postAuthSignup,
+    postAuthLogin,
+    postAuthLogout,
+    postTeams,
+    getTeamsIdComments,
+    getIssuesSearch,
+    getIssuesPublic,
+  };
 };
+export type GetCommentsResult = AxiosResponse<GetComments200>;
+export type PostIssuesIdCommentsResult = AxiosResponse<PostIssuesIdComments201>;
+export type AdoptCommentResult = AxiosResponse<AdoptComment200>;
 export type GetResult = AxiosResponse<Get200>;
+export type PostAuthSignupResult = AxiosResponse<PostAuthSignup201>;
+export type PostAuthLoginResult = AxiosResponse<PostAuthLogin200>;
+export type PostAuthLogoutResult = AxiosResponse<void>;
+export type PostTeamsResult = AxiosResponse<PostTeams201>;
+export type GetTeamsIdCommentsResult = AxiosResponse<GetTeamsIdComments200>;
+export type GetIssuesSearchResult = AxiosResponse<GetIssuesSearch200>;
+export type GetIssuesPublicResult = AxiosResponse<GetPublicIssuesResponse>;
