@@ -28,6 +28,7 @@ function parseSearchQuery(input: string) {
     title: [],
     tag: [],
     content: [],
+    sort: 'latest',
   };
 
   const tokens = input.split(/\s+/);
@@ -55,6 +56,10 @@ function parseSearchQuery(input: string) {
         result.author = value;
       } else if (key === 'teamId') {
         result.teamId = value;
+      } else if (key === 'sort') {
+        if (value === 'latest' || value === 'oldest') {
+          result.sort = value;
+        }
       }
     } else {
       result.title.push(key);
@@ -120,15 +125,20 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
     );
   }
 
+  const orderBy =
+    dto.sort === 'oldest'
+      ? { createdAt: Prisma.SortOrder.asc }
+      : { createdAt: Prisma.SortOrder.desc };
+
   const where: Prisma.ErrorIssueWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
-  return where;
+  return { where, orderBy };
 }
 
 export async function searchIssues(input: string) {
   const dto = parseSearchQuery(input);
-  const where = buildSearchWhere(dto);
+  const { where, orderBy } = buildSearchWhere(dto);
 
   const page = dto.page ?? 1;
   const itemsPerPage = 10;
@@ -143,7 +153,7 @@ export async function searchIssues(input: string) {
           select: { comments: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       skip: (page - 1) * itemsPerPage,
       take: itemsPerPage,
     }),
