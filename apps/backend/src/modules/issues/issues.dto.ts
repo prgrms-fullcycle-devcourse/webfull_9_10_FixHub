@@ -85,7 +85,7 @@ export const GetIssueDetailResponseSchema = z.object({
   logs: z.array(
     z.object({
       logId: z.string().openapi({ example: 'log-uuid-001' }),
-      logType: z.enum(['ERROR', 'WARN']).openapi({ example: 'ERROR' }),
+      logType: z.enum(['SENT', 'RECEIVED']).openapi({ example: 'SENT' }),
       source: z.string().nullable().openapi({ example: 'RedisClient' }),
       message: z
         .string()
@@ -116,7 +116,7 @@ export const CreateIssueBodySchema = z.object({
   isPublic: z.boolean().openapi({ example: true }),
   logs: z.array(
     z.object({
-      logType: z.enum(['ERROR', 'WARN']).openapi({ example: 'ERROR' }),
+      logType: z.enum(['SENT', 'RECEIVED']).openapi({ example: 'SENT' }),
       source: z.string().min(1).openapi({ example: 'RedisClient' }),
       message: z
         .string()
