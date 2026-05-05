@@ -41,6 +41,7 @@ export type SearchIssuesQueryObjectDto = {
   status?: IssueStatus;
   content: string[];
   page?: number;
+  sort: 'latest' | 'oldest';
 };
 
 export const issueStatusSchema = z.enum(['UNSOLVED', 'SOLVED']);
