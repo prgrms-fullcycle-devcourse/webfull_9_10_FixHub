@@ -18,8 +18,8 @@ enum IssueStatus {
 }
 
 enum LogType {
- ERROR
- WARN
+ SENT
+ RECEIVED
 }
 
 model User {
@@ -111,7 +111,7 @@ model ErrorIssueTag {
 model ErrorLog {
   id           String     @id @default(uuid()) @db.Uuid
   issueId      String     @map("issue_id") @db.Uuid
-  logType      LogType    @map("log_type") @default(ERROR)
+  logType      LogType    @map("log_type") @default(SENT)
   source       String?
   message      String?
   stackTrace   String?    @map("stack_trace") @db.Text

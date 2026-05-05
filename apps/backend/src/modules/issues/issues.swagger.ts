@@ -111,13 +111,13 @@ const issueDetailExample = {
   logs: [
     {
       logId: 'log-uuid-001',
-      logType: 'ERROR',
+      logType: 'SENT',
       source: 'RedisClient',
       message: 'connect ETIMEDOUT 127.0.0.1:6379',
     },
     {
       logId: 'log-uuid-002',
-      logType: 'WARN',
+      logType: 'RECEIVED',
       source: 'ConnectionPool',
       message: 'Max retries exceeded',
     },
@@ -131,12 +131,12 @@ const createIssueRequestExample = {
   isPublic: true,
   logs: [
     {
-      logType: 'ERROR',
+      logType: 'SENT',
       source: 'RedisClient',
       message: 'connect ETIMEDOUT 127.0.0.1:6379',
     },
     {
-      logType: 'WARN',
+      logType: 'RECEIVED',
       source: 'ConnectionPool',
       message: 'Max retries exceeded',
     },

@@ -264,7 +264,7 @@ export async function getIssueDetail({
     status: issue.status,
     logs: issue.errorLogs.map((log, index) => ({
       logId: `log-uuid-00${index + 1}`,
-      logType: log.logType as 'ERROR' | 'WARN',
+      logType: log.logType as 'SENT' | 'RECEIVED',
       source: log.source,
       message: log.message ?? '',
     })),
