@@ -2,6 +2,10 @@
 
 > 팀 단위에서 이슈를 제기하고, 공유하고, 해결까지 관리할 수 있는 협업 플랫폼
 
+## 🔗 링크 (Links)
+- **프론트**: https://webfull-9-10-fix-hub-frontend.vercel.app
+- **백엔드 api 문서**: https://webfull-9-10-fixhub.onrender.com/api-docs
+
 ---
 
 ## 🛠 기술 스택 (Tech Stack)
