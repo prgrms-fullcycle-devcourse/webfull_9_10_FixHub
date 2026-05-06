@@ -1,8 +1,8 @@
 import { useState } from 'react';
-
 import { MoreHorizontal, Rocket } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import CommonModal from '@/components/ui/CommonModal';
 
 export type IssueCommentItem = {
   id: number;
@@ -31,19 +31,55 @@ function IssueCommentList({
   const [editedCommentTexts, setEditedCommentTexts] = useState<
     Record<number, string>
   >({});
+  const [deleteConfirmCommentId, setDeleteConfirmCommentId] = useState<
+    number | null
+  >(null);
+  const [deletedCommentIds, setDeletedCommentIds] = useState<number[]>([]);
 
-  const visibleComments = showAllComments ? comments : comments.slice(0, 3);
+  const remainingComments = comments.filter(
+    (comment) => !deletedCommentIds.includes(comment.id),
+  );
+  const visibleComments = showAllComments
+    ? remainingComments
+    : remainingComments.slice(0, 3);
   const canAdoptComments = currentUserId === issueAuthorId;
+  const deleteConfirmComment = remainingComments.find(
+    (comment) => comment.id === deleteConfirmCommentId,
+  );
 
   const startEditComment = (comment: IssueCommentItem) => {
     setEditingCommentId(comment.id);
     setEditingText(editedCommentTexts[comment.id] ?? comment.text);
+    setDeleteConfirmCommentId(null);
     setOpenMenuId(null);
   };
 
   const cancelEditComment = () => {
     setEditingCommentId(null);
     setEditingText('');
+  };
+
+  const startDeleteComment = (commentId: number) => {
+    setDeleteConfirmCommentId(commentId);
+    setEditingCommentId(null);
+    setEditingText('');
+    setOpenMenuId(null);
+  };
+
+  const cancelDeleteComment = () => {
+    setDeleteConfirmCommentId(null);
+  };
+
+  const confirmDeleteComment = () => {
+    if (deleteConfirmCommentId === null) {
+      return;
+    }
+
+    setDeletedCommentIds((prevCommentIds) => [
+      ...prevCommentIds,
+      deleteConfirmCommentId,
+    ]);
+    setDeleteConfirmCommentId(null);
   };
 
   const saveEditedComment = (commentId: number) => {
@@ -64,7 +100,7 @@ function IssueCommentList({
   return (
     <aside className="relative z-10 rounded-lg bg-(--surface-panel) p-5">
       <h2 className="mb-6 typo-semibold-18 text-(--text-primary)">
-        댓글수 {comments.length}
+        댓글수 {remainingComments.length}
       </h2>
 
       <div className="space-y-5">
@@ -96,7 +132,7 @@ function IssueCommentList({
                       isEditing
                         ? 'border border-(--primary) shadow-[0_0_18px_rgba(255,248,53,0.2)]'
                         : ''
-                    }`}
+                    } `}
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -137,7 +173,7 @@ function IssueCommentList({
                           </button>
                         ) : null}
 
-                        {!isEditing && (
+                        {!isEditing && canEditComment && (
                           <Button
                             type="button"
                             variant="ghost"
@@ -166,16 +202,15 @@ function IssueCommentList({
                               </button>
                             )}
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                alert('댓글 삭제 클릭');
-                                setOpenMenuId(null);
-                              }}
-                              className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
-                            >
-                              삭제
-                            </button>
+                            {canEditComment && (
+                              <button
+                                type="button"
+                                onClick={() => startDeleteComment(comment.id)}
+                                className="block w-full cursor-pointer px-4 py-3 text-left text-(--status-error) hover:bg-(--surface-selected)"
+                              >
+                                삭제
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -239,16 +274,35 @@ function IssueCommentList({
           </div>
         ))}
 
-        {comments.length > 3 && (
+        {remainingComments.length > 3 && (
           <button
             type="button"
             onClick={() => setShowAllComments(!showAllComments)}
             className="mt-2 flex w-full cursor-pointer items-center justify-center rounded-sm border border-border bg-(--surface-selected) py-3 typo-regular-14 text-(--text-primary) hover:opacity-90"
           >
-            {showAllComments ? '접기' : `댓글 더보기 (${comments.length - 3})`}
+            {showAllComments
+              ? '접기'
+              : `댓글 더보기 (${remainingComments.length - 3})`}
           </button>
         )}
       </div>
+
+      <CommonModal
+        isOpen={deleteConfirmCommentId !== null}
+        title="댓글 삭제"
+        description={
+          <>
+            {deleteConfirmComment?.name ?? '작성자'}님의 댓글을 삭제할까요?
+            <br />
+            삭제한 댓글은 목록에서 더 이상 보이지 않습니다.
+          </>
+        }
+        cancelText="취소하기"
+        confirmText="삭제하기"
+        onClose={cancelDeleteComment}
+        onConfirm={confirmDeleteComment}
+        confirmButtonClassName="bg-(--status-error) text-(--status-error-foreground) hover:opacity-90"
+      />
     </aside>
   );
 }
