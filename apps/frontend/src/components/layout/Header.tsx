@@ -1,7 +1,8 @@
-import { Bell, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import Logo from '@/assets/logo.svg';
+import NotificationPopover from '@/components/notifications/NotificationPopover';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -50,12 +51,7 @@ export default function Header() {
 
       {/* 알림, 프로필 */}
       <div className="flex items-center gap-8">
-        <div className="relative">
-          <span className="absolute inline-block rounded-full bg-destructive w-[1.1rem] h-[1.1rem] text-center text-secondary-foreground -right-0.75 -top-1.25 text-xs">
-            1
-          </span>
-          <Bell className="w-8 h-8" />
-        </div>
+        <NotificationPopover />
         <div className="flex justify-end gap-4 items-center">
           <div className="w-12 h-12 rounded-full bg-white">
             <img src="" alt="" />
