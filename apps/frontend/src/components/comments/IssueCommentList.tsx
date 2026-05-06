@@ -112,7 +112,7 @@ function IssueCommentList({
                         )}
 
                         {isEditing && (
-                          <span className="rounded-sm border border-(--primary) px-3 py-1 text-xs text-(--primary)">
+                          <span className="rounded-sm border px-3 py-1 text-xs text-(--text-secondary)">
                             수정 중
                           </span>
                         )}
@@ -188,7 +188,7 @@ function IssueCommentList({
                           onChange={(event) =>
                             setEditingText(event.target.value)
                           }
-                          className="min-h-28 w-full resize-none rounded-md border border-(--primary) bg-(--surface-input) px-4 py-3 typo-regular-14 leading-6 text-(--text-primary) outline-none placeholder:text-(--text-secondary) focus:shadow-[0_0_14px_rgba(255,248,53,0.22)]"
+                          className="min-h-28 w-full resize-none rounded-md border border-border bg-(--surface-input) px-4 py-3 typo-regular-14 leading-6 text-(--text-primary) outline-none placeholder:text-(--text-secondary) focus:shadow-[0_0_14px_rgba(255,248,53,0.22)]"
                           placeholder="댓글 내용을 수정해주세요."
                           aria-label="댓글 수정 내용"
                         />
