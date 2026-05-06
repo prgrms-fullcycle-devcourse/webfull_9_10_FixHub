@@ -6,6 +6,13 @@ export default defineConfig({
     output: {
       target: './src/api/generated.ts',
       client: 'react-query',
+      httpClient: 'axios',
+      override: {
+        mutator: {
+          path: './src/api/mutator.ts',
+          name: 'customInstance',
+        },
+      },
     },
   },
 });
