@@ -77,6 +77,10 @@
   --text-regular-20-line-height: 1;
   --text-regular-20-weight: 400;
 
+  --text-bold-20-size: 20px;
+  --text-bold-20-line-height: 1;
+  --text-bold-20-weight: 700;
+
   --text-semibold-18-size: 18px;
   --text-semibold-18-line-height: 1.6;
   --text-semibold-18-weight: 600;
@@ -140,6 +144,14 @@
     font-size: var(--text-medium-40-size);
     line-height: var(--text-medium-40-line-height);
     font-weight: var(--text-medium-40-weight);
+    letter-spacing: 0;
+  }
+
+  .typo-bold-20 {
+    font-family: var(--font-body);
+    font-size: var(--text-bold-20-size);
+    line-height: var(--text-bold-20-line-height);
+    font-weight: var(--text-bold-20-weight);
     letter-spacing: 0;
   }
 
