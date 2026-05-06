@@ -191,6 +191,56 @@ export type AdoptComment409 = {
   error: AdoptComment409Error;
 };
 
+export type UpdateCommentBody = {
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  content: string;
+};
+
+export type UpdateComment200 = {
+  id: string;
+  content: string;
+  updatedAt: string;
+};
+
+export type UpdateComment400Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateComment400 = {
+  error: UpdateComment400Error;
+};
+
+export type UpdateComment401Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateComment401 = {
+  error: UpdateComment401Error;
+};
+
+export type UpdateComment403Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateComment403 = {
+  error: UpdateComment403Error;
+};
+
+export type UpdateComment404Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateComment404 = {
+  error: UpdateComment404Error;
+};
+
 export type GetParams = {
   /**
    * @minLength 1
@@ -328,6 +378,27 @@ export type PostTeams401Error = {
 
 export type PostTeams401 = {
   error: PostTeams401Error;
+};
+
+export type GetTeams200DataItem = {
+  teamId: string;
+  name: string;
+  memberCount: number;
+  /** @nullable */
+  ownerId: string | null;
+};
+
+export type GetTeams200 = {
+  data: GetTeams200DataItem[];
+};
+
+export type GetTeams401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeams401 = {
+  error: GetTeams401Error;
 };
 
 export type GetIssuesSearchParams = {
@@ -852,6 +923,160 @@ export const useAdoptComment = <
   TContext
 > => {
   return useMutation(getAdoptCommentMutationOptions(options), queryClient);
+};
+
+/**
+ * 댓글 작성자가 댓글 내용을 수정합니다.
+ * @summary 댓글 수정
+ */
+export type updateCommentResponse200 = {
+  data: UpdateComment200;
+  status: 200;
+};
+
+export type updateCommentResponse400 = {
+  data: UpdateComment400;
+  status: 400;
+};
+
+export type updateCommentResponse401 = {
+  data: UpdateComment401;
+  status: 401;
+};
+
+export type updateCommentResponse403 = {
+  data: UpdateComment403;
+  status: 403;
+};
+
+export type updateCommentResponse404 = {
+  data: UpdateComment404;
+  status: 404;
+};
+
+export type updateCommentResponseSuccess = updateCommentResponse200 & {
+  headers: Headers;
+};
+export type updateCommentResponseError = (
+  | updateCommentResponse400
+  | updateCommentResponse401
+  | updateCommentResponse403
+  | updateCommentResponse404
+) & {
+  headers: Headers;
+};
+
+export type updateCommentResponse =
+  | updateCommentResponseSuccess
+  | updateCommentResponseError;
+
+export const getUpdateCommentUrl = (id: string, commentId: string) => {
+  return `/issues/${id}/comments/${commentId}`;
+};
+
+export const updateComment = async (
+  id: string,
+  commentId: string,
+  updateCommentBody: UpdateCommentBody,
+  options?: RequestInit,
+): Promise<updateCommentResponse> => {
+  const res = await fetch(getUpdateCommentUrl(id, commentId), {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateCommentBody),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: updateCommentResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as updateCommentResponse;
+};
+
+export const getUpdateCommentMutationOptions = <
+  TError =
+    | UpdateComment400
+    | UpdateComment401
+    | UpdateComment403
+    | UpdateComment404,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateComment>>,
+    TError,
+    { id: string; commentId: string; data: UpdateCommentBody },
+    TContext
+  >;
+  fetch?: RequestInit;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateComment>>,
+  TError,
+  { id: string; commentId: string; data: UpdateCommentBody },
+  TContext
+> => {
+  const mutationKey = ['updateComment'];
+  const { mutation: mutationOptions, fetch: fetchOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, fetch: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateComment>>,
+    { id: string; commentId: string; data: UpdateCommentBody }
+  > = (props) => {
+    const { id, commentId, data } = props ?? {};
+
+    return updateComment(id, commentId, data, fetchOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateComment>>
+>;
+export type UpdateCommentMutationBody = UpdateCommentBody;
+export type UpdateCommentMutationError =
+  | UpdateComment400
+  | UpdateComment401
+  | UpdateComment403
+  | UpdateComment404;
+
+/**
+ * @summary 댓글 수정
+ */
+export const useUpdateComment = <
+  TError =
+    | UpdateComment400
+    | UpdateComment401
+    | UpdateComment403
+    | UpdateComment404,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateComment>>,
+      TError,
+      { id: string; commentId: string; data: UpdateCommentBody },
+      TContext
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateComment>>,
+  TError,
+  { id: string; commentId: string; data: UpdateCommentBody },
+  TContext
+> => {
+  return useMutation(getUpdateCommentMutationOptions(options), queryClient);
 };
 
 /**
@@ -1514,6 +1739,166 @@ export const usePostTeams = <
 > => {
   return useMutation(getPostTeamsMutationOptions(options), queryClient);
 };
+
+/**
+ * 현재 로그인한 사용자가 속한 팀 목록을 조회합니다.
+ * @summary 내가 속한 팀 조회
+ */
+export type getTeamsResponse200 = {
+  data: GetTeams200;
+  status: 200;
+};
+
+export type getTeamsResponse401 = {
+  data: GetTeams401;
+  status: 401;
+};
+
+export type getTeamsResponseSuccess = getTeamsResponse200 & {
+  headers: Headers;
+};
+export type getTeamsResponseError = getTeamsResponse401 & {
+  headers: Headers;
+};
+
+export type getTeamsResponse = getTeamsResponseSuccess | getTeamsResponseError;
+
+export const getGetTeamsUrl = () => {
+  return `/teams`;
+};
+
+export const getTeams = async (
+  options?: RequestInit,
+): Promise<getTeamsResponse> => {
+  const res = await fetch(getGetTeamsUrl(), {
+    ...options,
+    method: 'GET',
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getTeamsResponse['data'] = body ? JSON.parse(body) : {};
+  return { data, status: res.status, headers: res.headers } as getTeamsResponse;
+};
+
+export const getGetTeamsQueryKey = () => {
+  return [`/teams`] as const;
+};
+
+export const getGetTeamsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeams>>,
+  TError = GetTeams401,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
+  >;
+  fetch?: RequestInit;
+}) => {
+  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTeamsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTeams>>> = ({
+    signal,
+  }) => getTeams({ signal, ...fetchOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeams>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeams>>
+>;
+export type GetTeamsQueryError = GetTeams401;
+
+export function useGetTeams<
+  TData = Awaited<ReturnType<typeof getTeams>>,
+  TError = GetTeams401,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeams>>,
+          TError,
+          Awaited<ReturnType<typeof getTeams>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeams<
+  TData = Awaited<ReturnType<typeof getTeams>>,
+  TError = GetTeams401,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeams>>,
+          TError,
+          Awaited<ReturnType<typeof getTeams>>
+        >,
+        'initialData'
+      >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeams<
+  TData = Awaited<ReturnType<typeof getTeams>>,
+  TError = GetTeams401,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내가 속한 팀 조회
+ */
+
+export function useGetTeams<
+  TData = Awaited<ReturnType<typeof getTeams>>,
+  TError = GetTeams401,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
+    >;
+    fetch?: RequestInit;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * 검색 태그를 이용해 이슈를 검색합니다.

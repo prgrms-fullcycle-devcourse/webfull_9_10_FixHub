@@ -86,6 +86,27 @@ export const AdoptCommentResponseSchema = z.object({
   }),
 });
 
+export const UpdateCommentParamsSchema = z.object({
+  id: z.string().min(1),
+  commentId: z.string().min(1),
+});
+
+export const UpdateCommentBodySchema = z.object({
+  content: z.string().trim().min(1).max(1000),
+});
+
+export const UpdateCommentResponseSchema = z.object({
+  id: z.string().openapi({
+    example: 'comment-uuid-001',
+  }),
+  content: z.string().openapi({
+    example: '수정된 댓글 내용입니다.',
+  }),
+  updatedAt: z.string().openapi({
+    example: '2025-04-22T14:00:00.000Z',
+  }),
+});
+
 export const CommentErrorResponseSchema = z.object({
   error: z.object({
     code: z.string().openapi({
@@ -108,3 +129,8 @@ export type CreateCommentResponseDto = z.infer<
 >;
 export type GetCommentsParamsDto = z.infer<typeof GetCommentsParamsSchema>;
 export type GetCommentsResponseDto = z.infer<typeof GetCommentsResponseSchema>;
+export type UpdateCommentParamsDto = z.infer<typeof UpdateCommentParamsSchema>;
+export type UpdateCommentBodyDto = z.infer<typeof UpdateCommentBodySchema>;
+export type UpdateCommentResponseDto = z.infer<
+  typeof UpdateCommentResponseSchema
+>;

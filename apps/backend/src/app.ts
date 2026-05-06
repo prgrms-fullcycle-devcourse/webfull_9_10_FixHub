@@ -38,12 +38,11 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/auth', authRouter);
-app.use('/comments', commentsRouter);
 app.use('/issues', issuesRouter);
+app.use('/issues/:id/comments', commentsRouter);
 app.use('/', healthRouter);
 app.use('/teams', teamsRouter);
 app.use('/', usersRouter);
-app.use('/', issuesRouter);
 
 app.use(errorHandler);
 

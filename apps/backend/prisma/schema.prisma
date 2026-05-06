@@ -22,7 +22,6 @@ enum LogType {
  RECEIVED
 }
 
-
 model User {
   id            String         @id @default(uuid()) @db.Uuid
   name          String
@@ -133,6 +132,7 @@ model Comment {
   isAdopted   Boolean    @default(false) @map("is_adopted")
   rewardScore Int?       @map("reward_score")
   createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
   issue       ErrorIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
   parent      Comment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies     Comment[]  @relation("CommentReplies")

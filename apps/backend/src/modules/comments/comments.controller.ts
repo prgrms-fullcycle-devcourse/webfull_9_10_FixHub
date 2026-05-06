@@ -2,10 +2,14 @@ import type { NextFunction, Request, Response } from 'express';
 
 import type { AuthRequest } from '../../common/middlewares/authenticate.js';
 
-import type { CreateCommentBodyDto } from './comments.dto.js';
+import type {
+  CreateCommentBodyDto,
+  UpdateCommentBodyDto,
+} from './comments.dto.js';
 import {
   adoptComment,
   createComment,
+  editComment,
   getComments as getCommentsService,
 } from './comments.service.js';
 
@@ -40,6 +44,27 @@ export async function postAdoptComment(
     );
 
     return res.status(200).json(adoptedComment);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function patchComment(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const comment = await editComment(
+      {
+        id: req.params.id as string,
+        commentId: req.params.commentId as string,
+      },
+      req.body as UpdateCommentBodyDto,
+      (req as AuthRequest).userId,
+    );
+
+    return res.status(200).json(comment);
   } catch (error) {
     return next(error);
   }

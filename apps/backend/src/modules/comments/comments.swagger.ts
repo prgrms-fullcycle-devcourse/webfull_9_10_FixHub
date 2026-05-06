@@ -9,6 +9,9 @@ import {
   CreateCommentResponseSchema,
   GetCommentsParamsSchema,
   GetCommentsResponseSchema,
+  UpdateCommentBodySchema,
+  UpdateCommentParamsSchema,
+  UpdateCommentResponseSchema,
 } from './comments.dto.js';
 
 export function registerCommentsSwagger(registry: OpenAPIRegistry) {
@@ -87,6 +90,68 @@ export function registerCommentsSwagger(registry: OpenAPIRegistry) {
       },
       409: {
         description: '이미 채택된 댓글이 있음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'patch',
+    path: '/issues/{id}/comments/{commentId}',
+    operationId: 'updateComment',
+    tags: ['Comments'],
+    summary: '댓글 수정',
+    description: '댓글 작성자가 댓글 내용을 수정합니다.',
+    request: {
+      params: UpdateCommentParamsSchema,
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: UpdateCommentBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '댓글 수정 성공',
+        content: {
+          'application/json': {
+            schema: UpdateCommentResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 실패',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '댓글 작성자 권한 없음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '댓글을 찾을 수 없음',
         content: {
           'application/json': {
             schema: CommentErrorResponseSchema,
