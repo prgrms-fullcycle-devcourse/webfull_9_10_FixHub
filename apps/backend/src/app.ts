@@ -15,10 +15,20 @@ import { openApiDocument } from './docs/openapi.js';
 
 const app: Express = express();
 
+const allowedOrigins = ['http://localhost:5173', process.env.CLIENT_URL].filter(
+  Boolean,
+);
+
 // 프론트 주소만 허용 + 쿠키 허용
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   }),
 );

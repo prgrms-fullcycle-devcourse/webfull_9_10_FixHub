@@ -8,6 +8,11 @@ import {
   CreateIssueParamsSchema,
   CreateIssueBodySchema,
   CreateIssueResponseSchema,
+  UpdateIssueParamsSchema,
+  UpdateIssueBodySchema,
+  UpdateIssueResponseSchema,
+  DeleteIssueParamsSchema,
+  DeleteIssueResponseSchema,
 } from './issues.dto.js';
 import { zod as z } from '../../common/lib/zod.js';
 
@@ -52,9 +57,7 @@ const detailBadRequestSchema = z
   .object({
     error: z.object({
       code: z.string().openapi({ example: 'VALIDATION_ERROR' }),
-      message: z
-        .string()
-        .openapi({ example: 'teamId 또는 issueId 값이 올바르지 않습니다.' }),
+      message: z.string().openapi({ example: '값이 올바르지 않습니다.' }),
     }),
   })
   .openapi('DetailBadRequest');
@@ -74,7 +77,7 @@ const createBadRequestSchema = z
       code: z.string().openapi({ example: 'VALIDATION_ERROR' }),
       message: z
         .string()
-        .openapi({ example: '요청 본문 또는 teamId 값이 올바르지 않습니다.' }),
+        .openapi({ example: '요청 본문 값이 올바르지 않습니다.' }),
     }),
   })
   .openapi('CreateBadRequest');
@@ -146,6 +149,32 @@ const createIssueRequestExample = {
 const createIssueResponseExample = {
   id: 'issue-uuid-010',
   createdAt: '2025-04-22T10:00:00Z',
+};
+
+const updateIssueRequestExample = {
+  title: '수정된 제목',
+  content: '수정된 내용입니다.',
+  tags: ['BACKEND'],
+  isPublic: false,
+  logs: [
+    {
+      logType: 'SENT',
+      stackTrace: '에러 로그 내용',
+    },
+    {
+      logType: 'RECEIVED',
+      stackTrace: '요청 정보 내용',
+    },
+  ],
+};
+
+const updateIssueResponseExample = {
+  id: 'issue-uuid-010',
+  updatedAt: '2025-04-22T11:00:00Z',
+};
+
+const deleteIssueResponseExample = {
+  success: true,
 };
 
 export function registerIssuesSwagger(registry: OpenAPIRegistry) {
@@ -289,6 +318,124 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: forbiddenSchema,
+          },
+        },
+      },
+    },
+  });
+
+  /* 이슈 수정 */
+  registry.registerPath({
+    method: 'patch',
+    path: '/teams/{teamId}/issues/{issueId}',
+    tags: ['Issue'],
+    summary: '이슈 수정',
+    description: '팀에 속한 특정 이슈를 수정합니다.',
+    request: {
+      params: UpdateIssueParamsSchema,
+      body: {
+        content: {
+          'application/json': {
+            schema: UpdateIssueBodySchema,
+            example: updateIssueRequestExample,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '이슈 수정 성공',
+        content: {
+          'application/json': {
+            schema: UpdateIssueResponseSchema,
+            example: updateIssueResponseExample,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: createBadRequestSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: unauthorizedSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: forbiddenSchema,
+          },
+        },
+      },
+      404: {
+        description: '이슈를 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: notFoundSchema,
+          },
+        },
+      },
+    },
+  });
+
+  /* 이슈 삭제 */
+  registry.registerPath({
+    method: 'delete',
+    path: '/teams/{teamId}/issues/{issueId}',
+    tags: ['Issue'],
+    summary: '이슈 삭제',
+    description: '팀에 속한 특정 이슈를 삭제합니다.',
+    request: {
+      params: DeleteIssueParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '이슈 삭제 성공',
+        content: {
+          'application/json': {
+            schema: DeleteIssueResponseSchema,
+            example: deleteIssueResponseExample,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: createBadRequestSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: unauthorizedSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: forbiddenSchema,
+          },
+        },
+      },
+      404: {
+        description: '이슈를 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: notFoundSchema,
           },
         },
       },

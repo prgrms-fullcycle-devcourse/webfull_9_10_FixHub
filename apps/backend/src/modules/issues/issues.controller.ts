@@ -6,6 +6,9 @@ import {
   GetIssueDetailParamsSchema,
   CreateIssueParamsSchema,
   CreateIssueBodySchema,
+  UpdateIssueParamsSchema,
+  UpdateIssueBodySchema,
+  DeleteIssueParamsSchema,
 } from './issues.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
@@ -14,6 +17,8 @@ import {
   getPublicIssues as getPublicIssuesService,
   getIssueDetail as getIssueDetailService,
   createIssue as createIssueService,
+  updateIssue as updateIssueService,
+  deleteIssue as deleteIssueService,
 } from './issues.service.js';
 
 export async function getIssues(
@@ -97,6 +102,55 @@ export async function postIssue(
     );
 
     return res.status(201).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/* 이슈 수정 */
+export async function patchIssue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedParams = UpdateIssueParamsSchema.safeParse(req.params);
+  const parsedBody = UpdateIssueBodySchema.safeParse(req.body);
+
+  if (!parsedParams.success || !parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const response = await updateIssueService(
+      userId,
+      parsedParams.data,
+      parsedBody.data,
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/* 이슈 삭제 */
+export async function removeIssue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedParams = DeleteIssueParamsSchema.safeParse(req.params);
+
+  if (!parsedParams.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const response = await deleteIssueService(userId, parsedParams.data);
+
+    return res.status(200).json(response);
   } catch (error) {
     return next(error);
   }
