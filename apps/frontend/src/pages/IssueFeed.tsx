@@ -52,6 +52,7 @@ function IssueFeed() {
           <IssueList
             status={selectedStatus === 'ALL' ? undefined : selectedStatus}
             tags={selectedLanguages}
+            sort={sort}
           />
         </div>
       </section>
