@@ -3,7 +3,7 @@ import { IssueStatus } from '@prisma/client';
 import { zod as z } from '../../common/lib/zod.js';
 
 export const SearchIssuesQuerySchema = z.object({
-  search: z.string().min(1).optional(),
+  search: z.string().optional(),
 });
 
 export const SearchIssuesResponseSchema = z.object({
