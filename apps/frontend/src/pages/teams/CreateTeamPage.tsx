@@ -7,7 +7,7 @@ import {
   getGetTeamsQueryKey,
   usePostTeams,
   type PostTeamsBody,
-  type postTeamsResponse,
+  type PostTeamsMutationResult,
 } from '@/api/generated';
 
 export default function CreateTeamPage() {
@@ -23,7 +23,7 @@ export default function CreateTeamPage() {
     mutation: {
       mutationFn: async (variables: {
         data?: PostTeamsBody;
-      }): Promise<postTeamsResponse> => {
+      }): Promise<PostTeamsMutationResult> => {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teams`, {
           method: 'POST',
           headers: {
