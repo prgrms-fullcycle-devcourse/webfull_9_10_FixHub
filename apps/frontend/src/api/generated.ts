@@ -21,6 +21,8 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import { customInstance } from './mutator';
+import type { ErrorType, BodyType } from './mutator';
 export type GetPublicIssuesResponseMeta = {
   totalItemCount: number;
   currentItemCount: number;
@@ -45,13 +47,58 @@ export interface GetPublicIssuesResponse {
   data: PublicIssueItem[];
 }
 
-export type IssueErrorResponseError = {
+export type PublicBadRequestError = {
   code: string;
   message: string;
 };
 
-export interface IssueErrorResponse {
-  error: IssueErrorResponseError;
+export interface PublicBadRequest {
+  error: PublicBadRequestError;
+}
+
+export type DetailBadRequestError = {
+  code: string;
+  message: string;
+};
+
+export interface DetailBadRequest {
+  error: DetailBadRequestError;
+}
+
+export type NotFoundError = {
+  code: string;
+  message: string;
+};
+
+export interface NotFound {
+  error: NotFoundError;
+}
+
+export type CreateBadRequestError = {
+  code: string;
+  message: string;
+};
+
+export interface CreateBadRequest {
+  error: CreateBadRequestError;
+}
+
+export type UnauthorizedError = {
+  code: string;
+  message: string;
+};
+
+export interface Unauthorized {
+  error: UnauthorizedError;
+}
+
+export type ForbiddenError = {
+  code: string;
+  message: string;
+};
+
+export interface Forbidden {
+  error: ForbiddenError;
 }
 
 export type GetComments200DataItemRepliesItemRepliesItem = {
@@ -445,52 +492,88 @@ export type GetIssuesPublicParams = {
   limit?: number;
 };
 
+export type GetTeamsTeamIdIssuesIssueId200Status =
+  (typeof GetTeamsTeamIdIssuesIssueId200Status)[keyof typeof GetTeamsTeamIdIssuesIssueId200Status];
+
+export const GetTeamsTeamIdIssuesIssueId200Status = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
+export type GetTeamsTeamIdIssuesIssueId200LogsItemLogType =
+  (typeof GetTeamsTeamIdIssuesIssueId200LogsItemLogType)[keyof typeof GetTeamsTeamIdIssuesIssueId200LogsItemLogType];
+
+export const GetTeamsTeamIdIssuesIssueId200LogsItemLogType = {
+  SENT: 'SENT',
+  RECEIVED: 'RECEIVED',
+} as const;
+
+export type GetTeamsTeamIdIssuesIssueId200LogsItem = {
+  logId: string;
+  logType: GetTeamsTeamIdIssuesIssueId200LogsItemLogType;
+  /** @nullable */
+  source: string | null;
+  message: string;
+};
+
+export type GetTeamsTeamIdIssuesIssueId200 = {
+  id: string;
+  title: string;
+  content: string;
+  tag: string[];
+  author: string;
+  errorLog: string;
+  isPublic: boolean;
+  status: GetTeamsTeamIdIssuesIssueId200Status;
+  logs: GetTeamsTeamIdIssuesIssueId200LogsItem[];
+};
+
+export type PostTeamsTeamIdIssuesBodyLogsItemLogType =
+  (typeof PostTeamsTeamIdIssuesBodyLogsItemLogType)[keyof typeof PostTeamsTeamIdIssuesBodyLogsItemLogType];
+
+export const PostTeamsTeamIdIssuesBodyLogsItemLogType = {
+  SENT: 'SENT',
+  RECEIVED: 'RECEIVED',
+} as const;
+
+export type PostTeamsTeamIdIssuesBodyLogsItem = {
+  logType: PostTeamsTeamIdIssuesBodyLogsItemLogType;
+  /** @minLength 1 */
+  source: string;
+  /** @minLength 1 */
+  message: string;
+};
+
+export type PostTeamsTeamIdIssuesBody = {
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  content: string;
+  tag: string[];
+  isPublic: boolean;
+  logs: PostTeamsTeamIdIssuesBodyLogsItem[];
+};
+
+export type PostTeamsTeamIdIssues201 = {
+  id: string;
+  createdAt: string;
+};
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 /**
  * 이슈에 작성된 일반 댓글과 대댓글 목록을 조회합니다.
  * @summary 댓글 목록 조회
  */
-export type getCommentsResponse200 = {
-  data: GetComments200;
-  status: 200;
-};
-
-export type getCommentsResponse404 = {
-  data: GetComments404;
-  status: 404;
-};
-
-export type getCommentsResponseSuccess = getCommentsResponse200 & {
-  headers: Headers;
-};
-export type getCommentsResponseError = getCommentsResponse404 & {
-  headers: Headers;
-};
-
-export type getCommentsResponse =
-  | getCommentsResponseSuccess
-  | getCommentsResponseError;
-
-export const getGetCommentsUrl = (id: string) => {
-  return `/issues/${id}/comments`;
-};
-
-export const getComments = async (
+export const getComments = (
   id: string,
-  options?: RequestInit,
-): Promise<getCommentsResponse> => {
-  const res = await fetch(getGetCommentsUrl(id), {
-    ...options,
-    method: 'GET',
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: getCommentsResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as getCommentsResponse;
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetComments200>(
+    { url: `/issues/${id}/comments`, method: 'GET', signal },
+    options,
+  );
 };
 
 export const getGetCommentsQueryKey = (id: string) => {
@@ -499,23 +582,23 @@ export const getGetCommentsQueryKey = (id: string) => {
 
 export const getGetCommentsQueryOptions = <
   TData = Awaited<ReturnType<typeof getComments>>,
-  TError = GetComments404,
+  TError = ErrorType<GetComments404>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getGetCommentsQueryKey(id);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getComments>>> = ({
     signal,
-  }) => getComments(id, { signal, ...fetchOptions });
+  }) => getComments(id, requestOptions, signal);
 
   return {
     queryKey,
@@ -532,11 +615,11 @@ export const getGetCommentsQueryOptions = <
 export type GetCommentsQueryResult = NonNullable<
   Awaited<ReturnType<typeof getComments>>
 >;
-export type GetCommentsQueryError = GetComments404;
+export type GetCommentsQueryError = ErrorType<GetComments404>;
 
 export function useGetComments<
   TData = Awaited<ReturnType<typeof getComments>>,
-  TError = GetComments404,
+  TError = ErrorType<GetComments404>,
 >(
   id: string,
   options: {
@@ -551,7 +634,7 @@ export function useGetComments<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & {
@@ -559,7 +642,7 @@ export function useGetComments<
 };
 export function useGetComments<
   TData = Awaited<ReturnType<typeof getComments>>,
-  TError = GetComments404,
+  TError = ErrorType<GetComments404>,
 >(
   id: string,
   options?: {
@@ -574,7 +657,7 @@ export function useGetComments<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -582,14 +665,14 @@ export function useGetComments<
 };
 export function useGetComments<
   TData = Awaited<ReturnType<typeof getComments>>,
-  TError = GetComments404,
+  TError = ErrorType<GetComments404>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -601,14 +684,14 @@ export function useGetComments<
 
 export function useGetComments<
   TData = Awaited<ReturnType<typeof getComments>>,
-  TError = GetComments404,
+  TError = ErrorType<GetComments404>,
 >(
   id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getComments>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -628,106 +711,59 @@ export function useGetComments<
  * 일반 댓글 또는 대댓글을 생성합니다.
  * @summary 댓글 생성
  */
-export type postIssuesIdCommentsResponse201 = {
-  data: PostIssuesIdComments201;
-  status: 201;
-};
-
-export type postIssuesIdCommentsResponse400 = {
-  data: PostIssuesIdComments400;
-  status: 400;
-};
-
-export type postIssuesIdCommentsResponse401 = {
-  data: PostIssuesIdComments401;
-  status: 401;
-};
-
-export type postIssuesIdCommentsResponse404 = {
-  data: PostIssuesIdComments404;
-  status: 404;
-};
-
-export type postIssuesIdCommentsResponseSuccess =
-  postIssuesIdCommentsResponse201 & {
-    headers: Headers;
-  };
-export type postIssuesIdCommentsResponseError = (
-  | postIssuesIdCommentsResponse400
-  | postIssuesIdCommentsResponse401
-  | postIssuesIdCommentsResponse404
-) & {
-  headers: Headers;
-};
-
-export type postIssuesIdCommentsResponse =
-  | postIssuesIdCommentsResponseSuccess
-  | postIssuesIdCommentsResponseError;
-
-export const getPostIssuesIdCommentsUrl = (id: string) => {
-  return `/issues/${id}/comments`;
-};
-
-export const postIssuesIdComments = async (
+export const postIssuesIdComments = (
   id: string,
-  postIssuesIdCommentsBody: PostIssuesIdCommentsBody,
-  options?: RequestInit,
-): Promise<postIssuesIdCommentsResponse> => {
-  const res = await fetch(getPostIssuesIdCommentsUrl(id), {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(postIssuesIdCommentsBody),
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postIssuesIdCommentsResponse['data'] = body
-    ? JSON.parse(body)
-    : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as postIssuesIdCommentsResponse;
+  postIssuesIdCommentsBody: BodyType<PostIssuesIdCommentsBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PostIssuesIdComments201>(
+    {
+      url: `/issues/${id}/comments`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: postIssuesIdCommentsBody,
+      signal,
+    },
+    options,
+  );
 };
 
 export const getPostIssuesIdCommentsMutationOptions = <
-  TError =
-    | PostIssuesIdComments400
-    | PostIssuesIdComments401
-    | PostIssuesIdComments404,
+  TError = ErrorType<
+    PostIssuesIdComments400 | PostIssuesIdComments401 | PostIssuesIdComments404
+  >,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postIssuesIdComments>>,
     TError,
-    { id: string; data: PostIssuesIdCommentsBody },
+    { id: string; data: BodyType<PostIssuesIdCommentsBody> },
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postIssuesIdComments>>,
   TError,
-  { id: string; data: PostIssuesIdCommentsBody },
+  { id: string; data: BodyType<PostIssuesIdCommentsBody> },
   TContext
 > => {
   const mutationKey = ['postIssuesIdComments'];
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       'mutationKey' in options.mutation &&
       options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postIssuesIdComments>>,
-    { id: string; data: PostIssuesIdCommentsBody }
+    { id: string; data: BodyType<PostIssuesIdCommentsBody> }
   > = (props) => {
     const { id, data } = props ?? {};
 
-    return postIssuesIdComments(id, data, fetchOptions);
+    return postIssuesIdComments(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -736,36 +772,35 @@ export const getPostIssuesIdCommentsMutationOptions = <
 export type PostIssuesIdCommentsMutationResult = NonNullable<
   Awaited<ReturnType<typeof postIssuesIdComments>>
 >;
-export type PostIssuesIdCommentsMutationBody = PostIssuesIdCommentsBody;
-export type PostIssuesIdCommentsMutationError =
-  | PostIssuesIdComments400
-  | PostIssuesIdComments401
-  | PostIssuesIdComments404;
+export type PostIssuesIdCommentsMutationBody =
+  BodyType<PostIssuesIdCommentsBody>;
+export type PostIssuesIdCommentsMutationError = ErrorType<
+  PostIssuesIdComments400 | PostIssuesIdComments401 | PostIssuesIdComments404
+>;
 
 /**
  * @summary 댓글 생성
  */
 export const usePostIssuesIdComments = <
-  TError =
-    | PostIssuesIdComments400
-    | PostIssuesIdComments401
-    | PostIssuesIdComments404,
+  TError = ErrorType<
+    PostIssuesIdComments400 | PostIssuesIdComments401 | PostIssuesIdComments404
+  >,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof postIssuesIdComments>>,
       TError,
-      { id: string; data: PostIssuesIdCommentsBody },
+      { id: string; data: BodyType<PostIssuesIdCommentsBody> },
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
   Awaited<ReturnType<typeof postIssuesIdComments>>,
   TError,
-  { id: string; data: PostIssuesIdCommentsBody },
+  { id: string; data: BodyType<PostIssuesIdCommentsBody> },
   TContext
 > => {
   return useMutation(
@@ -778,77 +813,26 @@ export const usePostIssuesIdComments = <
  * 이슈 작성자가 해결 제안 댓글을 채택합니다.
  * @summary 댓글 채택
  */
-export type adoptCommentResponse200 = {
-  data: AdoptComment200;
-  status: 200;
-};
-
-export type adoptCommentResponse401 = {
-  data: AdoptComment401;
-  status: 401;
-};
-
-export type adoptCommentResponse403 = {
-  data: AdoptComment403;
-  status: 403;
-};
-
-export type adoptCommentResponse404 = {
-  data: AdoptComment404;
-  status: 404;
-};
-
-export type adoptCommentResponse409 = {
-  data: AdoptComment409;
-  status: 409;
-};
-
-export type adoptCommentResponseSuccess = adoptCommentResponse200 & {
-  headers: Headers;
-};
-export type adoptCommentResponseError = (
-  | adoptCommentResponse401
-  | adoptCommentResponse403
-  | adoptCommentResponse404
-  | adoptCommentResponse409
-) & {
-  headers: Headers;
-};
-
-export type adoptCommentResponse =
-  | adoptCommentResponseSuccess
-  | adoptCommentResponseError;
-
-export const getAdoptCommentUrl = (id: string, commentId: string) => {
-  return `/issues/${id}/comments/${commentId}/adopt`;
-};
-
-export const adoptComment = async (
+export const adoptComment = (
   id: string,
   commentId: string,
-  options?: RequestInit,
-): Promise<adoptCommentResponse> => {
-  const res = await fetch(getAdoptCommentUrl(id, commentId), {
-    ...options,
-    method: 'POST',
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: adoptCommentResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as adoptCommentResponse;
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<AdoptComment200>(
+    {
+      url: `/issues/${id}/comments/${commentId}/adopt`,
+      method: 'POST',
+      signal,
+    },
+    options,
+  );
 };
 
 export const getAdoptCommentMutationOptions = <
-  TError =
-    | AdoptComment401
-    | AdoptComment403
-    | AdoptComment404
-    | AdoptComment409,
+  TError = ErrorType<
+    AdoptComment401 | AdoptComment403 | AdoptComment404 | AdoptComment409
+  >,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -857,7 +841,7 @@ export const getAdoptCommentMutationOptions = <
     { id: string; commentId: string },
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof adoptComment>>,
   TError,
@@ -865,13 +849,13 @@ export const getAdoptCommentMutationOptions = <
   TContext
 > => {
   const mutationKey = ['adoptComment'];
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       'mutationKey' in options.mutation &&
       options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof adoptComment>>,
@@ -879,7 +863,7 @@ export const getAdoptCommentMutationOptions = <
   > = (props) => {
     const { id, commentId } = props ?? {};
 
-    return adoptComment(id, commentId, fetchOptions);
+    return adoptComment(id, commentId, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -889,21 +873,17 @@ export type AdoptCommentMutationResult = NonNullable<
   Awaited<ReturnType<typeof adoptComment>>
 >;
 
-export type AdoptCommentMutationError =
-  | AdoptComment401
-  | AdoptComment403
-  | AdoptComment404
-  | AdoptComment409;
+export type AdoptCommentMutationError = ErrorType<
+  AdoptComment401 | AdoptComment403 | AdoptComment404 | AdoptComment409
+>;
 
 /**
  * @summary 댓글 채택
  */
 export const useAdoptComment = <
-  TError =
-    | AdoptComment401
-    | AdoptComment403
-    | AdoptComment404
-    | AdoptComment409,
+  TError = ErrorType<
+    AdoptComment401 | AdoptComment403 | AdoptComment404 | AdoptComment409
+  >,
   TContext = unknown,
 >(
   options?: {
@@ -913,7 +893,7 @@ export const useAdoptComment = <
       { id: string; commentId: string },
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
@@ -929,111 +909,60 @@ export const useAdoptComment = <
  * 댓글 작성자가 댓글 내용을 수정합니다.
  * @summary 댓글 수정
  */
-export type updateCommentResponse200 = {
-  data: UpdateComment200;
-  status: 200;
-};
-
-export type updateCommentResponse400 = {
-  data: UpdateComment400;
-  status: 400;
-};
-
-export type updateCommentResponse401 = {
-  data: UpdateComment401;
-  status: 401;
-};
-
-export type updateCommentResponse403 = {
-  data: UpdateComment403;
-  status: 403;
-};
-
-export type updateCommentResponse404 = {
-  data: UpdateComment404;
-  status: 404;
-};
-
-export type updateCommentResponseSuccess = updateCommentResponse200 & {
-  headers: Headers;
-};
-export type updateCommentResponseError = (
-  | updateCommentResponse400
-  | updateCommentResponse401
-  | updateCommentResponse403
-  | updateCommentResponse404
-) & {
-  headers: Headers;
-};
-
-export type updateCommentResponse =
-  | updateCommentResponseSuccess
-  | updateCommentResponseError;
-
-export const getUpdateCommentUrl = (id: string, commentId: string) => {
-  return `/issues/${id}/comments/${commentId}`;
-};
-
-export const updateComment = async (
+export const updateComment = (
   id: string,
   commentId: string,
-  updateCommentBody: UpdateCommentBody,
-  options?: RequestInit,
-): Promise<updateCommentResponse> => {
-  const res = await fetch(getUpdateCommentUrl(id, commentId), {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateCommentBody),
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: updateCommentResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as updateCommentResponse;
+  updateCommentBody: BodyType<UpdateCommentBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<UpdateComment200>(
+    {
+      url: `/issues/${id}/comments/${commentId}`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateCommentBody,
+      signal,
+    },
+    options,
+  );
 };
 
 export const getUpdateCommentMutationOptions = <
-  TError =
-    | UpdateComment400
-    | UpdateComment401
-    | UpdateComment403
-    | UpdateComment404,
+  TError = ErrorType<
+    UpdateComment400 | UpdateComment401 | UpdateComment403 | UpdateComment404
+  >,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateComment>>,
     TError,
-    { id: string; commentId: string; data: UpdateCommentBody },
+    { id: string; commentId: string; data: BodyType<UpdateCommentBody> },
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateComment>>,
   TError,
-  { id: string; commentId: string; data: UpdateCommentBody },
+  { id: string; commentId: string; data: BodyType<UpdateCommentBody> },
   TContext
 > => {
   const mutationKey = ['updateComment'];
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       'mutationKey' in options.mutation &&
       options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateComment>>,
-    { id: string; commentId: string; data: UpdateCommentBody }
+    { id: string; commentId: string; data: BodyType<UpdateCommentBody> }
   > = (props) => {
     const { id, commentId, data } = props ?? {};
 
-    return updateComment(id, commentId, data, fetchOptions);
+    return updateComment(id, commentId, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1042,38 +971,34 @@ export const getUpdateCommentMutationOptions = <
 export type UpdateCommentMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateComment>>
 >;
-export type UpdateCommentMutationBody = UpdateCommentBody;
-export type UpdateCommentMutationError =
-  | UpdateComment400
-  | UpdateComment401
-  | UpdateComment403
-  | UpdateComment404;
+export type UpdateCommentMutationBody = BodyType<UpdateCommentBody>;
+export type UpdateCommentMutationError = ErrorType<
+  UpdateComment400 | UpdateComment401 | UpdateComment403 | UpdateComment404
+>;
 
 /**
  * @summary 댓글 수정
  */
 export const useUpdateComment = <
-  TError =
-    | UpdateComment400
-    | UpdateComment401
-    | UpdateComment403
-    | UpdateComment404,
+  TError = ErrorType<
+    UpdateComment400 | UpdateComment401 | UpdateComment403 | UpdateComment404
+  >,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateComment>>,
       TError,
-      { id: string; commentId: string; data: UpdateCommentBody },
+      { id: string; commentId: string; data: BodyType<UpdateCommentBody> },
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateComment>>,
   TError,
-  { id: string; commentId: string; data: UpdateCommentBody },
+  { id: string; commentId: string; data: BodyType<UpdateCommentBody> },
   TContext
 > => {
   return useMutation(getUpdateCommentMutationOptions(options), queryClient);
@@ -1082,43 +1007,15 @@ export const useUpdateComment = <
 /**
  * Health check API
  */
-export type getResponse200 = {
-  data: Get200;
-  status: 200;
-};
-
-export type getResponseSuccess = getResponse200 & {
-  headers: Headers;
-};
-export type getResponse = getResponseSuccess;
-
-export const getGetUrl = (params?: GetParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/?${stringifiedParams}` : `/`;
-};
-
-export const get = async (
+export const get = (
   params?: GetParams,
-  options?: RequestInit,
-): Promise<getResponse> => {
-  const res = await fetch(getGetUrl(params), {
-    ...options,
-    method: 'GET',
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: getResponse['data'] = body ? JSON.parse(body) : {};
-  return { data, status: res.status, headers: res.headers } as getResponse;
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<Get200>(
+    { url: `/`, method: 'GET', params, signal },
+    options,
+  );
 };
 
 export const getGetQueryKey = (params?: GetParams) => {
@@ -1127,23 +1024,23 @@ export const getGetQueryKey = (params?: GetParams) => {
 
 export const getGetQueryOptions = <
   TData = Awaited<ReturnType<typeof get>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getGetQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof get>>> = ({
     signal,
-  }) => get(params, { signal, ...fetchOptions });
+  }) => get(params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof get>>,
@@ -1153,11 +1050,11 @@ export const getGetQueryOptions = <
 };
 
 export type GetQueryResult = NonNullable<Awaited<ReturnType<typeof get>>>;
-export type GetQueryError = unknown;
+export type GetQueryError = ErrorType<unknown>;
 
 export function useGet<
   TData = Awaited<ReturnType<typeof get>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params: undefined | GetParams,
   options: {
@@ -1172,7 +1069,7 @@ export function useGet<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & {
@@ -1180,7 +1077,7 @@ export function useGet<
 };
 export function useGet<
   TData = Awaited<ReturnType<typeof get>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetParams,
   options?: {
@@ -1195,7 +1092,7 @@ export function useGet<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -1203,14 +1100,14 @@ export function useGet<
 };
 export function useGet<
   TData = Awaited<ReturnType<typeof get>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -1219,14 +1116,14 @@ export function useGet<
 
 export function useGet<
   TData = Awaited<ReturnType<typeof get>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof get>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -1245,93 +1142,56 @@ export function useGet<
 /**
  * @summary 회원가입
  */
-export type postAuthSignupResponse201 = {
-  data: PostAuthSignup201;
-  status: 201;
-};
-
-export type postAuthSignupResponse400 = {
-  data: PostAuthSignup400;
-  status: 400;
-};
-
-export type postAuthSignupResponse409 = {
-  data: PostAuthSignup409;
-  status: 409;
-};
-
-export type postAuthSignupResponseSuccess = postAuthSignupResponse201 & {
-  headers: Headers;
-};
-export type postAuthSignupResponseError = (
-  | postAuthSignupResponse400
-  | postAuthSignupResponse409
-) & {
-  headers: Headers;
-};
-
-export type postAuthSignupResponse =
-  | postAuthSignupResponseSuccess
-  | postAuthSignupResponseError;
-
-export const getPostAuthSignupUrl = () => {
-  return `/auth/signup`;
-};
-
-export const postAuthSignup = async (
-  postAuthSignupBody?: PostAuthSignupBody,
-  options?: RequestInit,
-): Promise<postAuthSignupResponse> => {
-  const res = await fetch(getPostAuthSignupUrl(), {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(postAuthSignupBody),
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postAuthSignupResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as postAuthSignupResponse;
+export const postAuthSignup = (
+  postAuthSignupBody?: BodyType<PostAuthSignupBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PostAuthSignup201>(
+    {
+      url: `/auth/signup`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: postAuthSignupBody,
+      signal,
+    },
+    options,
+  );
 };
 
 export const getPostAuthSignupMutationOptions = <
-  TError = PostAuthSignup400 | PostAuthSignup409,
+  TError = ErrorType<PostAuthSignup400 | PostAuthSignup409>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postAuthSignup>>,
     TError,
-    { data?: PostAuthSignupBody },
+    { data?: BodyType<PostAuthSignupBody> },
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postAuthSignup>>,
   TError,
-  { data?: PostAuthSignupBody },
+  { data?: BodyType<PostAuthSignupBody> },
   TContext
 > => {
   const mutationKey = ['postAuthSignup'];
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       'mutationKey' in options.mutation &&
       options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postAuthSignup>>,
-    { data?: PostAuthSignupBody }
+    { data?: BodyType<PostAuthSignupBody> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return postAuthSignup(data, fetchOptions);
+    return postAuthSignup(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1340,30 +1200,34 @@ export const getPostAuthSignupMutationOptions = <
 export type PostAuthSignupMutationResult = NonNullable<
   Awaited<ReturnType<typeof postAuthSignup>>
 >;
-export type PostAuthSignupMutationBody = PostAuthSignupBody | undefined;
-export type PostAuthSignupMutationError = PostAuthSignup400 | PostAuthSignup409;
+export type PostAuthSignupMutationBody =
+  | BodyType<PostAuthSignupBody>
+  | undefined;
+export type PostAuthSignupMutationError = ErrorType<
+  PostAuthSignup400 | PostAuthSignup409
+>;
 
 /**
  * @summary 회원가입
  */
 export const usePostAuthSignup = <
-  TError = PostAuthSignup400 | PostAuthSignup409,
+  TError = ErrorType<PostAuthSignup400 | PostAuthSignup409>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof postAuthSignup>>,
       TError,
-      { data?: PostAuthSignupBody },
+      { data?: BodyType<PostAuthSignupBody> },
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
   Awaited<ReturnType<typeof postAuthSignup>>,
   TError,
-  { data?: PostAuthSignupBody },
+  { data?: BodyType<PostAuthSignupBody> },
   TContext
 > => {
   return useMutation(getPostAuthSignupMutationOptions(options), queryClient);
@@ -1372,93 +1236,56 @@ export const usePostAuthSignup = <
 /**
  * @summary 로그인
  */
-export type postAuthLoginResponse200 = {
-  data: PostAuthLogin200;
-  status: 200;
-};
-
-export type postAuthLoginResponse400 = {
-  data: PostAuthLogin400;
-  status: 400;
-};
-
-export type postAuthLoginResponse401 = {
-  data: PostAuthLogin401;
-  status: 401;
-};
-
-export type postAuthLoginResponseSuccess = postAuthLoginResponse200 & {
-  headers: Headers;
-};
-export type postAuthLoginResponseError = (
-  | postAuthLoginResponse400
-  | postAuthLoginResponse401
-) & {
-  headers: Headers;
-};
-
-export type postAuthLoginResponse =
-  | postAuthLoginResponseSuccess
-  | postAuthLoginResponseError;
-
-export const getPostAuthLoginUrl = () => {
-  return `/auth/login`;
-};
-
-export const postAuthLogin = async (
-  postAuthLoginBody?: PostAuthLoginBody,
-  options?: RequestInit,
-): Promise<postAuthLoginResponse> => {
-  const res = await fetch(getPostAuthLoginUrl(), {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(postAuthLoginBody),
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postAuthLoginResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as postAuthLoginResponse;
+export const postAuthLogin = (
+  postAuthLoginBody?: BodyType<PostAuthLoginBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PostAuthLogin200>(
+    {
+      url: `/auth/login`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: postAuthLoginBody,
+      signal,
+    },
+    options,
+  );
 };
 
 export const getPostAuthLoginMutationOptions = <
-  TError = PostAuthLogin400 | PostAuthLogin401,
+  TError = ErrorType<PostAuthLogin400 | PostAuthLogin401>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postAuthLogin>>,
     TError,
-    { data?: PostAuthLoginBody },
+    { data?: BodyType<PostAuthLoginBody> },
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postAuthLogin>>,
   TError,
-  { data?: PostAuthLoginBody },
+  { data?: BodyType<PostAuthLoginBody> },
   TContext
 > => {
   const mutationKey = ['postAuthLogin'];
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       'mutationKey' in options.mutation &&
       options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postAuthLogin>>,
-    { data?: PostAuthLoginBody }
+    { data?: BodyType<PostAuthLoginBody> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return postAuthLogin(data, fetchOptions);
+    return postAuthLogin(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1467,30 +1294,32 @@ export const getPostAuthLoginMutationOptions = <
 export type PostAuthLoginMutationResult = NonNullable<
   Awaited<ReturnType<typeof postAuthLogin>>
 >;
-export type PostAuthLoginMutationBody = PostAuthLoginBody | undefined;
-export type PostAuthLoginMutationError = PostAuthLogin400 | PostAuthLogin401;
+export type PostAuthLoginMutationBody = BodyType<PostAuthLoginBody> | undefined;
+export type PostAuthLoginMutationError = ErrorType<
+  PostAuthLogin400 | PostAuthLogin401
+>;
 
 /**
  * @summary 로그인
  */
 export const usePostAuthLogin = <
-  TError = PostAuthLogin400 | PostAuthLogin401,
+  TError = ErrorType<PostAuthLogin400 | PostAuthLogin401>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof postAuthLogin>>,
       TError,
-      { data?: PostAuthLoginBody },
+      { data?: BodyType<PostAuthLoginBody> },
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
   Awaited<ReturnType<typeof postAuthLogin>>,
   TError,
-  { data?: PostAuthLoginBody },
+  { data?: BodyType<PostAuthLoginBody> },
   TContext
 > => {
   return useMutation(getPostAuthLoginMutationOptions(options), queryClient);
@@ -1499,53 +1328,18 @@ export const usePostAuthLogin = <
 /**
  * @summary 로그아웃
  */
-export type postAuthLogoutResponse200 = {
-  data: void;
-  status: 200;
-};
-
-export type postAuthLogoutResponse401 = {
-  data: PostAuthLogout401;
-  status: 401;
-};
-
-export type postAuthLogoutResponseSuccess = postAuthLogoutResponse200 & {
-  headers: Headers;
-};
-export type postAuthLogoutResponseError = postAuthLogoutResponse401 & {
-  headers: Headers;
-};
-
-export type postAuthLogoutResponse =
-  | postAuthLogoutResponseSuccess
-  | postAuthLogoutResponseError;
-
-export const getPostAuthLogoutUrl = () => {
-  return `/auth/logout`;
-};
-
-export const postAuthLogout = async (
-  options?: RequestInit,
-): Promise<postAuthLogoutResponse> => {
-  const res = await fetch(getPostAuthLogoutUrl(), {
-    ...options,
-    method: 'POST',
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postAuthLogoutResponse['data'] = body
-    ? JSON.parse(body)
-    : undefined;
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as postAuthLogoutResponse;
+export const postAuthLogout = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<void>(
+    { url: `/auth/logout`, method: 'POST', signal },
+    options,
+  );
 };
 
 export const getPostAuthLogoutMutationOptions = <
-  TError = PostAuthLogout401,
+  TError = ErrorType<PostAuthLogout401>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1554,7 +1348,7 @@ export const getPostAuthLogoutMutationOptions = <
     void,
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postAuthLogout>>,
   TError,
@@ -1562,19 +1356,19 @@ export const getPostAuthLogoutMutationOptions = <
   TContext
 > => {
   const mutationKey = ['postAuthLogout'];
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       'mutationKey' in options.mutation &&
       options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postAuthLogout>>,
     void
   > = () => {
-    return postAuthLogout(fetchOptions);
+    return postAuthLogout(requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1584,13 +1378,13 @@ export type PostAuthLogoutMutationResult = NonNullable<
   Awaited<ReturnType<typeof postAuthLogout>>
 >;
 
-export type PostAuthLogoutMutationError = PostAuthLogout401;
+export type PostAuthLogoutMutationError = ErrorType<PostAuthLogout401>;
 
 /**
  * @summary 로그아웃
  */
 export const usePostAuthLogout = <
-  TError = PostAuthLogout401,
+  TError = ErrorType<PostAuthLogout401>,
   TContext = unknown,
 >(
   options?: {
@@ -1600,7 +1394,7 @@ export const usePostAuthLogout = <
       void,
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
@@ -1616,93 +1410,56 @@ export const usePostAuthLogout = <
  * 새로운 팀을 생성합니다.
  * @summary 팀 생성
  */
-export type postTeamsResponse201 = {
-  data: PostTeams201;
-  status: 201;
-};
-
-export type postTeamsResponse400 = {
-  data: PostTeams400;
-  status: 400;
-};
-
-export type postTeamsResponse401 = {
-  data: PostTeams401;
-  status: 401;
-};
-
-export type postTeamsResponseSuccess = postTeamsResponse201 & {
-  headers: Headers;
-};
-export type postTeamsResponseError = (
-  | postTeamsResponse400
-  | postTeamsResponse401
-) & {
-  headers: Headers;
-};
-
-export type postTeamsResponse =
-  | postTeamsResponseSuccess
-  | postTeamsResponseError;
-
-export const getPostTeamsUrl = () => {
-  return `/teams`;
-};
-
-export const postTeams = async (
-  postTeamsBody?: PostTeamsBody,
-  options?: RequestInit,
-): Promise<postTeamsResponse> => {
-  const res = await fetch(getPostTeamsUrl(), {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(postTeamsBody),
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postTeamsResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as postTeamsResponse;
+export const postTeams = (
+  postTeamsBody?: BodyType<PostTeamsBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PostTeams201>(
+    {
+      url: `/teams`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: postTeamsBody,
+      signal,
+    },
+    options,
+  );
 };
 
 export const getPostTeamsMutationOptions = <
-  TError = PostTeams400 | PostTeams401,
+  TError = ErrorType<PostTeams400 | PostTeams401>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postTeams>>,
     TError,
-    { data?: PostTeamsBody },
+    { data?: BodyType<PostTeamsBody> },
     TContext
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postTeams>>,
   TError,
-  { data?: PostTeamsBody },
+  { data?: BodyType<PostTeamsBody> },
   TContext
 > => {
   const mutationKey = ['postTeams'];
-  const { mutation: mutationOptions, fetch: fetchOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       'mutationKey' in options.mutation &&
       options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, fetch: undefined };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postTeams>>,
-    { data?: PostTeamsBody }
+    { data?: BodyType<PostTeamsBody> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return postTeams(data, fetchOptions);
+    return postTeams(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1711,30 +1468,30 @@ export const getPostTeamsMutationOptions = <
 export type PostTeamsMutationResult = NonNullable<
   Awaited<ReturnType<typeof postTeams>>
 >;
-export type PostTeamsMutationBody = PostTeamsBody | undefined;
-export type PostTeamsMutationError = PostTeams400 | PostTeams401;
+export type PostTeamsMutationBody = BodyType<PostTeamsBody> | undefined;
+export type PostTeamsMutationError = ErrorType<PostTeams400 | PostTeams401>;
 
 /**
  * @summary 팀 생성
  */
 export const usePostTeams = <
-  TError = PostTeams400 | PostTeams401,
+  TError = ErrorType<PostTeams400 | PostTeams401>,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof postTeams>>,
       TError,
-      { data?: PostTeamsBody },
+      { data?: BodyType<PostTeamsBody> },
       TContext
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
   Awaited<ReturnType<typeof postTeams>>,
   TError,
-  { data?: PostTeamsBody },
+  { data?: BodyType<PostTeamsBody> },
   TContext
 > => {
   return useMutation(getPostTeamsMutationOptions(options), queryClient);
@@ -1744,41 +1501,14 @@ export const usePostTeams = <
  * 현재 로그인한 사용자가 속한 팀 목록을 조회합니다.
  * @summary 내가 속한 팀 조회
  */
-export type getTeamsResponse200 = {
-  data: GetTeams200;
-  status: 200;
-};
-
-export type getTeamsResponse401 = {
-  data: GetTeams401;
-  status: 401;
-};
-
-export type getTeamsResponseSuccess = getTeamsResponse200 & {
-  headers: Headers;
-};
-export type getTeamsResponseError = getTeamsResponse401 & {
-  headers: Headers;
-};
-
-export type getTeamsResponse = getTeamsResponseSuccess | getTeamsResponseError;
-
-export const getGetTeamsUrl = () => {
-  return `/teams`;
-};
-
-export const getTeams = async (
-  options?: RequestInit,
-): Promise<getTeamsResponse> => {
-  const res = await fetch(getGetTeamsUrl(), {
-    ...options,
-    method: 'GET',
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: getTeamsResponse['data'] = body ? JSON.parse(body) : {};
-  return { data, status: res.status, headers: res.headers } as getTeamsResponse;
+export const getTeams = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetTeams200>(
+    { url: `/teams`, method: 'GET', signal },
+    options,
+  );
 };
 
 export const getGetTeamsQueryKey = () => {
@@ -1787,20 +1517,20 @@ export const getGetTeamsQueryKey = () => {
 
 export const getGetTeamsQueryOptions = <
   TData = Awaited<ReturnType<typeof getTeams>>,
-  TError = GetTeams401,
+  TError = ErrorType<GetTeams401>,
 >(options?: {
   query?: Partial<
     UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
   >;
-  fetch?: RequestInit;
+  request?: SecondParameter<typeof customInstance>;
 }) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getGetTeamsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getTeams>>> = ({
     signal,
-  }) => getTeams({ signal, ...fetchOptions });
+  }) => getTeams(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getTeams>>,
@@ -1812,11 +1542,11 @@ export const getGetTeamsQueryOptions = <
 export type GetTeamsQueryResult = NonNullable<
   Awaited<ReturnType<typeof getTeams>>
 >;
-export type GetTeamsQueryError = GetTeams401;
+export type GetTeamsQueryError = ErrorType<GetTeams401>;
 
 export function useGetTeams<
   TData = Awaited<ReturnType<typeof getTeams>>,
-  TError = GetTeams401,
+  TError = ErrorType<GetTeams401>,
 >(
   options: {
     query: Partial<
@@ -1830,7 +1560,7 @@ export function useGetTeams<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & {
@@ -1838,7 +1568,7 @@ export function useGetTeams<
 };
 export function useGetTeams<
   TData = Awaited<ReturnType<typeof getTeams>>,
-  TError = GetTeams401,
+  TError = ErrorType<GetTeams401>,
 >(
   options?: {
     query?: Partial<
@@ -1852,7 +1582,7 @@ export function useGetTeams<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -1860,13 +1590,13 @@ export function useGetTeams<
 };
 export function useGetTeams<
   TData = Awaited<ReturnType<typeof getTeams>>,
-  TError = GetTeams401,
+  TError = ErrorType<GetTeams401>,
 >(
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -1878,13 +1608,13 @@ export function useGetTeams<
 
 export function useGetTeams<
   TData = Awaited<ReturnType<typeof getTeams>>,
-  TError = GetTeams401,
+  TError = ErrorType<GetTeams401>,
 >(
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getTeams>>, TError, TData>
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -1904,49 +1634,15 @@ export function useGetTeams<
  * 검색 태그를 이용해 이슈를 검색합니다.
  * @summary 이슈 검색
  */
-export type getIssuesSearchResponse200 = {
-  data: GetIssuesSearch200;
-  status: 200;
-};
-
-export type getIssuesSearchResponseSuccess = getIssuesSearchResponse200 & {
-  headers: Headers;
-};
-export type getIssuesSearchResponse = getIssuesSearchResponseSuccess;
-
-export const getGetIssuesSearchUrl = (params?: GetIssuesSearchParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0
-    ? `/issues/search?${stringifiedParams}`
-    : `/issues/search`;
-};
-
-export const getIssuesSearch = async (
+export const getIssuesSearch = (
   params?: GetIssuesSearchParams,
-  options?: RequestInit,
-): Promise<getIssuesSearchResponse> => {
-  const res = await fetch(getGetIssuesSearchUrl(params), {
-    ...options,
-    method: 'GET',
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: getIssuesSearchResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as getIssuesSearchResponse;
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetIssuesSearch200>(
+    { url: `/issues/search`, method: 'GET', params, signal },
+    options,
+  );
 };
 
 export const getGetIssuesSearchQueryKey = (params?: GetIssuesSearchParams) => {
@@ -1955,7 +1651,7 @@ export const getGetIssuesSearchQueryKey = (params?: GetIssuesSearchParams) => {
 
 export const getGetIssuesSearchQueryOptions = <
   TData = Awaited<ReturnType<typeof getIssuesSearch>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetIssuesSearchParams,
   options?: {
@@ -1966,16 +1662,16 @@ export const getGetIssuesSearchQueryOptions = <
         TData
       >
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getGetIssuesSearchQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getIssuesSearch>>> = ({
     signal,
-  }) => getIssuesSearch(params, { signal, ...fetchOptions });
+  }) => getIssuesSearch(params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getIssuesSearch>>,
@@ -1987,11 +1683,11 @@ export const getGetIssuesSearchQueryOptions = <
 export type GetIssuesSearchQueryResult = NonNullable<
   Awaited<ReturnType<typeof getIssuesSearch>>
 >;
-export type GetIssuesSearchQueryError = unknown;
+export type GetIssuesSearchQueryError = ErrorType<unknown>;
 
 export function useGetIssuesSearch<
   TData = Awaited<ReturnType<typeof getIssuesSearch>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params: undefined | GetIssuesSearchParams,
   options: {
@@ -2010,7 +1706,7 @@ export function useGetIssuesSearch<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & {
@@ -2018,7 +1714,7 @@ export function useGetIssuesSearch<
 };
 export function useGetIssuesSearch<
   TData = Awaited<ReturnType<typeof getIssuesSearch>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetIssuesSearchParams,
   options?: {
@@ -2037,7 +1733,7 @@ export function useGetIssuesSearch<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -2045,7 +1741,7 @@ export function useGetIssuesSearch<
 };
 export function useGetIssuesSearch<
   TData = Awaited<ReturnType<typeof getIssuesSearch>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetIssuesSearchParams,
   options?: {
@@ -2056,7 +1752,7 @@ export function useGetIssuesSearch<
         TData
       >
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -2068,7 +1764,7 @@ export function useGetIssuesSearch<
 
 export function useGetIssuesSearch<
   TData = Awaited<ReturnType<typeof getIssuesSearch>>,
-  TError = unknown,
+  TError = ErrorType<unknown>,
 >(
   params?: GetIssuesSearchParams,
   options?: {
@@ -2079,7 +1775,7 @@ export function useGetIssuesSearch<
         TData
       >
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -2098,60 +1794,15 @@ export function useGetIssuesSearch<
 /**
  * @summary 최신 이슈 피드 조회
  */
-export type getIssuesPublicResponse200 = {
-  data: GetPublicIssuesResponse;
-  status: 200;
-};
-
-export type getIssuesPublicResponse400 = {
-  data: IssueErrorResponse;
-  status: 400;
-};
-
-export type getIssuesPublicResponseSuccess = getIssuesPublicResponse200 & {
-  headers: Headers;
-};
-export type getIssuesPublicResponseError = getIssuesPublicResponse400 & {
-  headers: Headers;
-};
-
-export type getIssuesPublicResponse =
-  | getIssuesPublicResponseSuccess
-  | getIssuesPublicResponseError;
-
-export const getGetIssuesPublicUrl = (params?: GetIssuesPublicParams) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0
-    ? `/issues/public?${stringifiedParams}`
-    : `/issues/public`;
-};
-
-export const getIssuesPublic = async (
+export const getIssuesPublic = (
   params?: GetIssuesPublicParams,
-  options?: RequestInit,
-): Promise<getIssuesPublicResponse> => {
-  const res = await fetch(getGetIssuesPublicUrl(params), {
-    ...options,
-    method: 'GET',
-  });
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: getIssuesPublicResponse['data'] = body ? JSON.parse(body) : {};
-  return {
-    data,
-    status: res.status,
-    headers: res.headers,
-  } as getIssuesPublicResponse;
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetPublicIssuesResponse>(
+    { url: `/issues/public`, method: 'GET', params, signal },
+    options,
+  );
 };
 
 export const getGetIssuesPublicQueryKey = (params?: GetIssuesPublicParams) => {
@@ -2160,7 +1811,7 @@ export const getGetIssuesPublicQueryKey = (params?: GetIssuesPublicParams) => {
 
 export const getGetIssuesPublicQueryOptions = <
   TData = Awaited<ReturnType<typeof getIssuesPublic>>,
-  TError = IssueErrorResponse,
+  TError = ErrorType<PublicBadRequest>,
 >(
   params?: GetIssuesPublicParams,
   options?: {
@@ -2171,16 +1822,16 @@ export const getGetIssuesPublicQueryOptions = <
         TData
       >
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
 ) => {
-  const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getGetIssuesPublicQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getIssuesPublic>>> = ({
     signal,
-  }) => getIssuesPublic(params, { signal, ...fetchOptions });
+  }) => getIssuesPublic(params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getIssuesPublic>>,
@@ -2192,11 +1843,11 @@ export const getGetIssuesPublicQueryOptions = <
 export type GetIssuesPublicQueryResult = NonNullable<
   Awaited<ReturnType<typeof getIssuesPublic>>
 >;
-export type GetIssuesPublicQueryError = IssueErrorResponse;
+export type GetIssuesPublicQueryError = ErrorType<PublicBadRequest>;
 
 export function useGetIssuesPublic<
   TData = Awaited<ReturnType<typeof getIssuesPublic>>,
-  TError = IssueErrorResponse,
+  TError = ErrorType<PublicBadRequest>,
 >(
   params: undefined | GetIssuesPublicParams,
   options: {
@@ -2215,7 +1866,7 @@ export function useGetIssuesPublic<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & {
@@ -2223,7 +1874,7 @@ export function useGetIssuesPublic<
 };
 export function useGetIssuesPublic<
   TData = Awaited<ReturnType<typeof getIssuesPublic>>,
-  TError = IssueErrorResponse,
+  TError = ErrorType<PublicBadRequest>,
 >(
   params?: GetIssuesPublicParams,
   options?: {
@@ -2242,7 +1893,7 @@ export function useGetIssuesPublic<
         >,
         'initialData'
       >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -2250,7 +1901,7 @@ export function useGetIssuesPublic<
 };
 export function useGetIssuesPublic<
   TData = Awaited<ReturnType<typeof getIssuesPublic>>,
-  TError = IssueErrorResponse,
+  TError = ErrorType<PublicBadRequest>,
 >(
   params?: GetIssuesPublicParams,
   options?: {
@@ -2261,7 +1912,7 @@ export function useGetIssuesPublic<
         TData
       >
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -2273,7 +1924,7 @@ export function useGetIssuesPublic<
 
 export function useGetIssuesPublic<
   TData = Awaited<ReturnType<typeof getIssuesPublic>>,
-  TError = IssueErrorResponse,
+  TError = ErrorType<PublicBadRequest>,
 >(
   params?: GetIssuesPublicParams,
   options?: {
@@ -2284,7 +1935,7 @@ export function useGetIssuesPublic<
         TData
       >
     >;
-    fetch?: RequestInit;
+    request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & {
@@ -2299,3 +1950,286 @@ export function useGetIssuesPublic<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * 팀에 속한 특정 이슈의 상세 정보를 조회합니다.
+ * @summary 이슈 상세 조회
+ */
+export const getTeamsTeamIdIssuesIssueId = (
+  teamId: string,
+  issueId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetTeamsTeamIdIssuesIssueId200>(
+    { url: `/teams/${teamId}/issues/${issueId}`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetTeamsTeamIdIssuesIssueIdQueryKey = (
+  teamId: string,
+  issueId: string,
+) => {
+  return [`/teams/${teamId}/issues/${issueId}`] as const;
+};
+
+export const getGetTeamsTeamIdIssuesIssueIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+  TError = ErrorType<DetailBadRequest | NotFound>,
+>(
+  teamId: string,
+  issueId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetTeamsTeamIdIssuesIssueIdQueryKey(teamId, issueId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>
+  > = ({ signal }) =>
+    getTeamsTeamIdIssuesIssueId(teamId, issueId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(teamId && issueId),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsTeamIdIssuesIssueIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>
+>;
+export type GetTeamsTeamIdIssuesIssueIdQueryError = ErrorType<
+  DetailBadRequest | NotFound
+>;
+
+export function useGetTeamsTeamIdIssuesIssueId<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+  TError = ErrorType<DetailBadRequest | NotFound>,
+>(
+  teamId: string,
+  issueId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdIssuesIssueId<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+  TError = ErrorType<DetailBadRequest | NotFound>,
+>(
+  teamId: string,
+  issueId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdIssuesIssueId<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+  TError = ErrorType<DetailBadRequest | NotFound>,
+>(
+  teamId: string,
+  issueId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 이슈 상세 조회
+ */
+
+export function useGetTeamsTeamIdIssuesIssueId<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+  TError = ErrorType<DetailBadRequest | NotFound>,
+>(
+  teamId: string,
+  issueId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdIssuesIssueId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsTeamIdIssuesIssueIdQueryOptions(
+    teamId,
+    issueId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 팀에 새로운 이슈를 등록합니다.
+ * @summary 이슈 등록
+ */
+export const postTeamsTeamIdIssues = (
+  teamId: string,
+  postTeamsTeamIdIssuesBody?: BodyType<PostTeamsTeamIdIssuesBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PostTeamsTeamIdIssues201>(
+    {
+      url: `/teams/${teamId}/issues`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: postTeamsTeamIdIssuesBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostTeamsTeamIdIssuesMutationOptions = <
+  TError = ErrorType<CreateBadRequest | Unauthorized | Forbidden>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postTeamsTeamIdIssues>>,
+    TError,
+    { teamId: string; data?: BodyType<PostTeamsTeamIdIssuesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postTeamsTeamIdIssues>>,
+  TError,
+  { teamId: string; data?: BodyType<PostTeamsTeamIdIssuesBody> },
+  TContext
+> => {
+  const mutationKey = ['postTeamsTeamIdIssues'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postTeamsTeamIdIssues>>,
+    { teamId: string; data?: BodyType<PostTeamsTeamIdIssuesBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return postTeamsTeamIdIssues(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostTeamsTeamIdIssuesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postTeamsTeamIdIssues>>
+>;
+export type PostTeamsTeamIdIssuesMutationBody =
+  | BodyType<PostTeamsTeamIdIssuesBody>
+  | undefined;
+export type PostTeamsTeamIdIssuesMutationError = ErrorType<
+  CreateBadRequest | Unauthorized | Forbidden
+>;
+
+/**
+ * @summary 이슈 등록
+ */
+export const usePostTeamsTeamIdIssues = <
+  TError = ErrorType<CreateBadRequest | Unauthorized | Forbidden>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postTeamsTeamIdIssues>>,
+      TError,
+      { teamId: string; data?: BodyType<PostTeamsTeamIdIssuesBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postTeamsTeamIdIssues>>,
+  TError,
+  { teamId: string; data?: BodyType<PostTeamsTeamIdIssuesBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostTeamsTeamIdIssuesMutationOptions(options),
+    queryClient,
+  );
+};
