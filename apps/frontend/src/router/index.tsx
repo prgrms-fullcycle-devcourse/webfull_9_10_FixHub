@@ -13,6 +13,7 @@ import IssueEdit from '@/pages/IssueEdit';
 import IssueFeed from '@/pages/IssueFeed';
 import CreateTeamPage from '@/pages/teams/CreateTeamPage';
 import AdditionalInfoPage from '@/pages/auth/AdditionalInfoPage';
+import TeamDetailPage from '@/pages/teams/TeamDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: '/', element: <IssueFeed /> },
       { path: '/issues/new', element: <IssueCreate /> },
       { path: '/teams/new', element: <CreateTeamPage /> },
+      { path: '/teams/:teamId', element: <TeamDetailPage /> },
       { path: '/issues/:issueId', element: <IssueDetail /> },
       { path: '/issues/:issueId/edit', element: <IssueEdit /> },
     ],
