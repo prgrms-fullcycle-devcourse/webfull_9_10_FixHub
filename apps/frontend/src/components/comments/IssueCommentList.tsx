@@ -1,8 +1,8 @@
 import { useState } from 'react';
-
 import { MoreHorizontal, Rocket } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import CommonModal from '@/components/ui/CommonModal';
 
 export type IssueCommentItem = {
   id: number;
@@ -43,6 +43,9 @@ function IssueCommentList({
     ? remainingComments
     : remainingComments.slice(0, 3);
   const canAdoptComments = currentUserId === issueAuthorId;
+  const deleteConfirmComment = remainingComments.find(
+    (comment) => comment.id === deleteConfirmCommentId,
+  );
 
   const startEditComment = (comment: IssueCommentItem) => {
     setEditingCommentId(comment.id);
@@ -67,8 +70,15 @@ function IssueCommentList({
     setDeleteConfirmCommentId(null);
   };
 
-  const confirmDeleteComment = (commentId: number) => {
-    setDeletedCommentIds((prevCommentIds) => [...prevCommentIds, commentId]);
+  const confirmDeleteComment = () => {
+    if (deleteConfirmCommentId === null) {
+      return;
+    }
+
+    setDeletedCommentIds((prevCommentIds) => [
+      ...prevCommentIds,
+      deleteConfirmCommentId,
+    ]);
     setDeleteConfirmCommentId(null);
   };
 
@@ -98,7 +108,6 @@ function IssueCommentList({
           <div key={comment.id}>
             {(() => {
               const isEditing = editingCommentId === comment.id;
-              const isDeleteConfirming = deleteConfirmCommentId === comment.id;
               const displayedText =
                 editedCommentTexts[comment.id] ?? comment.text;
               const canEditComment = comment.authorId === currentUserId;
@@ -123,11 +132,7 @@ function IssueCommentList({
                       isEditing
                         ? 'border border-(--primary) shadow-[0_0_18px_rgba(255,248,53,0.2)]'
                         : ''
-                    } ${
-                      isDeleteConfirming
-                        ? 'border border-(--status-error) shadow-[0_0_18px_rgba(228,99,101,0.3)]'
-                        : ''
-                    }`}
+                    } `}
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -145,12 +150,6 @@ function IssueCommentList({
                         {isEditing && (
                           <span className="rounded-sm border px-3 py-1 text-xs text-(--text-secondary)">
                             수정 중
-                          </span>
-                        )}
-
-                        {isDeleteConfirming && (
-                          <span className="rounded-sm border border-(--status-error) px-3 py-1 text-xs text-(--status-error)">
-                            삭제 확인
                           </span>
                         )}
                       </div>
@@ -174,24 +173,22 @@ function IssueCommentList({
                           </button>
                         ) : null}
 
-                        {!isEditing &&
-                          !isDeleteConfirming &&
-                          canEditComment && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              onClick={() =>
-                                setOpenMenuId(
-                                  openMenuId === comment.id ? null : comment.id,
-                                )
-                              }
-                              className="cursor-pointer text-(--text-primary) hover:bg-(--surface-selected)"
-                              aria-label="댓글 메뉴"
-                            >
-                              <MoreHorizontal size={24} />
-                            </Button>
-                          )}
+                        {!isEditing && canEditComment && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() =>
+                              setOpenMenuId(
+                                openMenuId === comment.id ? null : comment.id,
+                              )
+                            }
+                            className="cursor-pointer text-(--text-primary) hover:bg-(--surface-selected)"
+                            aria-label="댓글 메뉴"
+                          >
+                            <MoreHorizontal size={24} />
+                          </Button>
+                        )}
 
                         {openMenuId === comment.id && (
                           <div className="absolute right-0 top-9 z-30 w-32 overflow-hidden rounded-sm border border-border bg-popover typo-regular-14 text-popover-foreground shadow-(--shadow)">
@@ -259,37 +256,6 @@ function IssueCommentList({
                       </p>
                     )}
 
-                    {isDeleteConfirming && !isEditing && (
-                      <div className="mt-4 rounded-md border border-(--status-error) bg-(--surface-overlay) p-4">
-                        <p className="typo-regular-14 leading-6 text-(--text-primary)">
-                          이 댓글을 삭제할까요? 삭제 후에는 댓글 목록에서 보이지
-                          않습니다.
-                        </p>
-
-                        <div className="mt-3 flex justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={cancelDeleteComment}
-                            className="cursor-pointer text-(--text-primary) hover:bg-(--surface-selected)"
-                          >
-                            취소
-                          </Button>
-
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => confirmDeleteComment(comment.id)}
-                            className="cursor-pointer border border-(--status-error) text-(--status-error) hover:bg-(--status-error) hover:text-(--status-error-foreground)"
-                          >
-                            삭제
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
                     <div className="mt-3 flex justify-between text-xs text-(--text-secondary)">
                       <span>2026-04-25(토)</span>
 
@@ -320,6 +286,23 @@ function IssueCommentList({
           </button>
         )}
       </div>
+
+      <CommonModal
+        isOpen={deleteConfirmCommentId !== null}
+        title="댓글 삭제"
+        description={
+          <>
+            {deleteConfirmComment?.name ?? '작성자'}님의 댓글을 삭제할까요?
+            <br />
+            삭제한 댓글은 목록에서 더 이상 보이지 않습니다.
+          </>
+        }
+        cancelText="취소하기"
+        confirmText="삭제하기"
+        onClose={cancelDeleteComment}
+        onConfirm={confirmDeleteComment}
+        confirmButtonClassName="bg-(--status-error) text-(--status-error-foreground) hover:opacity-90"
+      />
     </aside>
   );
 }
