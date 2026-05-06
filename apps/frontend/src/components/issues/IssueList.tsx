@@ -2,8 +2,21 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useGetIssuesSearch } from '@/api/generated';
+import type { IssueSort, IssueStatus } from '@/types/issue';
 
-export default function IssueList() {
+type IssueListProps = {
+  status?: IssueStatus;
+  tags?: string[];
+  sort?: IssueSort;
+  team?: string;
+};
+
+export default function IssueList({
+  status,
+  tags = [],
+  sort,
+  team,
+}: IssueListProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,8 +30,13 @@ export default function IssueList() {
         tokens.push(`${key}:${value}`);
       }
     });
+    if (status) tokens.push(`status:${status}`);
+    tokens.push(...tags.map((tag) => `tag:${tag}`));
+    if (sort) tokens.push(`sort:${sort}`);
+    if (team) tokens.push(`teamId:${team}`);
+    tokens.push(`page:${currentPage}`);
     return tokens.join(' ');
-  }, [searchParams]);
+  }, [searchParams, status, tags, sort, team, currentPage]);
 
   const querySearchString = `${searchString}`.trim();
 
@@ -44,8 +62,8 @@ export default function IssueList() {
     );
   }
 
-  const issues = data.data.data;
-  const totalPages = data.data.meta.totalPages;
+  const issues = data.data;
+  const totalPages = data.meta.totalPages;
 
   if (issues.length === 0) {
     return (

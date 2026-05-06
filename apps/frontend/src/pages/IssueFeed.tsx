@@ -49,7 +49,10 @@ function IssueFeed() {
             onReset={handleReset}
           />
 
-          <IssueList />
+          <IssueList
+            status={selectedStatus === 'ALL' ? undefined : selectedStatus}
+            tags={selectedLanguages}
+          />
         </div>
       </section>
 
