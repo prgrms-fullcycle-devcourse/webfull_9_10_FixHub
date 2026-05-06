@@ -9,6 +9,7 @@ import type {
 import {
   adoptComment,
   createComment,
+  deleteComment as deleteCommentService,
   editComment,
   getComments as getCommentsService,
 } from './comments.service.js';
@@ -65,6 +66,26 @@ export async function patchComment(
     );
 
     return res.status(200).json(comment);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function deleteComment(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const result = await deleteCommentService(
+      {
+        id: req.params.id as string,
+        commentId: req.params.commentId as string,
+      },
+      (req as AuthRequest).userId,
+    );
+
+    return res.status(200).json(result);
   } catch (error) {
     return next(error);
   }
