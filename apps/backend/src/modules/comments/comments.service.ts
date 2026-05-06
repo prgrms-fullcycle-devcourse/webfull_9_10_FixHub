@@ -7,6 +7,8 @@ import type {
   CreateCommentBodyDto,
   CreateCommentParamsDto,
   CreateCommentResponseDto,
+  DeleteCommentParamsDto,
+  DeleteCommentResponseDto,
   GetCommentsParamsDto,
   GetCommentsResponseDto,
   UpdateCommentBodyDto,
@@ -215,6 +217,42 @@ export async function editComment(
     id: updatedComment.id,
     content: updatedComment.content,
     updatedAt: updatedComment.updatedAt.toISOString(),
+  };
+}
+
+export async function deleteComment(
+  params: DeleteCommentParamsDto,
+  userId: string,
+): Promise<DeleteCommentResponseDto> {
+  const comment = await prisma.comment.findFirst({
+    where: {
+      id: params.commentId,
+      issueId: params.id,
+    },
+    select: {
+      id: true,
+      userId: true,
+    },
+  });
+
+  if (!comment) {
+    console.error('deleteComment() - 댓글을 찾을 수 없습니다.');
+    throw Errors.NOT_FOUND;
+  }
+
+  if (comment.userId !== userId) {
+    console.error('deleteComment() - 댓글 작성자만 삭제할 수 있습니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  await prisma.comment.delete({
+    where: {
+      id: comment.id,
+    },
+  });
+
+  return {
+    success: true,
   };
 }
 

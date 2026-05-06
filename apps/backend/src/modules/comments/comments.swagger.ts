@@ -7,6 +7,8 @@ import {
   CreateCommentBodySchema,
   CreateCommentParamsSchema,
   CreateCommentResponseSchema,
+  DeleteCommentParamsSchema,
+  DeleteCommentResponseSchema,
   GetCommentsParamsSchema,
   GetCommentsResponseSchema,
   UpdateCommentBodySchema,
@@ -131,6 +133,52 @@ export function registerCommentsSwagger(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 실패',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '댓글 작성자 권한 없음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '댓글을 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: CommentErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'delete',
+    path: '/issues/{id}/comments/{commentId}',
+    operationId: 'deleteComment',
+    tags: ['Comments'],
+    summary: '댓글 삭제',
+    description: '댓글 작성자가 본인이 작성한 댓글을 삭제합니다.',
+    request: {
+      params: DeleteCommentParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '댓글 삭제 성공',
+        content: {
+          'application/json': {
+            schema: DeleteCommentResponseSchema,
           },
         },
       },

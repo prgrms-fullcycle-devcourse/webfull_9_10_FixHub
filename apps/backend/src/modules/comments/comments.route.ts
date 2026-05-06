@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { authenticate } from '../../common/middlewares/authenticate.js';
 import { validate } from '../../common/middlewares/validator.js';
 import {
+  deleteComment,
   getComments,
   patchComment,
   postAdoptComment,
@@ -26,5 +27,7 @@ router.patch(
   validate(UpdateCommentBodySchema),
   patchComment,
 );
+
+router.delete('/:commentId', authenticate, deleteComment);
 
 export default router;

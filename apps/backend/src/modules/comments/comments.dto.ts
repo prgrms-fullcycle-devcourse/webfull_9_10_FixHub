@@ -107,6 +107,17 @@ export const UpdateCommentResponseSchema = z.object({
   }),
 });
 
+export const DeleteCommentParamsSchema = z.object({
+  id: z.string().min(1),
+  commentId: z.string().min(1),
+});
+
+export const DeleteCommentResponseSchema = z.object({
+  success: z.boolean().openapi({
+    example: true,
+  }),
+});
+
 export const CommentErrorResponseSchema = z.object({
   error: z.object({
     code: z.string().openapi({
@@ -126,6 +137,10 @@ export type CreateCommentParamsDto = z.infer<typeof CreateCommentParamsSchema>;
 export type CreateCommentBodyDto = z.infer<typeof CreateCommentBodySchema>;
 export type CreateCommentResponseDto = z.infer<
   typeof CreateCommentResponseSchema
+>;
+export type DeleteCommentParamsDto = z.infer<typeof DeleteCommentParamsSchema>;
+export type DeleteCommentResponseDto = z.infer<
+  typeof DeleteCommentResponseSchema
 >;
 export type GetCommentsParamsDto = z.infer<typeof GetCommentsParamsSchema>;
 export type GetCommentsResponseDto = z.infer<typeof GetCommentsResponseSchema>;
