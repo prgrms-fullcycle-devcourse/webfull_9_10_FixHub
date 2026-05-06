@@ -20,6 +20,7 @@ export default function IssueList({
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
+  const [prevSearchString, setPrevSearchString] = useState('');
 
   const searchString = useMemo(() => {
     const tokens: string[] = [];
@@ -34,11 +35,15 @@ export default function IssueList({
     tokens.push(...tags.map((tag) => `tag:${tag}`));
     if (sort) tokens.push(`sort:${sort}`);
     if (team) tokens.push(`teamId:${team}`);
-    tokens.push(`page:${currentPage}`);
     return tokens.join(' ');
-  }, [searchParams, status, tags, sort, team, currentPage]);
+  }, [searchParams, status, tags, sort, team]);
 
-  const querySearchString = `${searchString}`.trim();
+  if (prevSearchString !== searchString) {
+    setPrevSearchString(searchString);
+    setCurrentPage(1);
+  }
+
+  const querySearchString = `${searchString} page:${currentPage}`;
 
   const { data, isPending, isError } = useGetIssuesSearch({
     search: querySearchString,
