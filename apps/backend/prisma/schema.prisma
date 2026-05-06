@@ -44,9 +44,10 @@ model ScoreLog {
   teamMemberId String     @map("team_member_id") @db.Uuid
   amount       Int
   reason       String
+  issueId      String?     @map("issue_id") @db.Uuid
   createdAt    DateTime   @default(now()) @map("created_at")
   teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
-
+  issue        ErrorIssue? @relation(fields: [issueId], references: [id], onDelete: SetNull)
   @@map("score_logs")
 }
 
@@ -93,6 +94,7 @@ model ErrorIssue {
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   errorLogs ErrorLog[]
   tags      ErrorIssueTag[]
+  scoreLogs ScoreLog[]
 
   @@map("error_issues")
 }
