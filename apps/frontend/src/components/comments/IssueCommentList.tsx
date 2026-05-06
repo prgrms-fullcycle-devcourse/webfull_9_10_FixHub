@@ -31,19 +31,45 @@ function IssueCommentList({
   const [editedCommentTexts, setEditedCommentTexts] = useState<
     Record<number, string>
   >({});
+  const [deleteConfirmCommentId, setDeleteConfirmCommentId] = useState<
+    number | null
+  >(null);
+  const [deletedCommentIds, setDeletedCommentIds] = useState<number[]>([]);
 
-  const visibleComments = showAllComments ? comments : comments.slice(0, 3);
+  const remainingComments = comments.filter(
+    (comment) => !deletedCommentIds.includes(comment.id),
+  );
+  const visibleComments = showAllComments
+    ? remainingComments
+    : remainingComments.slice(0, 3);
   const canAdoptComments = currentUserId === issueAuthorId;
 
   const startEditComment = (comment: IssueCommentItem) => {
     setEditingCommentId(comment.id);
     setEditingText(editedCommentTexts[comment.id] ?? comment.text);
+    setDeleteConfirmCommentId(null);
     setOpenMenuId(null);
   };
 
   const cancelEditComment = () => {
     setEditingCommentId(null);
     setEditingText('');
+  };
+
+  const startDeleteComment = (commentId: number) => {
+    setDeleteConfirmCommentId(commentId);
+    setEditingCommentId(null);
+    setEditingText('');
+    setOpenMenuId(null);
+  };
+
+  const cancelDeleteComment = () => {
+    setDeleteConfirmCommentId(null);
+  };
+
+  const confirmDeleteComment = (commentId: number) => {
+    setDeletedCommentIds((prevCommentIds) => [...prevCommentIds, commentId]);
+    setDeleteConfirmCommentId(null);
   };
 
   const saveEditedComment = (commentId: number) => {
@@ -64,7 +90,7 @@ function IssueCommentList({
   return (
     <aside className="relative z-10 rounded-lg bg-(--surface-panel) p-5">
       <h2 className="mb-6 typo-semibold-18 text-(--text-primary)">
-        댓글수 {comments.length}
+        댓글수 {remainingComments.length}
       </h2>
 
       <div className="space-y-5">
@@ -72,6 +98,7 @@ function IssueCommentList({
           <div key={comment.id}>
             {(() => {
               const isEditing = editingCommentId === comment.id;
+              const isDeleteConfirming = deleteConfirmCommentId === comment.id;
               const displayedText =
                 editedCommentTexts[comment.id] ?? comment.text;
               const canEditComment = comment.authorId === currentUserId;
@@ -96,6 +123,10 @@ function IssueCommentList({
                       isEditing
                         ? 'border border-(--primary) shadow-[0_0_18px_rgba(255,248,53,0.2)]'
                         : ''
+                    } ${
+                      isDeleteConfirming
+                        ? 'border border-(--status-error) shadow-[0_0_18px_rgba(228,99,101,0.3)]'
+                        : ''
                     }`}
                   >
                     <div className="mb-4 flex items-center justify-between">
@@ -114,6 +145,12 @@ function IssueCommentList({
                         {isEditing && (
                           <span className="rounded-sm border px-3 py-1 text-xs text-(--text-secondary)">
                             수정 중
+                          </span>
+                        )}
+
+                        {isDeleteConfirming && (
+                          <span className="rounded-sm border border-(--status-error) px-3 py-1 text-xs text-(--status-error)">
+                            삭제 확인
                           </span>
                         )}
                       </div>
@@ -137,22 +174,24 @@ function IssueCommentList({
                           </button>
                         ) : null}
 
-                        {!isEditing && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() =>
-                              setOpenMenuId(
-                                openMenuId === comment.id ? null : comment.id,
-                              )
-                            }
-                            className="cursor-pointer text-(--text-primary) hover:bg-(--surface-selected)"
-                            aria-label="댓글 메뉴"
-                          >
-                            <MoreHorizontal size={24} />
-                          </Button>
-                        )}
+                        {!isEditing &&
+                          !isDeleteConfirming &&
+                          canEditComment && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() =>
+                                setOpenMenuId(
+                                  openMenuId === comment.id ? null : comment.id,
+                                )
+                              }
+                              className="cursor-pointer text-(--text-primary) hover:bg-(--surface-selected)"
+                              aria-label="댓글 메뉴"
+                            >
+                              <MoreHorizontal size={24} />
+                            </Button>
+                          )}
 
                         {openMenuId === comment.id && (
                           <div className="absolute right-0 top-9 z-30 w-32 overflow-hidden rounded-sm border border-border bg-popover typo-regular-14 text-popover-foreground shadow-(--shadow)">
@@ -166,16 +205,15 @@ function IssueCommentList({
                               </button>
                             )}
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                alert('댓글 삭제 클릭');
-                                setOpenMenuId(null);
-                              }}
-                              className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
-                            >
-                              삭제
-                            </button>
+                            {canEditComment && (
+                              <button
+                                type="button"
+                                onClick={() => startDeleteComment(comment.id)}
+                                className="block w-full cursor-pointer px-4 py-3 text-left text-(--status-error) hover:bg-(--surface-selected)"
+                              >
+                                삭제
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -221,6 +259,37 @@ function IssueCommentList({
                       </p>
                     )}
 
+                    {isDeleteConfirming && !isEditing && (
+                      <div className="mt-4 rounded-md border border-(--status-error) bg-(--surface-overlay) p-4">
+                        <p className="typo-regular-14 leading-6 text-(--text-primary)">
+                          이 댓글을 삭제할까요? 삭제 후에는 댓글 목록에서 보이지
+                          않습니다.
+                        </p>
+
+                        <div className="mt-3 flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={cancelDeleteComment}
+                            className="cursor-pointer text-(--text-primary) hover:bg-(--surface-selected)"
+                          >
+                            취소
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => confirmDeleteComment(comment.id)}
+                            className="cursor-pointer border border-(--status-error) text-(--status-error) hover:bg-(--status-error) hover:text-(--status-error-foreground)"
+                          >
+                            삭제
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="mt-3 flex justify-between text-xs text-(--text-secondary)">
                       <span>2026-04-25(토)</span>
 
@@ -239,13 +308,15 @@ function IssueCommentList({
           </div>
         ))}
 
-        {comments.length > 3 && (
+        {remainingComments.length > 3 && (
           <button
             type="button"
             onClick={() => setShowAllComments(!showAllComments)}
             className="mt-2 flex w-full cursor-pointer items-center justify-center rounded-sm border border-border bg-(--surface-selected) py-3 typo-regular-14 text-(--text-primary) hover:opacity-90"
           >
-            {showAllComments ? '접기' : `댓글 더보기 (${comments.length - 3})`}
+            {showAllComments
+              ? '접기'
+              : `댓글 더보기 (${remainingComments.length - 3})`}
           </button>
         )}
       </div>
