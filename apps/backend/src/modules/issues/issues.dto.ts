@@ -135,3 +135,44 @@ export const CreateIssueResponseSchema = z.object({
 export type CreateIssueParamsDto = z.infer<typeof CreateIssueParamsSchema>;
 export type CreateIssueBodyDto = z.infer<typeof CreateIssueBodySchema>;
 export type CreateIssueResponseDto = z.infer<typeof CreateIssueResponseSchema>;
+
+/* 이슈 수정 */
+export const UpdateIssueParamsSchema = z.object({
+  teamId: z.uuidv7(),
+  issueId: z.uuidv7(),
+});
+
+export const UpdateIssueBodySchema = z.object({
+  title: z.string().min(1).openapi({ example: '수정된 제목' }),
+  content: z.string().min(1).openapi({ example: '수정된 내용입니다.' }),
+  tags: z.array(z.string().min(1)).openapi({ example: ['BACKEND'] }),
+  isPublic: z.boolean().openapi({ example: false }),
+  logs: z.array(
+    z.object({
+      logType: z.enum(['SENT', 'RECEIVED']).openapi({ example: 'SENT' }),
+      stackTrace: z.string().min(1).openapi({ example: '에러 로그 내용' }),
+    }),
+  ),
+});
+
+export const UpdateIssueResponseSchema = z.object({
+  id: z.string().openapi({ example: 'issue-uuid-010' }),
+  updatedAt: z.string().openapi({ example: '2025-04-22T11:00:00Z' }),
+});
+
+export type UpdateIssueParamsDto = z.infer<typeof UpdateIssueParamsSchema>;
+export type UpdateIssueBodyDto = z.infer<typeof UpdateIssueBodySchema>;
+export type UpdateIssueResponseDto = z.infer<typeof UpdateIssueResponseSchema>;
+
+/* 이슈 삭제 */
+export const DeleteIssueParamsSchema = z.object({
+  teamId: z.uuidv7(),
+  issueId: z.uuidv7(),
+});
+
+export const DeleteIssueResponseSchema = z.object({
+  success: z.boolean().openapi({ example: true }),
+});
+
+export type DeleteIssueParamsDto = z.infer<typeof DeleteIssueParamsSchema>;
+export type DeleteIssueResponseDto = z.infer<typeof DeleteIssueResponseSchema>;

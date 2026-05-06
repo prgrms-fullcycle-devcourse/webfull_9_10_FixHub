@@ -1,14 +1,15 @@
-import { CalendarDays, Globe2, SquarePen, Trash2 } from 'lucide-react';
+import { CalendarDays, Globe2, SquarePen } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import IssueCommentComposer from '@/components/comments/IssueCommentComposer';
 import IssueCommentList, {
   type IssueCommentItem,
 } from '@/components/comments/IssueCommentList';
+import IssueDeleteButton from '@/pages/issue/IssueDeleteButton';
 
 function IssueDetail() {
   const navigate = useNavigate();
-  const { issueId } = useParams();
+  const { issueId, teamId } = useParams();
 
   const isPublic = false;
   const visibilityText = isPublic ? '전체공개' : '비공개';
@@ -90,14 +91,7 @@ function IssueDetail() {
           </div>
 
           <div className="flex items-center gap-5">
-            <button
-              type="button"
-              onClick={() => alert('삭제 버튼 클릭')}
-              className="flex h-16 w-20 cursor-pointer items-center justify-center rounded-md bg-(--surface-overlay) text-(--text-primary) shadow-(--shadow) hover:bg-(--surface-selected)"
-              aria-label="삭제"
-            >
-              <Trash2 size={30} strokeWidth={1.7} />
-            </button>
+            <IssueDeleteButton teamId={teamId} issueId={issueId} />
 
             <button
               type="button"
