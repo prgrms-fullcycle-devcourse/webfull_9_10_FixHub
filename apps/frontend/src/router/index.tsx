@@ -7,12 +7,13 @@ import SignupPage from '@/pages/auth/SignupPage';
 
 // 로그인 후
 import AppLayout from '@/components/layout/AppLayout';
-import IssueCreate from '@/pages/IssueCreate';
-import IssueDetail from '@/pages/IssueDetail';
-import IssueEdit from '@/pages/IssueEdit';
-import IssueFeed from '@/pages/IssueFeed';
+import IssueCreate from '@/pages/issue/IssueCreate';
+import IssueDetail from '@/pages/issue/IssueDetail';
+import IssueEdit from '@/pages/issue/IssueEdit';
+import IssueFeed from '@/pages/issue/IssueFeed';
 import CreateTeamPage from '@/pages/teams/CreateTeamPage';
 import AdditionalInfoPage from '@/pages/auth/AdditionalInfoPage';
+import TeamDetailPage from '@/pages/teams/TeamDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: '/', element: <IssueFeed /> },
       { path: '/issues/new', element: <IssueCreate /> },
       { path: '/teams/new', element: <CreateTeamPage /> },
+      { path: '/teams/:teamId', element: <TeamDetailPage /> },
       { path: '/issues/:issueId', element: <IssueDetail /> },
       { path: '/issues/:issueId/edit', element: <IssueEdit /> },
     ],

@@ -4,6 +4,10 @@
 
 ---
 
+## 🔗 링크 (Links)
+- **프론트**: https://webfull-9-10-fix-hub-frontend.vercel.app
+- **백엔드 api 문서**: https://webfull-9-10-fixhub.onrender.com/api-docs
+
 ## 🛠 기술 스택 (Tech Stack)
 
 ### **Frontend**
@@ -152,4 +156,4 @@ pnpm start      # 프로덕션 실행
 
 ## 문서
 
-- [Orval 가이드](./docs/orval-usage.md): 배포된 OpenAPI URL 기준으로 API client와 TanStack Query 훅을 생성하는 방법
+- [Orval 가이드](./orval-usage.md): 배포된 OpenAPI URL 기준으로 API client와 TanStack Query 훅을 생성하는 방법

@@ -255,7 +255,8 @@ async function main() {
         data: {
           teamMemberId: rewardMember.id,
           amount: faker.number.int({ min: 10, max: 50 }),
-          reason: `이슈 해결 기여 - ${issue.id}`,
+          reason: `이슈 해결 기여`,
+          issueId: issue.id,
           createdAt,
         },
       });

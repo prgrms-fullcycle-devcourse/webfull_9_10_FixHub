@@ -1,9 +1,20 @@
 import { IssueStatus, Prisma } from '@prisma/client';
 
 import prisma from '../../common/config/prisma.js';
+import { Errors } from '../../common/errors/AppError.js';
 import type {
   SearchIssuesQueryObjectDto,
   GetPublicIssuesQuery,
+  GetIssueDetailParamsDto,
+  GetIssueDetailResponseDto,
+  CreateIssueParamsDto,
+  CreateIssueBodyDto,
+  CreateIssueResponseDto,
+  UpdateIssueParamsDto,
+  UpdateIssueBodyDto,
+  UpdateIssueResponseDto,
+  DeleteIssueParamsDto,
+  DeleteIssueResponseDto,
 } from './issues.dto.js';
 
 const KEYS = [
@@ -14,6 +25,7 @@ const KEYS = [
   'content',
   'page',
   'teamId',
+  'sort',
 ] as const;
 type Key = (typeof KEYS)[number];
 
@@ -22,6 +34,7 @@ function parseSearchQuery(input: string) {
     title: [],
     tag: [],
     content: [],
+    sort: 'latest',
   };
 
   const tokens = input.split(/\s+/);
@@ -49,6 +62,10 @@ function parseSearchQuery(input: string) {
         result.author = value;
       } else if (key === 'teamId') {
         result.teamId = value;
+      } else if (key === 'sort') {
+        if (value === 'latest' || value === 'oldest') {
+          result.sort = value;
+        }
       }
     } else {
       result.title.push(key);
@@ -63,7 +80,6 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
 
   andConditions.push(dto.teamId ? { teamId: dto.teamId } : { isPublic: true });
 
-  // title (AND)
   if (dto.title.length > 0) {
     andConditions.push(
       ...dto.title.map((t) => ({
@@ -75,7 +91,6 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
     );
   }
 
-  // content (AND)
   if (dto.content.length > 0) {
     andConditions.push(
       ...dto.content.map((c) => ({
@@ -87,7 +102,6 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
     );
   }
 
-  // author (relation 있을 때)
   if (dto.author) {
     andConditions.push({
       user: {
@@ -99,14 +113,12 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
     });
   }
 
-  // status
   if (dto.status) {
     andConditions.push({
       status: dto.status,
     });
   }
 
-  // tag (AND)
   if (dto.tag.length > 0) {
     andConditions.push(
       ...dto.tag.map((tag) => ({
@@ -119,16 +131,20 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
     );
   }
 
-  // 최종 where 생성
+  const orderBy =
+    dto.sort === 'oldest'
+      ? { createdAt: Prisma.SortOrder.asc }
+      : { createdAt: Prisma.SortOrder.desc };
+
   const where: Prisma.ErrorIssueWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
-  return where;
+  return { where, orderBy };
 }
 
 export async function searchIssues(input: string) {
   const dto = parseSearchQuery(input);
-  const where = buildSearchWhere(dto);
+  const { where, orderBy } = buildSearchWhere(dto);
 
   const page = dto.page ?? 1;
   const itemsPerPage = 10;
@@ -143,7 +159,7 @@ export async function searchIssues(input: string) {
           select: { comments: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       skip: (page - 1) * itemsPerPage,
       take: itemsPerPage,
     }),
@@ -158,9 +174,10 @@ export async function searchIssues(input: string) {
     tag: issue.tags.map((t) => t.tagName),
     status: issue.status,
     commentCount: issue._count.comments,
+    createdAt: issue.createdAt.toISOString(),
   }));
 
-  const response = {
+  return {
     meta: {
       totalItemCount,
       currentItemCount: data.length,
@@ -170,8 +187,6 @@ export async function searchIssues(input: string) {
     },
     data,
   };
-
-  return response;
 }
 
 export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
@@ -192,6 +207,13 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        tags: true,
+        user: true,
+        _count: {
+          select: { comments: true },
+        },
+      },
     }),
   ]);
 
@@ -207,11 +229,259 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
       id: issue.id,
       title: issue.title,
       teamName: '',
-      author: '',
-      tags: [],
+      author: issue.user?.name ?? '',
+      tags: issue.tags.map((tag) => tag.tagName),
       summary: issue.content ?? '',
-      commentCount: 0,
+      commentCount: issue._count.comments,
       createdAt: issue.createdAt.toISOString(),
     })),
+  };
+}
+
+/* 이슈 상세 조회 */
+export async function getIssueDetail({
+  teamId,
+  issueId,
+}: GetIssueDetailParamsDto): Promise<GetIssueDetailResponseDto> {
+  const issue = await prisma.errorIssue.findFirst({
+    where: {
+      id: issueId,
+      teamId,
+    },
+    include: {
+      user: true,
+      tags: true,
+      errorLogs: {
+        orderBy: {
+          capturedAt: 'desc',
+        },
+      },
+    },
+  });
+
+  if (!issue) {
+    console.error('getIssueDetail() - 이슈를 찾을 수 없습니다.');
+    throw Errors.NOT_FOUND;
+  }
+
+  const errorLog = issue.errorLogs
+    .map((log) => log.stackTrace ?? log.message ?? '')
+    .filter((value) => value.length > 0)
+    .join('\n\n');
+
+  return {
+    id: issue.id,
+    title: issue.title,
+    content: issue.content ?? '',
+    tag: issue.tags.map((item) => item.tagName),
+    author: issue.user.name,
+    errorLog,
+    isPublic: issue.isPublic,
+    status: issue.status,
+    logs: issue.errorLogs.map((log, index) => ({
+      logId: `log-uuid-00${index + 1}`,
+      logType: log.logType as 'SENT' | 'RECEIVED',
+      source: log.source,
+      message: log.message ?? '',
+    })),
+  };
+}
+
+/* 이슈 등록 */
+export async function createIssue(
+  userId: string,
+  params: CreateIssueParamsDto,
+  body: CreateIssueBodyDto,
+): Promise<CreateIssueResponseDto> {
+  const teamMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId: params.teamId,
+        userId,
+      },
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!teamMember) {
+    console.error('createIssue() - 팀 멤버 정보를 찾을 수 없습니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  if (teamMember.status !== 'ACTIVE') {
+    console.error('createIssue() - 활성화된 팀 멤버가 아닙니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  const createdIssue = await prisma.errorIssue.create({
+    data: {
+      userId,
+      teamId: params.teamId,
+      title: body.title,
+      content: body.content,
+      isPublic: body.isPublic,
+      tags: {
+        create: body.tag.map((tagName) => ({
+          tagName,
+        })),
+      },
+      errorLogs: {
+        create: body.logs.map((log) => ({
+          logType: log.logType,
+          source: log.source,
+          message: log.message,
+          stackTrace: log.message,
+          capturedAt: new Date(),
+        })),
+      },
+    },
+    select: {
+      id: true,
+      createdAt: true,
+    },
+  });
+
+  return {
+    id: createdIssue.id,
+    createdAt: createdIssue.createdAt.toISOString(),
+  };
+}
+
+/* 이슈 수정 */
+export async function updateIssue(
+  userId: string,
+  params: UpdateIssueParamsDto,
+  body: UpdateIssueBodyDto,
+): Promise<UpdateIssueResponseDto> {
+  const teamMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId: params.teamId,
+        userId,
+      },
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!teamMember) {
+    console.error('updateIssue() - 팀 멤버 정보를 찾을 수 없습니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  if (teamMember.status !== 'ACTIVE') {
+    console.error('updateIssue() - 활성화된 팀 멤버가 아닙니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  const issue = await prisma.errorIssue.findFirst({
+    where: {
+      id: params.issueId,
+      teamId: params.teamId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!issue) {
+    console.error('updateIssue() - 이슈를 찾을 수 없습니다.');
+    throw Errors.NOT_FOUND;
+  }
+
+  const uniqueTags = [...new Set(body.tags)];
+
+  const updatedIssue = await prisma.errorIssue.update({
+    where: {
+      id: issue.id,
+    },
+    data: {
+      title: body.title,
+      content: body.content,
+      isPublic: body.isPublic,
+      tags: {
+        deleteMany: {},
+        create: uniqueTags.map((tagName) => ({
+          tagName,
+        })),
+      },
+      errorLogs: {
+        deleteMany: {},
+        create: body.logs.map((log) => ({
+          logType: log.logType,
+          message: log.stackTrace,
+          stackTrace: log.stackTrace,
+          capturedAt: new Date(),
+        })),
+      },
+    },
+    select: {
+      id: true,
+      updatedAt: true,
+    },
+  });
+
+  return {
+    id: updatedIssue.id,
+    updatedAt: updatedIssue.updatedAt.toISOString(),
+  };
+}
+
+/* 이슈 삭제 */
+export async function deleteIssue(
+  userId: string,
+  params: DeleteIssueParamsDto,
+): Promise<DeleteIssueResponseDto> {
+  const teamMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId: params.teamId,
+        userId,
+      },
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!teamMember) {
+    console.error('deleteIssue() - 팀 멤버 정보를 찾을 수 없습니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  if (teamMember.status !== 'ACTIVE') {
+    console.error('deleteIssue() - 활성화된 팀 멤버가 아닙니다.');
+    throw Errors.FORBIDDEN;
+  }
+
+  const issue = await prisma.errorIssue.findFirst({
+    where: {
+      id: params.issueId,
+      teamId: params.teamId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!issue) {
+    console.error('deleteIssue() - 이슈를 찾을 수 없습니다.');
+    throw Errors.NOT_FOUND;
+  }
+
+  await prisma.errorIssue.delete({
+    where: {
+      id: issue.id,
+    },
+  });
+
+  return {
+    success: true,
   };
 }

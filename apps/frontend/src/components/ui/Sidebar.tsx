@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate, matchPath } from 'react-router-dom';
 
 import HomeIcon from '@/assets/icons/home.svg';
@@ -8,9 +8,17 @@ import PlusIcon from '@/assets/icons/plus.svg';
 import UserIcon from '@/assets/icons/user.svg';
 import LogoutIcon from '@/assets/icons/logout.svg';
 import ArrowIcon from '@/assets/icons/arrow.svg';
+import { useGetTeams } from '@/api/generated';
 
-// 추후 수정: api 요청 필요
-const teams = ['팀 A', '팀 A', '팀 B'];
+// 팀 목록 스켈레톤
+function TeamSkeleton() {
+  return (
+    <div className="flex items-center gap-[10px] px-5 py-[10px] animate-pulse">
+      <div className="size-6 rounded bg-foreground/20" />
+      <div className="h-4 w-32 rounded bg-foreground/20" />
+    </div>
+  );
+}
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,6 +35,42 @@ export default function Sidebar() {
 
   const isTeamCreationActive = isMatch('/teams/new');
 
+  // 내가 속한 팀 조회 API
+  const {
+    data: teamsResponse,
+    isLoading,
+    isError,
+    error,
+  } = useGetTeams({
+    query: {
+      enabled: isOpen,
+      queryFn: async () => {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teams`, {
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error('팀 목록 조회 실패');
+        }
+
+        return res.json();
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (isError) {
+      console.error('useGetTeams ERROR:', error);
+    }
+  }, [isError, error]);
+
+  const teams =
+    teamsResponse &&
+    'data' in teamsResponse &&
+    Array.isArray(teamsResponse.data)
+      ? teamsResponse.data
+      : [];
+
   return (
     <aside
       className="fixed left-0 top-[90px] h-[calc(100vh-90px)] w-[315px]
@@ -34,8 +78,7 @@ export default function Sidebar() {
       border-r border-white
       py-6
       flex flex-col gap-4
-      px-6
-    "
+      px-6"
     >
       <nav className="flex h-full flex-col gap-4">
         <SidebarItem
@@ -60,8 +103,7 @@ export default function Sidebar() {
               m-0
               px-5 py-[10px]
               rounded-sm
-              cursor-pointer
-          "
+              cursor-pointer"
           >
             <span>팀 목록</span>
             <ArrowIcon
@@ -86,11 +128,16 @@ export default function Sidebar() {
                 isOpen ? 'translate-y-0' : '-translate-y-2',
               ].join(' ')}
             >
-              {teams.map((team, index) => (
+              {isLoading &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <TeamSkeleton key={i} />
+                ))}
+              {teams.map((team) => (
                 <SidebarItem
-                  key={`${team}-${index}`}
+                  key={team.teamId}
                   icon={<TeamIcon />}
-                  label={team}
+                  label={team.name}
+                  onClick={() => navigate(`/teams/${team.teamId}`)}
                 />
               ))}
             </div>

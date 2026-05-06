@@ -1,12 +1,42 @@
-import { Bell, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import Logo from '@/assets/logo.svg';
+import NotificationPopover from '@/components/notifications/NotificationPopover';
 
 export default function Header() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const value = e.currentTarget.value;
+
+      const params = new URLSearchParams();
+
+      value
+        .trim()
+        .split(/\s+/)
+        .forEach((token) => {
+          const tokens = token.split(':');
+          const key = tokens[0];
+          if (key === '') return;
+          const value = tokens.slice(1).join(':');
+          if (value === '') {
+            params.append('title', key);
+          } else {
+            params.append(key, value);
+          }
+        });
+
+      navigate(`${location.pathname}?${params.toString()}`);
+    }
+  };
+
   return (
     <header className="flex justify-between items-center w-full border-b border-ring py-4 px-15 fixed bg-main-background/50 text-foreground backdrop-blur-[12px] z-50">
       {/* 로고 */}
-      <Logo className="h-10 w-40" />
+      <Logo className="h-10 w-40" onClick={() => navigate('/')} />
 
       {/* 검색 */}
       <div className="flex justify-start items-center bg-input w-111.5 h-14.5 rounded-[20px] py-3.5 px-5 gap-3">
@@ -15,17 +45,13 @@ export default function Header() {
           type="text"
           className="text-secondary-foreground placeholder-white/50 focus:outline-none text-base"
           placeholder="에러 제목, 태그, 팀, 담당자 검색"
+          onKeyDown={handleKeyDown}
         />
       </div>
 
       {/* 알림, 프로필 */}
       <div className="flex items-center gap-8">
-        <div className="relative">
-          <span className="absolute inline-block rounded-full bg-destructive w-[1.1rem] h-[1.1rem] text-center text-secondary-foreground -right-0.75 -top-1.25 text-xs">
-            1
-          </span>
-          <Bell className="w-8 h-8" />
-        </div>
+        <NotificationPopover />
         <div className="flex justify-end gap-4 items-center">
           <div className="w-12 h-12 rounded-full bg-white">
             <img src="" alt="" />
