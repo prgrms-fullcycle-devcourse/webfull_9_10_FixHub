@@ -20,6 +20,7 @@ const KEYS = [
   'content',
   'page',
   'teamId',
+  'sort',
 ] as const;
 type Key = (typeof KEYS)[number];
 

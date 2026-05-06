@@ -7,7 +7,7 @@ import {
   CreateIssueParamsSchema,
   CreateIssueBodySchema,
 } from './issues.dto.js';
-import { AppError, Errors } from '../../common/errors/AppError.js';
+import { Errors } from '../../common/errors/AppError.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 import {
   searchIssues,
@@ -24,9 +24,8 @@ export async function getIssues(
   const parsedQuery = SearchIssuesQuerySchema.safeParse(req.query);
 
   if (!parsedQuery.success) {
-    return next(
-      new AppError('VALIDATION_ERROR', JSON.stringify(parsedQuery.error), 400),
-    );
+    console.error(parsedQuery.error);
+    return next(Errors.VALIDATION_ERROR);
   }
 
   try {
