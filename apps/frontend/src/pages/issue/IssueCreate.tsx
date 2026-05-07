@@ -1,11 +1,19 @@
 import { useMemo, useState } from 'react';
 import { CircleHelp, FileImage, Plus, Sparkles } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { usePostTeamsTeamIdIssues } from '@/api/generated';
+import IssueMarkdown from '@/components/issues/IssueMarkdown';
 
 const allTags = ['JavaScript', 'Axios', 'React', 'frontend', 'ios'];
 const teamOptions = ['팀 A', '팀 B', '팀 C'];
 const memberOptions = ['김이름', '김하늘', '김병성'];
 
 function IssueCreate() {
+  const navigate = useNavigate();
+  const { teamId } = useParams();
+  const { mutateAsync, isPending } = usePostTeamsTeamIdIssues();
+
   const [title, setTitle] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState(['JavaScript', 'Axios']);
@@ -38,12 +46,70 @@ function IssueCreate() {
     setSelectedTags((prev) => prev.filter((item) => item !== tag));
   };
 
-  const handleCreate = () => {
-    alert('생성하기 클릭');
+  const handleCreate = async () => {
+    if (!teamId) {
+      alert('팀 정보가 없습니다.');
+      return;
+    }
+
+    if (!title.trim()) {
+      alert('제목을 입력하세요.');
+      return;
+    }
+
+    if (!description.trim()) {
+      alert('설명을 입력하세요.');
+      return;
+    }
+
+    if (selectedTags.length === 0) {
+      alert('태그를 1개 이상 선택하세요.');
+      return;
+    }
+
+    const logs = [];
+
+    if (errorLog.trim()) {
+      logs.push({
+        logType: 'SENT' as const,
+        source: 'ErrorLog',
+        message: errorLog.trim(),
+      });
+    }
+
+    if (requestInfo.trim()) {
+      logs.push({
+        logType: 'RECEIVED' as const,
+        source: 'RequestInfo',
+        message: requestInfo.trim(),
+      });
+    }
+
+    try {
+      const response = await mutateAsync({
+        teamId,
+        data: {
+          title: title.trim(),
+          content: description.trim(),
+          tag: selectedTags,
+          isPublic: visibility === 'public',
+          logs,
+        },
+      });
+
+      navigate(`/teams/${teamId}/issues/${response.id}`);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : '이슈 등록 중 오류가 발생했습니다.';
+
+      alert(message);
+    }
   };
 
   const handleCancel = () => {
-    alert('취소하기 클릭');
+    navigate(-1);
   };
 
   const handleAiSummary = () => {
@@ -53,7 +119,6 @@ function IssueCreate() {
   return (
     <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
       <div className="flex flex-col gap-[60px]">
-        {/* 헤더 */}
         <div className="flex items-start justify-between gap-4">
           <h1 className="typo-medium-40">이슈 등록</h1>
 
@@ -63,7 +128,7 @@ function IssueCreate() {
               onClick={handleCancel}
               className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow)"
             >
               취소하기
             </button>
@@ -71,18 +136,17 @@ function IssueCreate() {
             <button
               type="button"
               onClick={handleCreate}
+              disabled={isPending}
               className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
             >
-              생성하기
+              {isPending ? '생성 중...' : '생성하기'}
             </button>
           </div>
         </div>
 
-        {/* 입력 영역 */}
         <div className="flex flex-col gap-8">
-          {/* 제목 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <label className="pt-4 typo-semibold-18 text-(--text-primary)">
               제목 *
@@ -92,10 +156,10 @@ function IssueCreate() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="이슈 제목을 입력하세요."
-              className="h-14 w-full rounded-sm px-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
+              className="h-14 w-full rounded-sm border border-border px-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
                 transition-all duration-300
-                focus:border-white
-                focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                focus:border-primary
+                focus:shadow-(--shadow)"
               style={{
                 background: 'var(--surface-input)',
                 color: 'var(--text-primary)',
@@ -103,7 +167,6 @@ function IssueCreate() {
             />
           </div>
 
-          {/* 분류/태그 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <label className="pt-4 typo-semibold-18 text-(--text-primary)">
               분류/태그 *
@@ -111,10 +174,10 @@ function IssueCreate() {
 
             <div>
               <div
-                className="relative rounded-sm px-4 py-3
+                className="relative rounded-sm border border-border px-4 py-3
                   transition-all duration-300
-                  focus-within:border-white
-                  focus-within:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                  focus-within:border-primary
+                  focus-within:shadow-(--shadow)"
                 style={{
                   background: 'var(--surface-input)',
                   color: 'var(--text-primary)',
@@ -124,7 +187,7 @@ function IssueCreate() {
                   {selectedTags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-2 rounded-sm bg-(--surface-tag) px-3 py-1.5 text-xs text-(--text-primary)"
+                      className="flex items-center gap-2 rounded-sm bg-(--surface-tag) px-3 py-1.5 typo-regular-14 text-(--text-primary)"
                     >
                       {tag}
                       <button
@@ -163,7 +226,6 @@ function IssueCreate() {
             </div>
           </div>
 
-          {/* 설명 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <label className="pt-4 typo-semibold-18 text-(--text-primary)">
               설명
@@ -200,9 +262,9 @@ function IssueCreate() {
                   <button
                     type="button"
                     onClick={handleAiSummary}
-                    className="flex h-14 cursor-pointer items-center gap-2 rounded-full bg-white px-5 typo-medium-16 text-black
+                    className="flex h-14 cursor-pointer items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse)
                       transition-all duration-200 ease-out
-                      hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                      hover:shadow-(--shadow)"
                   >
                     <Sparkles size={16} />
                     AI 도움받기
@@ -214,24 +276,31 @@ function IssueCreate() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="이슈 상세 내용을 입력하세요. (마크다운 지원)"
-                className="min-h-189 w-full resize-none rounded-sm p-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
+                className="min-h-189 w-full resize-none rounded-sm border border-border p-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
                   transition-all duration-300
-                  focus:border-white
-                  focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                  focus:border-primary
+                  focus:shadow-(--shadow)"
                 style={{
                   background: 'var(--surface-input)',
                   color: 'var(--text-primary)',
                 }}
               />
+
+              {description.trim() && (
+                <div className="mt-4 rounded-sm bg-(--surface-panel) p-5">
+                  <p className="mb-3 typo-medium-16 text-(--text-primary)">
+                    미리보기
+                  </p>
+                  <IssueMarkdown content={description} />
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 로그 입력 영역 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <div />
 
             <div className="grid grid-cols-2 gap-5">
-              {/* 에러 로그 */}
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <h2 className="typo-semibold-18 text-(--text-primary)">
@@ -244,10 +313,10 @@ function IssueCreate() {
                   value={errorLog}
                   onChange={(e) => setErrorLog(e.target.value)}
                   placeholder="스택 트레이스, 에러 메시지 등을 붙여넣으세요."
-                  className="h-40 w-full resize-none rounded-sm p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
+                  className="h-40 w-full resize-none rounded-sm border border-border p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
                     transition-all duration-300
-                    focus:border-white
-                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                    focus:border-primary
+                    focus:shadow-(--shadow)"
                   style={{
                     background: 'var(--surface-input)',
                     color: 'var(--text-primary)',
@@ -255,7 +324,6 @@ function IssueCreate() {
                 />
               </div>
 
-              {/* 요청 정보 */}
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <h2 className="typo-semibold-18 text-(--text-primary)">
@@ -268,10 +336,10 @@ function IssueCreate() {
                   value={requestInfo}
                   onChange={(e) => setRequestInfo(e.target.value)}
                   placeholder="요청한 환경/재현 방법/추가 정보 등을 입력하세요."
-                  className="h-40 w-full resize-none rounded-sm p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
+                  className="h-40 w-full resize-none rounded-sm border border-border p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
                     transition-all duration-300
-                    focus:border-white
-                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                    focus:border-primary
+                    focus:shadow-(--shadow)"
                   style={{
                     background: 'var(--surface-input)',
                     color: 'var(--text-primary)',
@@ -281,9 +349,8 @@ function IssueCreate() {
             </div>
           </div>
 
-          <div className="h-px w-full bg-white/40" />
+          <div className="h-px w-full bg-border" />
 
-          {/* 상태 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <label className="pt-3 typo-semibold-18 text-(--text-primary)">
               상태 *
@@ -304,7 +371,7 @@ function IssueCreate() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       issueStatus === 'UNSOLVED'
                         ? 'border-(--status-unsaved)'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {issueStatus === 'UNSOLVED' && (
@@ -336,7 +403,7 @@ function IssueCreate() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       issueStatus === 'SOLVED'
                         ? 'border-(--status-solved)'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {issueStatus === 'SOLVED' && (
@@ -356,9 +423,8 @@ function IssueCreate() {
             </div>
           </div>
 
-          <div className="h-px w-full bg-white/40" />
+          <div className="h-px w-full bg-border" />
 
-          {/* 공개 범위 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
             <label className="pt-3 typo-semibold-18 text-(--text-primary)">
               공개 범위 *
@@ -379,7 +445,7 @@ function IssueCreate() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       visibility === 'public'
                         ? 'border-(--status-solved)'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {visibility === 'public' && (
@@ -411,7 +477,7 @@ function IssueCreate() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       visibility === 'private'
                         ? 'border-primary'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {visibility === 'private' && (
@@ -431,7 +497,6 @@ function IssueCreate() {
             </div>
           </div>
 
-          {/* 팀 선택 영역 */}
           <div className="grid grid-cols-[120px_1fr_1px_120px_1fr] items-center gap-4">
             <label className="typo-semibold-18 text-(--text-primary)">
               팀 선택
@@ -440,10 +505,10 @@ function IssueCreate() {
             <select
               value={team}
               onChange={(e) => setTeam(e.target.value)}
-              className="h-14 w-full cursor-pointer rounded-sm px-4 typo-regular-16 outline-none
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
                 transition-all duration-300
-                focus:border-white
-                focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                focus:border-primary
+                focus:shadow-(--shadow)"
               style={{
                 background: 'var(--surface-input)',
                 color: 'var(--text-primary)',
@@ -455,7 +520,7 @@ function IssueCreate() {
               ))}
             </select>
 
-            <div className="h-14 w-px bg-white/40" />
+            <div className="h-14 w-px bg-border" />
 
             <label className="typo-semibold-18 text-(--text-primary)">
               팀 멤버 선택
@@ -464,10 +529,10 @@ function IssueCreate() {
             <select
               value={member}
               onChange={(e) => setMember(e.target.value)}
-              className="h-14 w-full cursor-pointer rounded-sm px-4 typo-regular-16 outline-none
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
                 transition-all duration-300
-                focus:border-white
-                focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                focus:border-primary
+                focus:shadow-(--shadow)"
               style={{
                 background: 'var(--surface-input)',
                 color: 'var(--text-primary)',
@@ -480,16 +545,15 @@ function IssueCreate() {
             </select>
           </div>
 
-          <div className="h-px w-full bg-white/40" />
+          <div className="h-px w-full bg-border" />
 
-          {/* 하단 버튼 */}
           <div className="flex justify-between pt-[60px]">
             <button
               type="button"
               onClick={handleCancel}
               className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow)"
             >
               취소하기
             </button>
@@ -497,11 +561,12 @@ function IssueCreate() {
             <button
               type="button"
               onClick={handleCreate}
+              disabled={isPending}
               className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
             >
-              생성하기
+              {isPending ? '생성 중...' : '생성하기'}
             </button>
           </div>
         </div>

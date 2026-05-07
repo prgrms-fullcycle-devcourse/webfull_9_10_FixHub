@@ -14,7 +14,7 @@ function IssueDeleteModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-(--surface-overlay) px-4">
       <div className="w-full max-w-md rounded-md bg-(--surface-panel) p-6 shadow-(--shadow)">
         <div className="flex flex-col gap-3">
           <h2 className="typo-semibold-18 text-(--text-primary)">
