@@ -5,6 +5,7 @@ import { Errors } from '../../common/errors/AppError.js';
 import {
   createTeam,
   getMyTeams as getMyTeamsService,
+  getTeamMembers as getTeamMembersService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
@@ -39,6 +40,24 @@ export async function getMyTeams(
   try {
     const userId = (req as AuthRequest).userId;
     const response = await getMyTeamsService(userId);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// 팀원 목록 조회
+export async function getTeamMembers(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await getTeamMembersService(userId, teamId);
 
     return res.status(200).json(response);
   } catch (error) {

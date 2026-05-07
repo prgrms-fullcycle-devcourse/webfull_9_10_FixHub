@@ -5,6 +5,7 @@ import {
   CreateTeamBodySchema,
   CreateTeamResponseSchema,
   GetMyTeamsResponseSchema,
+  GetTeamMembersResponseSchema,
 } from './teams.dto.js';
 
 export const ErrorResponseSchema = z.object({
@@ -15,6 +16,7 @@ export const ErrorResponseSchema = z.object({
 });
 
 export function registerTeamsSwagger(registry: OpenAPIRegistry) {
+  // 팀 생성
   registry.registerPath({
     method: 'post',
     path: '/teams',
@@ -63,6 +65,7 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
     },
   });
 
+  // 내가 속한 팀 조회
   registry.registerPath({
     method: 'get',
     path: '/teams',
@@ -80,6 +83,54 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       401: {
         description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀원 목록 조회
+  registry.registerPath({
+    method: 'get',
+    path: '/teams/{teamId}/members',
+    tags: ['Teams'],
+    summary: '팀원 목록 조회',
+    description: '특정 팀에 속한 팀원 목록을 조회합니다.',
+    request: {
+      params: z.object({
+        teamId: z.uuidv7(),
+      }),
+    },
+    responses: {
+      200: {
+        description: '팀원 목록 조회 성공',
+        content: {
+          'application/json': {
+            schema: GetTeamMembersResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '리소스 없음',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,
