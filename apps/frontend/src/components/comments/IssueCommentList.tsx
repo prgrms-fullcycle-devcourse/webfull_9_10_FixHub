@@ -1,13 +1,17 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Rocket } from 'lucide-react';
 
+import { getGetCommentsQueryKey, useUpdateComment } from '@/api/generated';
 import { Button } from '@/components/ui/button';
 import CommonModal from '@/components/ui/CommonModal';
 
 export type IssueCommentItem = {
   id: string;
-  authorId: string;
-  name: string;
+  author: {
+    id: string;
+    name: string;
+  };
   selected: boolean;
   isReply: boolean;
   text: string;
@@ -15,16 +19,19 @@ export type IssueCommentItem = {
 };
 
 type IssueCommentListProps = {
+  issueId: string;
   comments: IssueCommentItem[];
   currentUserId: string;
-  issueAuthorId: string;
+  isIssueAuthor: boolean;
 };
 
 function IssueCommentList({
+  issueId,
   comments,
   currentUserId,
-  issueAuthorId,
+  isIssueAuthor,
 }: IssueCommentListProps) {
+  const queryClient = useQueryClient();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showAllComments, setShowAllComments] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -43,10 +50,28 @@ function IssueCommentList({
   const visibleComments = showAllComments
     ? remainingComments
     : remainingComments.slice(0, 3);
-  const canAdoptComments = currentUserId === issueAuthorId;
   const deleteConfirmComment = remainingComments.find(
     (comment) => comment.id === deleteConfirmCommentId,
   );
+  const { mutate: updateComment, isPending: isUpdatingComment } =
+    useUpdateComment({
+      mutation: {
+        onSuccess: (updatedComment) => {
+          setEditedCommentTexts((prevTexts) => ({
+            ...prevTexts,
+            [updatedComment.id]: updatedComment.content,
+          }));
+          setEditingCommentId(null);
+          setEditingText('');
+          queryClient.invalidateQueries({
+            queryKey: getGetCommentsQueryKey(issueId),
+          });
+        },
+        onError: () => {
+          alert('댓글 수정에 실패했습니다.');
+        },
+      },
+    });
 
   const startEditComment = (comment: IssueCommentItem) => {
     setEditingCommentId(comment.id);
@@ -86,16 +111,17 @@ function IssueCommentList({
   const saveEditedComment = (commentId: string) => {
     const nextText = editingText.trim();
 
-    if (!nextText) {
+    if (!nextText || !issueId) {
       return;
     }
 
-    setEditedCommentTexts((prevTexts) => ({
-      ...prevTexts,
-      [commentId]: nextText,
-    }));
-    setEditingCommentId(null);
-    setEditingText('');
+    updateComment({
+      id: issueId,
+      commentId,
+      data: {
+        content: nextText,
+      },
+    });
   };
 
   const formatCommentDate = (date: string) => {
@@ -126,7 +152,8 @@ function IssueCommentList({
               const isEditing = editingCommentId === comment.id;
               const displayedText =
                 editedCommentTexts[comment.id] ?? comment.text;
-              const canEditComment = comment.authorId === currentUserId;
+
+              const isCommentAuthor = comment.author.id === currentUserId;
               const canSaveEdit =
                 editingText.trim().length > 0 &&
                 editingText.trim() !== displayedText;
@@ -154,7 +181,7 @@ function IssueCommentList({
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-white" />
                         <span className="typo-medium-16 text-(--text-primary)">
-                          {comment.name}
+                          {comment.author.name}
                         </span>
 
                         {comment.isReply && (
@@ -175,8 +202,8 @@ function IssueCommentList({
                           <span className="rounded-full border-transparent border bg-(--status-unsaved) px-4 py-2 text-xs font-bold text-(--status-error-foreground)">
                             채택 +5
                           </span>
-                        ) : canAdoptComments &&
-                          comment.authorId !== currentUserId ? (
+                        ) : isIssueAuthor &&
+                          comment.author.id !== currentUserId ? (
                           <button
                             type="button"
                             className="flex gap-1 rounded-full border-1 px-4 py-2 text-xs font-bold transition duration-300 hover:bg-(--status-unsaved) hover:border-transparent cursor-pointer"
@@ -189,7 +216,7 @@ function IssueCommentList({
                           </button>
                         ) : null}
 
-                        {!isEditing && canEditComment && (
+                        {!isEditing && isCommentAuthor && (
                           <Button
                             type="button"
                             variant="ghost"
@@ -208,24 +235,23 @@ function IssueCommentList({
 
                         {openMenuId === comment.id && (
                           <div className="absolute right-0 top-9 z-30 w-32 overflow-hidden rounded-sm border border-border bg-popover typo-regular-14 text-popover-foreground shadow-(--shadow)">
-                            {canEditComment && (
-                              <button
-                                type="button"
-                                onClick={() => startEditComment(comment)}
-                                className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
-                              >
-                                수정
-                              </button>
-                            )}
-
-                            {canEditComment && (
-                              <button
-                                type="button"
-                                onClick={() => startDeleteComment(comment.id)}
-                                className="block w-full cursor-pointer px-4 py-3 text-left text-(--status-error) hover:bg-(--surface-selected)"
-                              >
-                                삭제
-                              </button>
+                            {isCommentAuthor && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => startEditComment(comment)}
+                                  className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => startDeleteComment(comment.id)}
+                                  className="block w-full cursor-pointer px-4 py-3 text-left text-(--status-error) hover:bg-(--surface-selected)"
+                                >
+                                  삭제
+                                </button>
+                              </>
                             )}
                           </div>
                         )}
@@ -258,11 +284,11 @@ function IssueCommentList({
                           <Button
                             type="button"
                             size="sm"
-                            disabled={!canSaveEdit}
+                            disabled={!canSaveEdit || isUpdatingComment}
                             onClick={() => saveEditedComment(comment.id)}
                             className="cursor-pointer bg-(--primary) text-(--primary-foreground) hover:opacity-90 disabled:cursor-not-allowed"
                           >
-                            저장
+                            {isUpdatingComment ? '저장 중' : '저장'}
                           </Button>
                         </div>
                       </div>
@@ -308,7 +334,8 @@ function IssueCommentList({
         title="댓글 삭제"
         description={
           <>
-            {deleteConfirmComment?.name ?? '작성자'}님의 댓글을 삭제할까요?
+            {deleteConfirmComment?.author.name ?? '작성자'}님의 댓글을
+            삭제할까요?
             <br />
             삭제한 댓글은 목록에서 더 이상 보이지 않습니다.
           </>
