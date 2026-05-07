@@ -172,7 +172,7 @@ function IssueDetail() {
       </div>
 
       <div className="min-[1334px]:col-start-1">
-        <IssueCommentComposer />
+        <IssueCommentComposer issueId={issueId} />
       </div>
     </section>
   );
