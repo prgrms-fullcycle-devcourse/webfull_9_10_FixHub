@@ -4,6 +4,7 @@ import { MoreHorizontal, Rocket } from 'lucide-react';
 
 import {
   getGetCommentsQueryKey,
+  useAdoptComment,
   useDeleteComment,
   useUpdateComment,
 } from '@/api/generated';
@@ -47,6 +48,11 @@ function IssueCommentList({
     string | null
   >(null);
   const [deletedCommentIds, setDeletedCommentIds] = useState<string[]>([]);
+  const [adoptedCommentId, setAdoptedCommentId] = useState<string | null>(null);
+  const [adoptingCommentId, setAdoptingCommentId] = useState<string | null>(
+    null,
+  );
+  const [isAdoptErrorModalOpen, setIsAdoptErrorModalOpen] = useState(false);
 
   const remainingComments = comments.filter(
     (comment) => !deletedCommentIds.includes(comment.id),
@@ -54,9 +60,29 @@ function IssueCommentList({
   const visibleComments = showAllComments
     ? remainingComments
     : remainingComments.slice(0, 3);
+  const hasAdoptedComment = remainingComments.some(
+    (comment) => comment.selected || comment.id === adoptedCommentId,
+  );
   const deleteConfirmComment = remainingComments.find(
     (comment) => comment.id === deleteConfirmCommentId,
   );
+  const { mutate: adoptComment, isPending: isAdoptingComment } =
+    useAdoptComment({
+      mutation: {
+        onSuccess: (adoptedComment, variables) => {
+          setAdoptedCommentId(adoptedComment.commentId ?? variables.commentId);
+          queryClient.invalidateQueries({
+            queryKey: getGetCommentsQueryKey(issueId),
+          });
+        },
+        onError: () => {
+          setIsAdoptErrorModalOpen(true);
+        },
+        onSettled: () => {
+          setAdoptingCommentId(null);
+        },
+      },
+    });
   const { mutate: updateComment, isPending: isUpdatingComment } =
     useUpdateComment({
       mutation: {
@@ -118,6 +144,18 @@ function IssueCommentList({
     setDeleteConfirmCommentId(null);
   };
 
+  const handleAdoptComment = (commentId: string) => {
+    if (!issueId || isAdoptingComment) {
+      return;
+    }
+
+    setAdoptingCommentId(commentId);
+    adoptComment({
+      id: issueId,
+      commentId,
+    });
+  };
+
   const confirmDeleteComment = () => {
     if (deleteConfirmCommentId === null || isDeletingComment || !issueId) {
       return;
@@ -175,6 +213,10 @@ function IssueCommentList({
                 editedCommentTexts[comment.id] ?? comment.text;
 
               const isCommentAuthor = comment.author.id === currentUserId;
+              const isSelectedComment =
+                comment.selected || adoptedCommentId === comment.id;
+              const canAdoptComment =
+                isIssueAuthor && !isCommentAuthor && !hasAdoptedComment;
               const canSaveEdit =
                 editingText.trim().length > 0 &&
                 editingText.trim() !== displayedText;
@@ -189,7 +231,7 @@ function IssueCommentList({
 
                   <div
                     className={`rounded-md bg-(--surface-comment) p-5 ${
-                      comment.selected
+                      isSelectedComment
                         ? 'border border-(--status-unsaved) shadow-[0_0_18px_rgba(228,99,101,0.35)]'
                         : ''
                     } ${
@@ -219,20 +261,20 @@ function IssueCommentList({
                       </div>
 
                       <div className="relative flex items-center gap-3">
-                        {comment.selected ? (
+                        {isSelectedComment ? (
                           <span className="rounded-full border-transparent border bg-(--status-unsaved) px-4 py-2 text-xs font-bold text-(--status-error-foreground)">
-                            채택 +5
+                            채택 +10
                           </span>
-                        ) : isIssueAuthor &&
-                          comment.author.id !== currentUserId ? (
+                        ) : canAdoptComment ? (
                           <button
                             type="button"
+                            disabled={isAdoptingComment}
                             className="flex gap-1 rounded-full border-1 px-4 py-2 text-xs font-bold transition duration-300 hover:bg-(--status-unsaved) hover:border-transparent cursor-pointer"
-                            onClick={() => {
-                              alert('채택하기 클릭');
-                            }}
+                            onClick={() => handleAdoptComment(comment.id)}
                           >
-                            채택
+                            {adoptingCommentId === comment.id
+                              ? '채택 중'
+                              : '채택'}
                             <Rocket size={18} />
                           </button>
                         ) : null}
@@ -366,6 +408,15 @@ function IssueCommentList({
         onClose={cancelDeleteComment}
         onConfirm={confirmDeleteComment}
         confirmButtonClassName="bg-(--status-error) text-(--status-error-foreground) hover:opacity-90"
+      />
+
+      <CommonModal
+        isOpen={isAdoptErrorModalOpen}
+        title="댓글 채택 실패"
+        description="댓글을 채택하지 못했습니다. 잠시 후 다시 시도해주세요."
+        confirmText="확인하기"
+        onClose={() => setIsAdoptErrorModalOpen(false)}
+        showCancelButton={false}
       />
     </aside>
   );
