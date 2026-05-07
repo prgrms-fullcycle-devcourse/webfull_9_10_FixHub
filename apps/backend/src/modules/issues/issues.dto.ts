@@ -176,3 +176,19 @@ export const DeleteIssueResponseSchema = z.object({
 
 export type DeleteIssueParamsDto = z.infer<typeof DeleteIssueParamsSchema>;
 export type DeleteIssueResponseDto = z.infer<typeof DeleteIssueResponseSchema>;
+
+/* ai 이슈 자동 생성 */
+export const SuggestIssueBodySchema = z.object({
+  errorLog: z.string().min(1),
+});
+
+export const SuggestIssueResponseSchema = z.object({
+  title: z.string(),
+  tags: z.array(z.string()),
+  summary: z.string(),
+});
+
+export type SuggestIssueBodyDto = z.infer<typeof SuggestIssueBodySchema>;
+export type SuggestIssueResponseDto = z.infer<
+  typeof SuggestIssueResponseSchema
+>;

@@ -7,6 +7,7 @@ import {
   postIssue,
   patchIssue,
   removeIssue,
+  suggestIssue,
 } from './issues.controller.js';
 import { authenticate } from '../../common/middlewares/authenticate.js';
 
@@ -14,6 +15,7 @@ const router = Router();
 
 router.get('/search', getIssues);
 router.get('/public', getPublicIssues);
+router.post('/suggest', suggestIssue);
 
 /* 이슈 상세 조회 */
 router.get('/teams/:teamId/issues/:issueId', getIssueDetail);

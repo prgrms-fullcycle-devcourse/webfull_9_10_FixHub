@@ -1,20 +1,23 @@
 import { IssueStatus, Prisma } from '@prisma/client';
+import OpenAI from 'openai';
 
 import prisma from '../../common/config/prisma.js';
-import { Errors } from '../../common/errors/AppError.js';
-import type {
-  SearchIssuesQueryObjectDto,
-  GetPublicIssuesQuery,
-  GetIssueDetailParamsDto,
-  GetIssueDetailResponseDto,
-  CreateIssueParamsDto,
-  CreateIssueBodyDto,
-  CreateIssueResponseDto,
-  UpdateIssueParamsDto,
-  UpdateIssueBodyDto,
-  UpdateIssueResponseDto,
-  DeleteIssueParamsDto,
-  DeleteIssueResponseDto,
+import { AppError, Errors } from '../../common/errors/AppError.js';
+import {
+  type SearchIssuesQueryObjectDto,
+  type GetPublicIssuesQuery,
+  type GetIssueDetailParamsDto,
+  type GetIssueDetailResponseDto,
+  type CreateIssueParamsDto,
+  type CreateIssueBodyDto,
+  type CreateIssueResponseDto,
+  type UpdateIssueParamsDto,
+  type UpdateIssueBodyDto,
+  type UpdateIssueResponseDto,
+  type DeleteIssueParamsDto,
+  type DeleteIssueResponseDto,
+  SuggestIssueResponseSchema,
+  SuggestIssueResponseDto,
 } from './issues.dto.js';
 
 const KEYS = [
@@ -484,4 +487,49 @@ export async function deleteIssue(
   return {
     success: true,
   };
+}
+
+const systemPrompt = `
+You are a strict JSON generator.
+You are an issue analyzer.
+
+Rules:
+- Title: max 8 words
+- Tags: 2~3 lowercase English words
+- Summary: 1 sentence
+- Return JSON only
+
+Output format:
+{
+  "title": "",
+  "tags": [],
+  "summary": ""
+}`;
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function generateIssue(
+  log: string,
+): Promise<SuggestIssueResponseDto> {
+  const res = await openai.chat.completions.create({
+    model: 'gpt-5.4-nano',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: log },
+    ],
+    temperature: 0.2,
+    max_tokens: 300,
+  });
+
+  const text = res.choices[0].message.content ?? '';
+
+  // JSON 파싱 + 검증
+  try {
+    const json = JSON.parse(text);
+    return SuggestIssueResponseSchema.parse(json);
+  } catch (_e) {
+    throw new AppError('502 Bad Gateway', 'Openai Error', 502);
+  }
 }
