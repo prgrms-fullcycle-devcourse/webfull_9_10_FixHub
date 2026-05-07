@@ -3,14 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   useGetComments,
+  useGetTeamsTeamIdIssuesIssueId,
   type GetComments200DataItem,
   type GetComments200DataItemRepliesItem,
+  GetTeamsTeamIdIssuesIssueId200Status,
 } from '@/api/generated';
 import IssueCommentComposer from '@/components/comments/IssueCommentComposer';
 import IssueCommentList, {
   type IssueCommentItem,
 } from '@/components/comments/IssueCommentList';
 import IssueDeleteButton from '@/pages/issue/IssueDeleteButton';
+import IssueMarkdown from '@/components/issues/IssueMarkdown';
 
 type ApiCommentItem =
   | GetComments200DataItem
@@ -37,9 +40,19 @@ function mapCommentToIssueCommentItem(
 function IssueDetail() {
   const navigate = useNavigate();
   // TODO: 이슈 상세 API 연결 전까지 임시로 데이터를 불러오기위함
-  // const { issueId, teamId } = useParams();
-  const issueId = 'dbca8c89-674b-4e33-ab57-1b757152327c';
-  const { teamId } = useParams();
+  const { issueId, teamId } = useParams();
+  // const issueId = 'dbca8c89-674b-4e33-ab57-1b757152327c';
+  // const { teamId } = useParams();
+
+  const {
+    data: issue,
+    isPending: isIssuePending,
+    isError: isIssueError,
+  } = useGetTeamsTeamIdIssuesIssueId(teamId ?? '', issueId ?? '', {
+    query: {
+      enabled: Boolean(teamId && issueId),
+    },
+  });
 
   const {
     data: commentsResponse,
@@ -51,6 +64,26 @@ function IssueDetail() {
       refetchOnMount: 'always',
     },
   });
+
+  if (isIssuePending || !issue) {
+    return (
+      <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
+        <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
+          불러오는 중...
+        </div>
+      </section>
+    );
+  }
+
+  if (isIssueError) {
+    return (
+      <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
+        <div className="py-10 text-center typo-regular-14 text-(--status-error)">
+          이슈 상세 정보를 불러오지 못했습니다.
+        </div>
+      </section>
+    );
+  }
 
   const isPublic = false;
   const visibilityText = isPublic ? '전체공개' : '비공개';
@@ -66,6 +99,22 @@ function IssueDetail() {
       ),
     ]) ?? [];
 
+  const statusClass =
+    issue.status === GetTeamsTeamIdIssuesIssueId200Status.SOLVED
+      ? 'bg-(--status-solved) text-success-foreground'
+      : 'bg-(--status-unsaved) text-(--text-primary)';
+
+  const statusText =
+    issue.status === GetTeamsTeamIdIssuesIssueId200Status.SOLVED
+      ? '해결'
+      : '미해결';
+
+  const requestInfoText =
+    issue.logs
+      .filter((log) => log.logType === 'RECEIVED')
+      .map((log) => log.message)
+      .join('\n\n') || '요청 정보가 없습니다.';
+
   return (
     <section className="relative grid min-h-[calc(100vh-90px)] w-full flex-1 gap-[60px] overflow-hidden px-[60px] pt-[60px] pb-[60px] text-(--text-primary) min-[1334px]:grid-cols-[minmax(0,1fr)_410px]">
       <div className="relative z-10 flex flex-col gap-[60px]">
@@ -73,22 +122,25 @@ function IssueDetail() {
           <div className="flex flex-col gap-8">
             <div className="flex items-center gap-4">
               <h1 className="typo-semibold-18 text-(--text-primary)">
-                로그인 시 500 에러 발생
+                {issue.title}
               </h1>
 
-              <span className="rounded-full bg-(--status-solved) px-4 py-1 typo-regular-14 text-success-foreground">
-                해결
+              <span
+                className={`rounded-full px-4 py-1 typo-regular-14 ${statusClass}`}
+              >
+                {statusText}
               </span>
             </div>
 
             <div className="flex gap-3">
-              <span className="rounded-sm bg-(--surface-tag) px-5 py-2.5 typo-regular-14 text-(--text-primary)">
-                Axios
-              </span>
-
-              <span className="rounded-sm bg-(--surface-tag) px-5 py-2.5 typo-regular-14 text-(--text-primary)">
-                JavaScript
-              </span>
+              {issue.tag.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-sm bg-(--surface-tag) px-5 py-2.5 typo-regular-14 text-(--text-primary)"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
 
             <div className="flex items-center gap-3 typo-regular-14 text-(--text-primary)">
@@ -102,7 +154,9 @@ function IssueDetail() {
 
             <button
               type="button"
-              onClick={() => navigate(`/issues/${issueId}/edit`)}
+              onClick={() =>
+                navigate(`/teams/${teamId}/issues/${issueId}/edit`)
+              }
               className="flex h-16 w-20 cursor-pointer items-center justify-center rounded-md bg-(--surface-overlay) text-(--text-primary) shadow-(--shadow) hover:bg-(--surface-selected)"
               aria-label="수정"
             >
@@ -113,22 +167,18 @@ function IssueDetail() {
 
         <div className="flex justify-between typo-regular-14 text-(--text-secondary)">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-full bg-white" />
-            <span>김이름</span>
+            <div className="h-11 w-11 rounded-full bg-(--surface-selected)" />
+            <span>{issue.author}</span>
           </div>
 
           <div className="flex items-center gap-2 typo-regular-14 text-(--text-primary)">
             <CalendarDays size={22} strokeWidth={1.8} />
-            <span>2026-04-25(토)</span>
+            <span>-</span>
           </div>
         </div>
 
-        <div className="min-h-47.5 rounded-md bg-(--surface-panel) p-7 typo-regular-14 leading-8 text-(--text-primary)">
-          네트워크단 Description에 여기서 나타내는 내용으로 입력합니다. 500에서
-          에러가 발생합니다. 내용을 넣습니다 Description에 여기서 나타내는
-          내용으로 넣습니다. 500에서 에러가 발생합니다. 내용을 넣습니다
-          Description에 여기서 나타내는 내용으로 넣습니다. 500에서 에러가
-          발생합니다. 내용입니다. TTT
+        <div className="min-h-47.5 rounded-md bg-(--surface-panel) p-7">
+          <IssueMarkdown content={issue.content} />
         </div>
 
         <div className="grid grid-cols-2 gap-5">
@@ -137,8 +187,8 @@ function IssueDetail() {
               에러 로그
             </h2>
 
-            <div className="h-57.5 rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary)">
-              {'{여기는 에러로그에 시도하며 자동 코드가 보였야 할 영역입니다}'}
+            <div className="h-57.5 rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary) whitespace-pre-wrap">
+              {issue.errorLog || '에러 로그가 없습니다.'}
             </div>
           </div>
 
@@ -147,10 +197,8 @@ function IssueDetail() {
               요청 정보
             </h2>
 
-            <div className="h-57.5 rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary)">
-              {
-                '{여기는 클라이언트에서 서버 API를 호출한 기록이 보일 영역입니다}'
-              }
+            <div className="h-57.5 rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary) whitespace-pre-wrap">
+              {requestInfoText}
             </div>
           </div>
         </div>
@@ -167,16 +215,16 @@ function IssueDetail() {
           </aside>
         ) : (
           <IssueCommentList
-            issueId={issueId}
             comments={comments}
             currentUserId={currentUserId}
             isIssueAuthor={isIssueAuthor}
+            issueId={issueId ?? ''}
           />
         )}
       </div>
 
       <div className="min-[1334px]:col-start-1">
-        <IssueCommentComposer issueId={issueId} />
+        <IssueCommentComposer issueId={issueId ?? ''} />
       </div>
     </section>
   );

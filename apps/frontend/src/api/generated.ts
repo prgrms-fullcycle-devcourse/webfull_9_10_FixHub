@@ -33,6 +33,7 @@ export type GetPublicIssuesResponseMeta = {
 
 export interface PublicIssueItem {
   id: string;
+  teamId: string;
   title: string;
   teamName: string;
   author: string;
@@ -498,21 +499,14 @@ export type GetIssuesSearch200Meta = {
   totalPages: number;
 };
 
-export type GetIssuesSearch200DataItemStatus =
-  (typeof GetIssuesSearch200DataItemStatus)[keyof typeof GetIssuesSearch200DataItemStatus];
-
-export const GetIssuesSearch200DataItemStatus = {
-  UNSOLVED: 'UNSOLVED',
-  SOLVED: 'SOLVED',
-} as const;
-
 export type GetIssuesSearch200DataItem = {
   id: string;
+  teamId: string;
   title: string;
   teamName: string;
   author: string;
-  tag: string[];
-  status: GetIssuesSearch200DataItemStatus;
+  tags: string[];
+  summary: string;
   commentCount: number;
   createdAt: string;
 };

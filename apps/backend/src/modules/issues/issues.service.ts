@@ -29,6 +29,24 @@ const KEYS = [
 ] as const;
 type Key = (typeof KEYS)[number];
 
+function toPlainSummary(content: string) {
+  return content
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/~~([^~]+)~~/g, '$1')
+    .replace(/^\s*[-+*]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/>\s?/g, '')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120);
+}
+
 function parseSearchQuery(input: string) {
   const result: SearchIssuesQueryObjectDto = {
     title: [],
@@ -210,6 +228,7 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
       include: {
         tags: true,
         user: true,
+        team: true,
         _count: {
           select: { comments: true },
         },
@@ -227,11 +246,12 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
     },
     data: issues.map((issue) => ({
       id: issue.id,
+      teamId: issue.teamId,
       title: issue.title,
-      teamName: '',
+      teamName: issue.team.name,
       author: issue.user?.name ?? '',
       tags: issue.tags.map((tag) => tag.tagName),
-      summary: issue.content ?? '',
+      summary: toPlainSummary(issue.content ?? ''),
       commentCount: issue._count.comments,
       createdAt: issue.createdAt.toISOString(),
     })),

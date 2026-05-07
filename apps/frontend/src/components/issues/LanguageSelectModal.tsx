@@ -8,29 +8,50 @@ interface LanguageSelectModalProps {
 }
 
 const languageOptions = [
-  'python',
-  'javascript',
-  'c#',
-  'reactjs',
-  'java',
-  'android',
-  'html',
-  'flutter',
-  'c++',
-  'node.js',
-  'typescript',
-  'css',
-  'r',
-  'php',
-  'angular',
-  'next.js',
-  'spring-boot',
-  'machine-learning',
-  'sql',
-  'excel',
-  'ios',
-  'azure',
-  'docker',
+  'Python',
+  'JavaScript',
+  'TypeScript',
+  'Java',
+  'C',
+  'C++',
+  'C#',
+  'Go',
+  'Rust',
+  'Kotlin',
+  'Swift',
+  'Php',
+  'Ruby',
+  'R',
+  'Scala',
+  'Html',
+  'CSS',
+  'React',
+  'Reactjs',
+  'Next.js',
+  'Vue',
+  'Angular',
+  'Node.js',
+  'Express',
+  'Spring',
+  'Spring-boot',
+  'Nestjs',
+  'Flutter',
+  'Android',
+  'Ios',
+  'DB',
+  'SQL',
+  'Mysql',
+  'PostgreSQL',
+  'Mongodb',
+  'Redis',
+  'Docker',
+  'Kubernetes',
+  'Aws',
+  'Azure',
+  'Git',
+  'Github',
+  'Machine-Learning',
+  'Excel',
 ];
 
 function LanguageSelectModal({
@@ -50,6 +71,11 @@ function LanguageSelectModal({
       language.toLowerCase().includes(searchKeyword.toLowerCase()),
     );
   }, [searchKeyword]);
+
+  const normalizedSelectedLanguages = useMemo(
+    () => selectedLanguages.map((language) => language.toLowerCase()),
+    [selectedLanguages],
+  );
 
   if (!isOpen) {
     return null;
@@ -88,13 +114,20 @@ function LanguageSelectModal({
 
         <div className="mb-6 flex max-h-[240px] flex-wrap gap-2 overflow-y-auto">
           {filteredLanguages.map((language) => {
-            const isSelected = selectedLanguages.includes(language);
+            const normalizedLanguage = language.toLowerCase();
+            const isSelected =
+              normalizedSelectedLanguages.includes(normalizedLanguage);
+
+            const matchedLanguage = selectedLanguages.find(
+              (selectedLanguage) =>
+                selectedLanguage.toLowerCase() === normalizedLanguage,
+            );
 
             return (
               <button
                 key={language}
                 type="button"
-                onClick={() => onToggleLanguage(language)}
+                onClick={() => onToggleLanguage(matchedLanguage ?? language)}
                 className={`cursor-pointer rounded-sm px-3 py-2 typo-regular-14 transition ${
                   isSelected
                     ? 'bg-primary text-(--text-inverse)'
