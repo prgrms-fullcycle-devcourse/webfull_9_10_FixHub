@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import IssueDeleteModal from '@/pages/issue/IssueDeleteModal';
-// import { useDeleteIssue } from '@/hooks/useDeleteIssue';
+import { useDeleteIssue } from '@/hooks/useDeleteIssue';
 
 interface IssueDeleteButtonProps {
   teamId?: string;
@@ -14,32 +15,30 @@ function IssueDeleteButton({
   issueId: _issueId,
 }: IssueDeleteButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
-  // const { mutate, isPending } = useDeleteIssue();
-  const isPending = false;
+  const { mutate, isPending } = useDeleteIssue();
 
   const handleConfirmDelete = () => {
-    // if (!_teamId || !_issueId) return;
+    if (!_teamId || !_issueId) return;
 
-    // mutate(
-    //   { teamId: _teamId, issueId: _issueId },
-    //   {
-    //     onSuccess: () => {
-    //       setIsOpen(false);
-    //     },
-    //     onError: (error) => {
-    //       const message =
-    //         error instanceof Error
-    //           ? error.message
-    //           : '이슈 삭제 중 오류가 발생했습니다.';
-    //
-    //       alert(message);
-    //     },
-    //   },
-    // );
+    mutate(
+      { teamId: _teamId, issueId: _issueId },
+      {
+        onSuccess: () => {
+          setIsOpen(false);
+          navigate('/');
+        },
+        onError: (error) => {
+          const message =
+            error instanceof Error
+              ? error.message
+              : '이슈 삭제 중 오류가 발생했습니다.';
 
-    alert('삭제 UI만 구현된 상태입니다.');
-    setIsOpen(false);
+          alert(message);
+        },
+      },
+    );
   };
 
   return (

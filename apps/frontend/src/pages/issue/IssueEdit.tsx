@@ -1,23 +1,88 @@
 import { useMemo, useState } from 'react';
 import { CircleHelp, FileImage, Plus, Sparkles } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import {
+  useGetTeamsTeamIdIssuesIssueId,
+  usePatchTeamsTeamIdIssuesIssueId,
+} from '@/api/generated';
+import IssueMarkdown from '@/components/issues/IssueMarkdown';
 
 const allTags = ['JavaScript', 'Axios', 'React', 'frontend', 'ios'];
 const teamOptions = ['팀 A', '팀 B', '팀 C'];
 const memberOptions = ['김이름', '김하늘', '김병성'];
 
+type DraftState = {
+  title: string;
+  selectedTags: string[];
+  description: string;
+  errorLog: string;
+  requestInfo: string;
+  issueStatus: 'UNSOLVED' | 'SOLVED';
+  visibility: 'public' | 'private';
+};
+
 function IssueEdit() {
-  const [title, setTitle] = useState('');
-  const [tagInput, setTagInput] = useState('');
-  const [selectedTags, setSelectedTags] = useState(['JavaScript', 'Axios']);
-  const [description, setDescription] = useState('');
-  const [errorLog, setErrorLog] = useState('');
-  const [requestInfo, setRequestInfo] = useState('');
-  const [issueStatus, setIssueStatus] = useState<'UNSOLVED' | 'SOLVED'>(
-    'UNSOLVED',
+  const navigate = useNavigate();
+  const { teamId, issueId } = useParams();
+
+  const { data, isPending: isDetailPending } = useGetTeamsTeamIdIssuesIssueId(
+    teamId ?? '',
+    issueId ?? '',
+    {
+      query: {
+        enabled: Boolean(teamId && issueId),
+      },
+    },
   );
-  const [visibility, setVisibility] = useState<'public' | 'private'>('private');
+
+  const { mutateAsync, isPending } = usePatchTeamsTeamIdIssuesIssueId();
+
+  const [tagInput, setTagInput] = useState('');
+  const [draft, setDraft] = useState<DraftState | null>(null);
   const [team, setTeam] = useState('팀');
   const [member, setMember] = useState('팀 멤버');
+
+  const initialValues: DraftState | null = data
+    ? {
+        title: data.title,
+        selectedTags: [...data.tag],
+        description: data.content,
+        errorLog:
+          data.logs.find((log) => log.logType === 'SENT')?.message ?? '',
+        requestInfo:
+          data.logs.find((log) => log.logType === 'RECEIVED')?.message ?? '',
+        issueStatus: data.status,
+        visibility: data.isPublic ? 'public' : 'private',
+      }
+    : null;
+
+  const title = draft?.title ?? initialValues?.title ?? '';
+  const selectedTags = draft?.selectedTags ?? initialValues?.selectedTags ?? [];
+  const description = draft?.description ?? initialValues?.description ?? '';
+  const errorLog = draft?.errorLog ?? initialValues?.errorLog ?? '';
+  const requestInfo = draft?.requestInfo ?? initialValues?.requestInfo ?? '';
+  const issueStatus =
+    draft?.issueStatus ?? initialValues?.issueStatus ?? 'UNSOLVED';
+  const visibility: 'public' | 'private' =
+    draft?.visibility ?? initialValues?.visibility ?? 'private';
+
+  const getBaseDraft = (): DraftState => ({
+    title,
+    selectedTags,
+    description,
+    errorLog,
+    requestInfo,
+    issueStatus,
+    visibility,
+  });
+
+  const updateDraft = (patch: Partial<DraftState>) => {
+    setDraft({
+      ...getBaseDraft(),
+      ...patch,
+    });
+  };
 
   const filteredTags = useMemo(() => {
     if (!tagInput.trim()) return [];
@@ -30,25 +95,94 @@ function IssueEdit() {
 
   const addTag = (tag: string) => {
     if (selectedTags.includes(tag)) return;
-    setSelectedTags((prev) => [...prev, tag]);
+    updateDraft({ selectedTags: [...selectedTags, tag] });
     setTagInput('');
   };
 
   const removeTag = (tag: string) => {
-    setSelectedTags((prev) => prev.filter((item) => item !== tag));
+    updateDraft({
+      selectedTags: selectedTags.filter((item) => item !== tag),
+    });
   };
 
-  const handleUpdate = () => {
-    alert('수정하기 클릭');
+  const handleUpdate = async () => {
+    if (!teamId || !issueId) {
+      alert('이슈 정보가 없습니다.');
+      return;
+    }
+
+    if (!title.trim()) {
+      alert('제목을 입력하세요.');
+      return;
+    }
+
+    if (!description.trim()) {
+      alert('설명을 입력하세요.');
+      return;
+    }
+
+    if (selectedTags.length === 0) {
+      alert('태그를 1개 이상 선택하세요.');
+      return;
+    }
+
+    const logs = [];
+
+    if (errorLog.trim()) {
+      logs.push({
+        logType: 'SENT' as const,
+        stackTrace: errorLog.trim(),
+      });
+    }
+
+    if (requestInfo.trim()) {
+      logs.push({
+        logType: 'RECEIVED' as const,
+        stackTrace: requestInfo.trim(),
+      });
+    }
+
+    try {
+      await mutateAsync({
+        teamId,
+        issueId,
+        data: {
+          title: title.trim(),
+          content: description.trim(),
+          tags: selectedTags,
+          isPublic: visibility === 'public',
+          logs,
+        },
+      });
+
+      navigate(`/teams/${teamId}/issues/${issueId}`);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : '이슈 수정 중 오류가 발생했습니다.';
+
+      alert(message);
+    }
   };
 
   const handleCancel = () => {
-    alert('취소하기 클릭');
+    navigate(-1);
   };
 
   const handleAiSummary = () => {
     alert('AI 도움받기 클릭');
   };
+
+  if (isDetailPending) {
+    return (
+      <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
+        <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
+          불러오는 중...
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
@@ -63,7 +197,7 @@ function IssueEdit() {
               onClick={handleCancel}
               className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow)"
             >
               취소하기
             </button>
@@ -71,11 +205,12 @@ function IssueEdit() {
             <button
               type="button"
               onClick={handleUpdate}
+              disabled={isPending}
               className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
             >
-              수정하기
+              {isPending ? '수정 중...' : '수정하기'}
             </button>
           </div>
         </div>
@@ -90,12 +225,12 @@ function IssueEdit() {
 
             <input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => updateDraft({ title: e.target.value })}
               placeholder="이슈 제목을 입력하세요."
-              className="h-14 w-full rounded-sm px-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
+              className="h-14 w-full rounded-sm border border-border px-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
                 transition-all duration-300
-                focus:border-white
-                focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                focus:border-primary
+                focus:shadow-(--shadow)"
               style={{
                 background: 'var(--surface-input)',
                 color: 'var(--text-primary)',
@@ -111,10 +246,10 @@ function IssueEdit() {
 
             <div>
               <div
-                className="relative rounded-sm px-4 py-3
+                className="relative rounded-sm border border-border px-4 py-3
                   transition-all duration-300
-                  focus-within:border-white
-                  focus-within:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                  focus-within:border-primary
+                  focus-within:shadow-(--shadow)"
                 style={{
                   background: 'var(--surface-input)',
                   color: 'var(--text-primary)',
@@ -124,7 +259,7 @@ function IssueEdit() {
                   {selectedTags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-2 rounded-sm bg-(--surface-tag) px-3 py-1.5 text-xs text-(--text-primary)"
+                      className="flex items-center gap-2 rounded-sm bg-(--surface-tag) px-3 py-1.5 typo-regular-14 text-(--text-primary)"
                     >
                       {tag}
                       <button
@@ -200,9 +335,9 @@ function IssueEdit() {
                   <button
                     type="button"
                     onClick={handleAiSummary}
-                    className="flex h-14 cursor-pointer items-center gap-2 rounded-full bg-white px-5 typo-medium-16 text-black
+                    className="flex h-14 cursor-pointer items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse)
                       transition-all duration-200 ease-out
-                      hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                      hover:shadow-(--shadow)"
                   >
                     <Sparkles size={16} />
                     AI 도움받기
@@ -212,17 +347,26 @@ function IssueEdit() {
 
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => updateDraft({ description: e.target.value })}
                 placeholder="이슈 상태 내용을 입력하세요. (마크다운 지원)"
-                className="min-h-189 w-full resize-none rounded-sm p-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
+                className="min-h-189 w-full resize-none rounded-sm border border-border p-5 typo-regular-16 outline-none placeholder:text-(--text-muted)
                   transition-all duration-300
-                  focus:border-white
-                  focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                  focus:border-primary
+                  focus:shadow-(--shadow)"
                 style={{
                   background: 'var(--surface-input)',
                   color: 'var(--text-primary)',
                 }}
               />
+
+              {description.trim() && (
+                <div className="mt-4 rounded-sm bg-(--surface-panel) p-5">
+                  <p className="mb-3 typo-medium-16 text-(--text-primary)">
+                    미리보기
+                  </p>
+                  <IssueMarkdown content={description} />
+                </div>
+              )}
             </div>
           </div>
 
@@ -242,12 +386,12 @@ function IssueEdit() {
 
                 <textarea
                   value={errorLog}
-                  onChange={(e) => setErrorLog(e.target.value)}
+                  onChange={(e) => updateDraft({ errorLog: e.target.value })}
                   placeholder="스택 트레이스, 에러 메시지 등을 붙여넣으세요."
-                  className="h-40 w-full resize-none rounded-sm p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
+                  className="h-40 w-full resize-none rounded-sm border border-border p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
                     transition-all duration-300
-                    focus:border-white
-                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                    focus:border-primary
+                    focus:shadow-(--shadow)"
                   style={{
                     background: 'var(--surface-input)',
                     color: 'var(--text-primary)',
@@ -266,12 +410,12 @@ function IssueEdit() {
 
                 <textarea
                   value={requestInfo}
-                  onChange={(e) => setRequestInfo(e.target.value)}
+                  onChange={(e) => updateDraft({ requestInfo: e.target.value })}
                   placeholder="요청한 환경/재현 방법/추가 정보 등을 입력하세요."
-                  className="h-40 w-full resize-none rounded-sm p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
+                  className="h-40 w-full resize-none rounded-sm border border-border p-4 typo-regular-16 outline-none placeholder:text-(--text-muted)
                     transition-all duration-300
-                    focus:border-white
-                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                    focus:border-primary
+                    focus:shadow-(--shadow)"
                   style={{
                     background: 'var(--surface-input)',
                     color: 'var(--text-primary)',
@@ -281,7 +425,7 @@ function IssueEdit() {
             </div>
           </div>
 
-          <div className="h-px w-full bg-white/40" />
+          <div className="h-px w-full bg-border" />
 
           {/* 상태 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
@@ -292,7 +436,7 @@ function IssueEdit() {
             <div className="grid grid-cols-2 gap-6">
               <button
                 type="button"
-                onClick={() => setIssueStatus('UNSOLVED')}
+                onClick={() => updateDraft({ issueStatus: 'UNSOLVED' })}
                 className={`cursor-pointer rounded-md border p-5 text-left ${
                   issueStatus === 'UNSOLVED'
                     ? 'border-(--status-unsaved) bg-(--surface-selected)'
@@ -304,7 +448,7 @@ function IssueEdit() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       issueStatus === 'UNSOLVED'
                         ? 'border-(--status-unsaved)'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {issueStatus === 'UNSOLVED' && (
@@ -324,7 +468,7 @@ function IssueEdit() {
 
               <button
                 type="button"
-                onClick={() => setIssueStatus('SOLVED')}
+                onClick={() => updateDraft({ issueStatus: 'SOLVED' })}
                 className={`cursor-pointer rounded-md border p-5 text-left ${
                   issueStatus === 'SOLVED'
                     ? 'border-(--status-solved) bg-(--surface-selected)'
@@ -336,7 +480,7 @@ function IssueEdit() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       issueStatus === 'SOLVED'
                         ? 'border-(--status-solved)'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {issueStatus === 'SOLVED' && (
@@ -356,7 +500,7 @@ function IssueEdit() {
             </div>
           </div>
 
-          <div className="h-px w-full bg-white/40" />
+          <div className="h-px w-full bg-border" />
 
           {/* 공개 범위 */}
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
@@ -367,7 +511,7 @@ function IssueEdit() {
             <div className="grid grid-cols-2 gap-6">
               <button
                 type="button"
-                onClick={() => setVisibility('public')}
+                onClick={() => updateDraft({ visibility: 'public' })}
                 className={`cursor-pointer rounded-md border p-5 text-left ${
                   visibility === 'public'
                     ? 'border-(--status-solved) bg-(--surface-selected)'
@@ -379,7 +523,7 @@ function IssueEdit() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       visibility === 'public'
                         ? 'border-(--status-solved)'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {visibility === 'public' && (
@@ -399,7 +543,7 @@ function IssueEdit() {
 
               <button
                 type="button"
-                onClick={() => setVisibility('private')}
+                onClick={() => updateDraft({ visibility: 'private' })}
                 className={`cursor-pointer rounded-md border p-5 text-left ${
                   visibility === 'private'
                     ? 'border-primary bg-(--surface-selected)'
@@ -411,7 +555,7 @@ function IssueEdit() {
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       visibility === 'private'
                         ? 'border-primary'
-                        : 'border-white'
+                        : 'border-border'
                     }`}
                   >
                     {visibility === 'private' && (
@@ -440,10 +584,10 @@ function IssueEdit() {
             <select
               value={team}
               onChange={(e) => setTeam(e.target.value)}
-              className="h-14 w-full cursor-pointer rounded-sm px-4 typo-regular-16 outline-none
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
                 transition-all duration-300
-                focus:border-white
-                focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                focus:border-primary
+                focus:shadow-(--shadow)"
               style={{
                 background: 'var(--surface-input)',
                 color: 'var(--text-primary)',
@@ -455,7 +599,7 @@ function IssueEdit() {
               ))}
             </select>
 
-            <div className="h-14 w-px bg-white/40" />
+            <div className="h-14 w-px bg-border" />
 
             <label className="typo-semibold-18 text-(--text-primary)">
               팀 멤버 선택
@@ -464,10 +608,10 @@ function IssueEdit() {
             <select
               value={member}
               onChange={(e) => setMember(e.target.value)}
-              className="h-14 w-full cursor-pointer rounded-sm px-4 typo-regular-16 outline-none
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
                 transition-all duration-300
-                focus:border-white
-                focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                focus:border-primary
+                focus:shadow-(--shadow)"
               style={{
                 background: 'var(--surface-input)',
                 color: 'var(--text-primary)',
@@ -480,7 +624,7 @@ function IssueEdit() {
             </select>
           </div>
 
-          <div className="h-px w-full bg-white/40" />
+          <div className="h-px w-full bg-border" />
 
           {/* 하단 버튼 */}
           <div className="flex justify-between pt-[60px]">
@@ -489,7 +633,7 @@ function IssueEdit() {
               onClick={handleCancel}
               className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow)"
             >
               취소하기
             </button>
@@ -497,11 +641,12 @@ function IssueEdit() {
             <button
               type="button"
               onClick={handleUpdate}
+              disabled={isPending}
               className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
                 transition-all duration-200 ease-out
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
             >
-              수정하기
+              {isPending ? '수정 중...' : '수정하기'}
             </button>
           </div>
         </div>
