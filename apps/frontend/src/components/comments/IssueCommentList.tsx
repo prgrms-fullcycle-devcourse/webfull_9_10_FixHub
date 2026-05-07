@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import CommonModal from '@/components/ui/CommonModal';
 
 export type IssueCommentItem = {
-  id: number;
+  id: string;
   authorId: string;
   name: string;
   selected: boolean;
   isReply: boolean;
   text: string;
+  createdAt: string;
 };
 
 type IssueCommentListProps = {
@@ -24,17 +25,17 @@ function IssueCommentList({
   currentUserId,
   issueAuthorId,
 }: IssueCommentListProps) {
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showAllComments, setShowAllComments] = useState(false);
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [editedCommentTexts, setEditedCommentTexts] = useState<
-    Record<number, string>
+    Record<string, string>
   >({});
   const [deleteConfirmCommentId, setDeleteConfirmCommentId] = useState<
-    number | null
+    string | null
   >(null);
-  const [deletedCommentIds, setDeletedCommentIds] = useState<number[]>([]);
+  const [deletedCommentIds, setDeletedCommentIds] = useState<string[]>([]);
 
   const remainingComments = comments.filter(
     (comment) => !deletedCommentIds.includes(comment.id),
@@ -59,7 +60,7 @@ function IssueCommentList({
     setEditingText('');
   };
 
-  const startDeleteComment = (commentId: number) => {
+  const startDeleteComment = (commentId: string) => {
     setDeleteConfirmCommentId(commentId);
     setEditingCommentId(null);
     setEditingText('');
@@ -82,7 +83,7 @@ function IssueCommentList({
     setDeleteConfirmCommentId(null);
   };
 
-  const saveEditedComment = (commentId: number) => {
+  const saveEditedComment = (commentId: string) => {
     const nextText = editingText.trim();
 
     if (!nextText) {
@@ -95,6 +96,21 @@ function IssueCommentList({
     }));
     setEditingCommentId(null);
     setEditingText('');
+  };
+
+  const formatCommentDate = (date: string) => {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return parsedDate.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short',
+    });
   };
 
   return (
@@ -257,7 +273,7 @@ function IssueCommentList({
                     )}
 
                     <div className="mt-3 flex justify-between text-xs text-(--text-secondary)">
-                      <span>2026-04-25(토)</span>
+                      <span>{formatCommentDate(comment.createdAt)}</span>
 
                       <button
                         type="button"
