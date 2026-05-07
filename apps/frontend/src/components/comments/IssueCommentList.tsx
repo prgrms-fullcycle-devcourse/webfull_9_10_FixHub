@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Rocket } from 'lucide-react';
 
-import { getGetCommentsQueryKey, useUpdateComment } from '@/api/generated';
+import {
+  getGetCommentsQueryKey,
+  useDeleteComment,
+  useUpdateComment,
+} from '@/api/generated';
 import { Button } from '@/components/ui/button';
 import CommonModal from '@/components/ui/CommonModal';
 
@@ -72,6 +76,24 @@ function IssueCommentList({
         },
       },
     });
+  const { mutate: deleteComment, isPending: isDeletingComment } =
+    useDeleteComment({
+      mutation: {
+        onSuccess: (_, variables) => {
+          setDeletedCommentIds((prevCommentIds) => [
+            ...prevCommentIds,
+            variables.commentId,
+          ]);
+          setDeleteConfirmCommentId(null);
+          queryClient.invalidateQueries({
+            queryKey: getGetCommentsQueryKey(issueId),
+          });
+        },
+        onError: () => {
+          alert('댓글 삭제에 실패했습니다.');
+        },
+      },
+    });
 
   const startEditComment = (comment: IssueCommentItem) => {
     setEditingCommentId(comment.id);
@@ -97,15 +119,14 @@ function IssueCommentList({
   };
 
   const confirmDeleteComment = () => {
-    if (deleteConfirmCommentId === null) {
+    if (deleteConfirmCommentId === null || isDeletingComment || !issueId) {
       return;
     }
 
-    setDeletedCommentIds((prevCommentIds) => [
-      ...prevCommentIds,
-      deleteConfirmCommentId,
-    ]);
-    setDeleteConfirmCommentId(null);
+    deleteComment({
+      id: issueId,
+      commentId: deleteConfirmCommentId,
+    });
   };
 
   const saveEditedComment = (commentId: string) => {
@@ -341,7 +362,7 @@ function IssueCommentList({
           </>
         }
         cancelText="취소하기"
-        confirmText="삭제하기"
+        confirmText={isDeletingComment ? '삭제 중' : '삭제하기'}
         onClose={cancelDeleteComment}
         onConfirm={confirmDeleteComment}
         confirmButtonClassName="bg-(--status-error) text-(--status-error-foreground) hover:opacity-90"
