@@ -101,6 +101,16 @@ export interface Forbidden {
   error: ForbiddenError;
 }
 
+export type GetComments200DataItemAuthor = {
+  id: string;
+  name: string;
+};
+
+export type GetComments200DataItemRepliesItemAuthor = {
+  id: string;
+  name: string;
+};
+
 export type GetComments200DataItemRepliesItemRepliesItem = {
   [key: string]: unknown;
 };
@@ -108,7 +118,7 @@ export type GetComments200DataItemRepliesItemRepliesItem = {
 export type GetComments200DataItemRepliesItem = {
   id: string;
   content: string;
-  author: string;
+  author: GetComments200DataItemRepliesItemAuthor;
   /** @nullable */
   parentId: string | null;
   isAdopted: boolean;
@@ -119,7 +129,7 @@ export type GetComments200DataItemRepliesItem = {
 export type GetComments200DataItem = {
   id: string;
   content: string;
-  author: string;
+  author: GetComments200DataItemAuthor;
   /** @nullable */
   parentId: string | null;
   isAdopted: boolean;
@@ -146,10 +156,7 @@ export type PostIssuesIdCommentsBody = {
    * @maxLength 1000
    */
   content: string;
-  /**
-   * @minLength 1
-   * @nullable
-   */
+  /** @nullable */
   parentId: string | null;
 };
 
@@ -286,6 +293,37 @@ export type UpdateComment404Error = {
 
 export type UpdateComment404 = {
   error: UpdateComment404Error;
+};
+
+export type DeleteComment200 = {
+  success: boolean;
+};
+
+export type DeleteComment401Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteComment401 = {
+  error: DeleteComment401Error;
+};
+
+export type DeleteComment403Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteComment403 = {
+  error: DeleteComment403Error;
+};
+
+export type DeleteComment404Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteComment404 = {
+  error: DeleteComment404Error;
 };
 
 export type GetParams = {
@@ -449,9 +487,6 @@ export type GetTeams401 = {
 };
 
 export type GetIssuesSearchParams = {
-  /**
-   * @minLength 1
-   */
   search?: string;
 };
 
@@ -526,6 +561,39 @@ export type GetTeamsTeamIdIssuesIssueId200 = {
   isPublic: boolean;
   status: GetTeamsTeamIdIssuesIssueId200Status;
   logs: GetTeamsTeamIdIssuesIssueId200LogsItem[];
+};
+
+export type PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType =
+  (typeof PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType)[keyof typeof PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType];
+
+export const PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType = {
+  SENT: 'SENT',
+  RECEIVED: 'RECEIVED',
+} as const;
+
+export type PatchTeamsTeamIdIssuesIssueIdBodyLogsItem = {
+  logType: PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType;
+  /** @minLength 1 */
+  stackTrace: string;
+};
+
+export type PatchTeamsTeamIdIssuesIssueIdBody = {
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  content: string;
+  tags: string[];
+  isPublic: boolean;
+  logs: PatchTeamsTeamIdIssuesIssueIdBodyLogsItem[];
+};
+
+export type PatchTeamsTeamIdIssuesIssueId200 = {
+  id: string;
+  updatedAt: string;
+};
+
+export type DeleteTeamsTeamIdIssuesIssueId200 = {
+  success: boolean;
 };
 
 export type PostTeamsTeamIdIssuesBodyLogsItemLogType =
@@ -1002,6 +1070,94 @@ export const useUpdateComment = <
   TContext
 > => {
   return useMutation(getUpdateCommentMutationOptions(options), queryClient);
+};
+
+/**
+ * 댓글 작성자가 본인이 작성한 댓글을 삭제합니다.
+ * @summary 댓글 삭제
+ */
+export const deleteComment = (
+  id: string,
+  commentId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DeleteComment200>(
+    { url: `/issues/${id}/comments/${commentId}`, method: 'DELETE', signal },
+    options,
+  );
+};
+
+export const getDeleteCommentMutationOptions = <
+  TError = ErrorType<DeleteComment401 | DeleteComment403 | DeleteComment404>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteComment>>,
+    TError,
+    { id: string; commentId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteComment>>,
+  TError,
+  { id: string; commentId: string },
+  TContext
+> => {
+  const mutationKey = ['deleteComment'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteComment>>,
+    { id: string; commentId: string }
+  > = (props) => {
+    const { id, commentId } = props ?? {};
+
+    return deleteComment(id, commentId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteComment>>
+>;
+
+export type DeleteCommentMutationError = ErrorType<
+  DeleteComment401 | DeleteComment403 | DeleteComment404
+>;
+
+/**
+ * @summary 댓글 삭제
+ */
+export const useDeleteComment = <
+  TError = ErrorType<DeleteComment401 | DeleteComment403 | DeleteComment404>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteComment>>,
+      TError,
+      { id: string; commentId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteComment>>,
+  TError,
+  { id: string; commentId: string },
+  TContext
+> => {
+  return useMutation(getDeleteCommentMutationOptions(options), queryClient);
 };
 
 /**
@@ -2134,6 +2290,217 @@ export function useGetTeamsTeamIdIssuesIssueId<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * 팀에 속한 특정 이슈를 수정합니다.
+ * @summary 이슈 수정
+ */
+export const patchTeamsTeamIdIssuesIssueId = (
+  teamId: string,
+  issueId: string,
+  patchTeamsTeamIdIssuesIssueIdBody?: BodyType<PatchTeamsTeamIdIssuesIssueIdBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PatchTeamsTeamIdIssuesIssueId200>(
+    {
+      url: `/teams/${teamId}/issues/${issueId}`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: patchTeamsTeamIdIssuesIssueIdBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPatchTeamsTeamIdIssuesIssueIdMutationOptions = <
+  TError = ErrorType<CreateBadRequest | Unauthorized | Forbidden | NotFound>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchTeamsTeamIdIssuesIssueId>>,
+    TError,
+    {
+      teamId: string;
+      issueId: string;
+      data?: BodyType<PatchTeamsTeamIdIssuesIssueIdBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchTeamsTeamIdIssuesIssueId>>,
+  TError,
+  {
+    teamId: string;
+    issueId: string;
+    data?: BodyType<PatchTeamsTeamIdIssuesIssueIdBody>;
+  },
+  TContext
+> => {
+  const mutationKey = ['patchTeamsTeamIdIssuesIssueId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchTeamsTeamIdIssuesIssueId>>,
+    {
+      teamId: string;
+      issueId: string;
+      data?: BodyType<PatchTeamsTeamIdIssuesIssueIdBody>;
+    }
+  > = (props) => {
+    const { teamId, issueId, data } = props ?? {};
+
+    return patchTeamsTeamIdIssuesIssueId(teamId, issueId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PatchTeamsTeamIdIssuesIssueIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchTeamsTeamIdIssuesIssueId>>
+>;
+export type PatchTeamsTeamIdIssuesIssueIdMutationBody =
+  | BodyType<PatchTeamsTeamIdIssuesIssueIdBody>
+  | undefined;
+export type PatchTeamsTeamIdIssuesIssueIdMutationError = ErrorType<
+  CreateBadRequest | Unauthorized | Forbidden | NotFound
+>;
+
+/**
+ * @summary 이슈 수정
+ */
+export const usePatchTeamsTeamIdIssuesIssueId = <
+  TError = ErrorType<CreateBadRequest | Unauthorized | Forbidden | NotFound>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof patchTeamsTeamIdIssuesIssueId>>,
+      TError,
+      {
+        teamId: string;
+        issueId: string;
+        data?: BodyType<PatchTeamsTeamIdIssuesIssueIdBody>;
+      },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof patchTeamsTeamIdIssuesIssueId>>,
+  TError,
+  {
+    teamId: string;
+    issueId: string;
+    data?: BodyType<PatchTeamsTeamIdIssuesIssueIdBody>;
+  },
+  TContext
+> => {
+  return useMutation(
+    getPatchTeamsTeamIdIssuesIssueIdMutationOptions(options),
+    queryClient,
+  );
+};
+
+/**
+ * 팀에 속한 특정 이슈를 삭제합니다.
+ * @summary 이슈 삭제
+ */
+export const deleteTeamsTeamIdIssuesIssueId = (
+  teamId: string,
+  issueId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DeleteTeamsTeamIdIssuesIssueId200>(
+    { url: `/teams/${teamId}/issues/${issueId}`, method: 'DELETE', signal },
+    options,
+  );
+};
+
+export const getDeleteTeamsTeamIdIssuesIssueIdMutationOptions = <
+  TError = ErrorType<CreateBadRequest | Unauthorized | Forbidden | NotFound>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTeamsTeamIdIssuesIssueId>>,
+    TError,
+    { teamId: string; issueId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTeamsTeamIdIssuesIssueId>>,
+  TError,
+  { teamId: string; issueId: string },
+  TContext
+> => {
+  const mutationKey = ['deleteTeamsTeamIdIssuesIssueId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTeamsTeamIdIssuesIssueId>>,
+    { teamId: string; issueId: string }
+  > = (props) => {
+    const { teamId, issueId } = props ?? {};
+
+    return deleteTeamsTeamIdIssuesIssueId(teamId, issueId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTeamsTeamIdIssuesIssueIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTeamsTeamIdIssuesIssueId>>
+>;
+
+export type DeleteTeamsTeamIdIssuesIssueIdMutationError = ErrorType<
+  CreateBadRequest | Unauthorized | Forbidden | NotFound
+>;
+
+/**
+ * @summary 이슈 삭제
+ */
+export const useDeleteTeamsTeamIdIssuesIssueId = <
+  TError = ErrorType<CreateBadRequest | Unauthorized | Forbidden | NotFound>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteTeamsTeamIdIssuesIssueId>>,
+      TError,
+      { teamId: string; issueId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTeamsTeamIdIssuesIssueId>>,
+  TError,
+  { teamId: string; issueId: string },
+  TContext
+> => {
+  return useMutation(
+    getDeleteTeamsTeamIdIssuesIssueIdMutationOptions(options),
+    queryClient,
+  );
+};
 
 /**
  * 팀에 새로운 이슈를 등록합니다.

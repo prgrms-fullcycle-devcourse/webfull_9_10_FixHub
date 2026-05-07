@@ -23,8 +23,10 @@ function mapCommentToIssueCommentItem(
   return {
     id: comment.id,
     // TODO: 댓글 목록 API에서 authorId를 내려주면 author 대신 authorId로 교체합니다.
-    authorId: comment.author,
-    name: comment.author,
+    author: {
+      id: comment.author.id,
+      name: comment.author.name,
+    },
     selected: comment.isAdopted,
     isReply,
     text: comment.content,
@@ -52,8 +54,9 @@ function IssueDetail() {
 
   const isPublic = false;
   const visibilityText = isPublic ? '전체공개' : '비공개';
-  const issueAuthorId = 'user-issue-author'; // TODO: 채택 뷰 테스트용 이슈 작성자 id
-  const currentUserId = 'user-issue-author'; // TODO: 채택 뷰 테스트용 로그인된 사용자 id
+  const currentUserId = '019e0177-c468-7adf-a877-d668b1b4f6a3'; // TODO: 채택 뷰 테스트용 로그인된 사용자 id
+  const isIssueAuthor =
+    currentUserId === '019e0177-c468-7adf-a877-d668b1b4f6a3'; // TODO: 채택 뷰 테스트용 해당 이슈의 작성자인지 여부
 
   const comments: IssueCommentItem[] =
     commentsResponse?.data.flatMap((comment) => [
@@ -164,9 +167,10 @@ function IssueDetail() {
           </aside>
         ) : (
           <IssueCommentList
+            issueId={issueId}
             comments={comments}
             currentUserId={currentUserId}
-            issueAuthorId={issueAuthorId}
+            isIssueAuthor={isIssueAuthor}
           />
         )}
       </div>
