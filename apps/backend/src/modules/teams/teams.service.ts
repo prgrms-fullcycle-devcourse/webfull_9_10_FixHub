@@ -199,7 +199,7 @@ export async function getTeamMembers(userId: string, teamId: string) {
   const data = members.map((member) => ({
     userId: member.userId,
     name: member.user.name,
-    role: member.role === 'LEADER' ? 'OWNER' : 'MEMBER',
+    role: member.role,
     joinedAt: member.joinedAt?.toISOString() ?? null,
     score: member.score,
   }));
