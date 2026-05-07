@@ -129,6 +129,7 @@ export async function getComments(
       createdAt: true,
       user: {
         select: {
+          id: true,
           name: true,
         },
       },
@@ -144,6 +145,7 @@ export async function getComments(
           createdAt: true,
           user: {
             select: {
+              id: true,
               name: true,
             },
           },
@@ -156,14 +158,20 @@ export async function getComments(
     data: comments.map((comment) => ({
       id: comment.id,
       content: comment.content,
-      author: comment.user.name,
+      author: {
+        id: comment.user.id,
+        name: comment.user.name,
+      },
       parentId: comment.parentId,
       isAdopted: comment.isAdopted,
       createdAt: comment.createdAt.toISOString(),
       replies: comment.replies.map((reply) => ({
         id: reply.id,
         content: reply.content,
-        author: reply.user.name,
+        author: {
+          id: reply.user.id,
+          name: reply.user.name,
+        },
         parentId: reply.parentId,
         isAdopted: reply.isAdopted,
         createdAt: reply.createdAt.toISOString(),

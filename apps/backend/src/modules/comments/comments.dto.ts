@@ -31,8 +31,13 @@ const CommentResponseBaseSchema = z.object({
   content: z.string().openapi({
     example: '환경변수에서 Redis 호스트 설정을 확인해보세요.',
   }),
-  author: z.string().openapi({
-    example: '김철수',
+  author: z.object({
+    id: z.uuid().openapi({
+      example: '00000000-0000-0000-0000-000000000000',
+    }),
+    name: z.string().openapi({
+      example: '김철수',
+    }),
   }),
   parentId: z.string().nullable().openapi({
     example: null,
