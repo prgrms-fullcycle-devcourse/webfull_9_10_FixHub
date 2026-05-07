@@ -5,6 +5,7 @@ import {
   CreateTeamBodySchema,
   CreateTeamResponseSchema,
   GetMyTeamsResponseSchema,
+  GetTeamDetailResponseSchema,
   GetTeamMembersResponseSchema,
 } from './teams.dto.js';
 
@@ -83,6 +84,54 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       401: {
         description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀 상세 조회
+  registry.registerPath({
+    method: 'get',
+    path: '/teams/{teamId}',
+    tags: ['Teams'],
+    summary: '팀 상세 조회',
+    description: '특정 팀의 상세 정보와 점수 상위 3명의 팀원을 조회합니다.',
+    request: {
+      params: z.object({
+        teamId: z.uuidv7(),
+      }),
+    },
+    responses: {
+      200: {
+        description: '팀 상세 조회 성공',
+        content: {
+          'application/json': {
+            schema: GetTeamDetailResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '리소스 없음',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,
