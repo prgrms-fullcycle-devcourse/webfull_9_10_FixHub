@@ -215,16 +215,16 @@ function IssueDetail() {
           </aside>
         ) : (
           <IssueCommentList
-            issueId={issueId}
             comments={comments}
             currentUserId={currentUserId}
             isIssueAuthor={isIssueAuthor}
+            issueId={issueId ?? ''}
           />
         )}
       </div>
 
       <div className="min-[1334px]:col-start-1">
-        <IssueCommentComposer issueId={issueId} />
+        <IssueCommentComposer issueId={issueId ?? ''} />
       </div>
     </section>
   );
