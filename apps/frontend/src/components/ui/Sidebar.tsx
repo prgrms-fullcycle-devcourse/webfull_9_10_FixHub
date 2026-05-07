@@ -30,8 +30,11 @@ export default function Sidebar() {
   const isIssueWriteActive =
     isMatch('/issues/new') || isMatch('/issues/:issueId/edit');
 
+  const isMyPageActive = isMatch('/mypage');
+
   const isHomeActive =
-    isMatch('/') || (!isIssueWriteActive && isMatch('/issues/:issueId'));
+    isMatch('/') ||
+    (!isIssueWriteActive && !isMyPageActive && isMatch('/issues/:issueId'));
 
   const isTeamCreationActive = isMatch('/teams/new');
 
@@ -155,7 +158,12 @@ export default function Sidebar() {
 
         <Divider />
 
-        <SidebarItem icon={<UserIcon />} label="마이페이지" />
+        <SidebarItem
+          icon={<UserIcon />}
+          label="마이페이지"
+          active={isMyPageActive}
+          onClick={() => navigate('/mypage')}
+        />
 
         <Divider />
 
