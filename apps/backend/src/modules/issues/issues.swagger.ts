@@ -13,6 +13,8 @@ import {
   UpdateIssueResponseSchema,
   DeleteIssueParamsSchema,
   DeleteIssueResponseSchema,
+  SuggestIssueBodySchema,
+  SuggestIssueResponseSchema,
 } from './issues.dto.js';
 import { zod as z } from '../../common/lib/zod.js';
 
@@ -104,6 +106,12 @@ const forbiddenSchema = z
     }),
   })
   .openapi('Forbidden');
+
+const badGateway502Schema = z.object({
+  code: z.string(),
+  message: z.string(),
+  statusCode: z.number(),
+});
 
 const issueDetailExample = {
   id: 'issue-uuid-010',
@@ -439,6 +447,42 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: notFoundSchema,
+          },
+        },
+      },
+    },
+  });
+
+  /* ai 이슈 자동 생성 */
+  registry.registerPath({
+    method: 'post',
+    path: '/issues/suggest',
+    tags: ['Issue'],
+    summary: 'ai 이슈 자동 생성',
+    description: '로그를 받아 ai가 이슈 제목, 태그, 내용을 생성합니다.',
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: SuggestIssueBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '자동 생성 성공',
+        content: {
+          'application/json': {
+            schema: SuggestIssueResponseSchema,
+          },
+        },
+      },
+      502: {
+        description: 'openai 요청 실패',
+        content: {
+          'application/json': {
+            schema: badGateway502Schema,
           },
         },
       },
