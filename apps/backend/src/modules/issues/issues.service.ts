@@ -520,7 +520,7 @@ export async function generateIssue(
       { role: 'user', content: log },
     ],
     temperature: 0.2,
-    max_tokens: 300,
+    max_completion_tokens: 300,
   });
 
   const text = res.choices[0].message.content ?? '';
