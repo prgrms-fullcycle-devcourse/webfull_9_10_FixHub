@@ -36,31 +36,6 @@ function mapCommentToIssueCommentItem(
   };
 }
 
-function getUserIdFromToken() {
-  if (typeof document === 'undefined') return '';
-
-  const tokenCookie = document.cookie
-    .split('; ')
-    .find((item) => item.startsWith('token='));
-
-  if (!tokenCookie) return '';
-
-  const token = tokenCookie.split('=')[1];
-  const payload = token.split('.')[1];
-
-  if (!payload) return '';
-
-  try {
-    const decoded = JSON.parse(
-      atob(payload.replace(/-/g, '+').replace(/_/g, '/')),
-    );
-
-    return typeof decoded.userId === 'string' ? decoded.userId : '';
-  } catch {
-    return '';
-  }
-}
-
 function IssueDetail() {
   const navigate = useNavigate();
   const { issueId, teamId } = useParams();
@@ -108,8 +83,7 @@ function IssueDetail() {
 
   const isPublic = issue.isPublic;
   const visibilityText = isPublic ? '전체공개' : '비공개';
-  const currentUserId = getUserIdFromToken();
-  const isIssueAuthor = false;
+  const isIssueAuthor = 'isAuthor' in issue ? issue.isAuthor === true : false;
 
   const comments: IssueCommentItem[] =
     commentsResponse?.data.flatMap((comment) => [
@@ -169,20 +143,22 @@ function IssueDetail() {
             </div>
           </div>
 
-          <div className="flex items-center gap-5">
-            <IssueDeleteButton teamId={teamId} issueId={issueId} />
+          {isIssueAuthor && (
+            <div className="flex items-center gap-5">
+              <IssueDeleteButton teamId={teamId} issueId={issueId} />
 
-            <button
-              type="button"
-              onClick={() =>
-                navigate(`/teams/${teamId}/issues/${issueId}/edit`)
-              }
-              className="flex h-16 w-20 cursor-pointer items-center justify-center rounded-md bg-(--surface-overlay) text-(--text-primary) shadow-(--shadow) hover:bg-(--surface-selected)"
-              aria-label="수정"
-            >
-              <SquarePen size={30} strokeWidth={1.7} />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(`/teams/${teamId}/issues/${issueId}/edit`)
+                }
+                className="flex h-16 w-20 cursor-pointer items-center justify-center rounded-md bg-(--surface-overlay) text-(--text-primary) shadow-(--shadow) hover:bg-(--surface-selected)"
+                aria-label="수정"
+              >
+                <SquarePen size={30} strokeWidth={1.7} />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-between typo-regular-14 text-(--text-secondary)">
@@ -236,7 +212,7 @@ function IssueDetail() {
         ) : (
           <IssueCommentList
             comments={comments}
-            currentUserId={currentUserId}
+            currentUserId=""
             isIssueAuthor={isIssueAuthor}
             issueId={issueId ?? ''}
           />

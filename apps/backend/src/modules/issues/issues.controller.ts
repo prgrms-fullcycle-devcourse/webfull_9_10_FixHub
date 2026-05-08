@@ -115,7 +115,8 @@ export async function getIssueDetail(
   }
 
   try {
-    const response = await getIssueDetailService(parsedParams.data);
+    const userId = (req as AuthRequest).userId;
+    const response = await getIssueDetailService(userId, parsedParams.data);
 
     return res.status(200).json(response);
   } catch (error) {

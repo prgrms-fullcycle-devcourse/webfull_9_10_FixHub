@@ -670,6 +670,8 @@ export type GetTeamsTeamIdIssuesIssueId200 = {
   content: string;
   tag: string[];
   author: string;
+  authorId: string;
+  isAuthor: boolean;
   errorLog: string;
   isPublic: boolean;
   status: GetTeamsTeamIdIssuesIssueId200Status;
@@ -755,6 +757,295 @@ export type PostIssuesSuggest502 = {
   code: string;
   message: string;
   statusCode: number;
+};
+
+export type GetMyProfile200 = {
+  id: string;
+  name: string;
+  email: string;
+  /** @nullable */
+  profileImg: string | null;
+  createdAt: string;
+  totalScore: number;
+  issueCount: number;
+  solvedCount: number;
+};
+
+export type GetMyProfile401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyProfile401 = {
+  error: GetMyProfile401Error;
+};
+
+export type UpdateMyProfileBodyPassword = {
+  /** @minLength 8 */
+  current: string;
+  /** @minLength 8 */
+  next: string;
+};
+
+export type UpdateMyProfileBody = {
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
+  name?: string;
+  /** @nullable */
+  profileImg?: string | null;
+  password?: UpdateMyProfileBodyPassword;
+};
+
+export type UpdateMyProfile200 = {
+  id: string;
+  name: string;
+  /** @nullable */
+  profileImg: string | null;
+  updatedAt: string;
+};
+
+export type UpdateMyProfile400Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateMyProfile400 = {
+  error: UpdateMyProfile400Error;
+};
+
+export type UpdateMyProfile401Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateMyProfile401 = {
+  error: UpdateMyProfile401Error;
+};
+
+export type GetUserProfile200 = {
+  id: string;
+  name: string;
+  /** @nullable */
+  profileImg: string | null;
+  createdAt: string;
+  totalScore: number;
+  issueCount: number;
+  solvedCount: number;
+};
+
+export type GetUserProfile400Error = {
+  code: string;
+  message: string;
+};
+
+export type GetUserProfile400 = {
+  error: GetUserProfile400Error;
+};
+
+export type GetUserProfile404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetUserProfile404 = {
+  error: GetUserProfile404Error;
+};
+
+export type GetMyIssuesParams = {
+  /**
+   * @exclusiveMinimum 0
+   */
+  page?: number;
+  /**
+   * @maximum 100
+   * @exclusiveMinimum 0
+   */
+  limit?: number;
+};
+
+export type GetMyIssues200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetMyIssues200DataItemStatus =
+  (typeof GetMyIssues200DataItemStatus)[keyof typeof GetMyIssues200DataItemStatus];
+
+export const GetMyIssues200DataItemStatus = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
+export type GetMyIssues200DataItem = {
+  id: string;
+  title: string;
+  status: GetMyIssues200DataItemStatus;
+  tags: string[];
+  summary: string;
+  commentCount: number;
+  adoptedCount: number;
+  createdAt: string;
+  teamId: string;
+  teamName: string;
+};
+
+export type GetMyIssues200 = {
+  meta: GetMyIssues200Meta;
+  data: GetMyIssues200DataItem[];
+};
+
+export type GetMyIssues401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyIssues401 = {
+  error: GetMyIssues401Error;
+};
+
+export type GetMySolvedParams = {
+  /**
+   * @exclusiveMinimum 0
+   */
+  page?: number;
+  /**
+   * @maximum 100
+   * @exclusiveMinimum 0
+   */
+  limit?: number;
+};
+
+export type GetMySolved200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetMySolved200DataItemStatus =
+  (typeof GetMySolved200DataItemStatus)[keyof typeof GetMySolved200DataItemStatus];
+
+export const GetMySolved200DataItemStatus = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
+export type GetMySolved200DataItem = {
+  id: string;
+  title: string;
+  status: GetMySolved200DataItemStatus;
+  tags: string[];
+  summary: string;
+  commentCount: number;
+  adoptedCount: number;
+  createdAt: string;
+  teamId: string;
+  teamName: string;
+  myAdoptedCommentId: string;
+};
+
+export type GetMySolved200 = {
+  meta: GetMySolved200Meta;
+  data: GetMySolved200DataItem[];
+};
+
+export type GetMySolved401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMySolved401 = {
+  error: GetMySolved401Error;
+};
+
+export type GetMyScoreParams = {
+  /**
+   * @minimum 2020
+   */
+  year?: number;
+};
+
+export type GetMyScore200DailyItemLogsItem = {
+  id: string;
+  amount: number;
+  reason: string;
+  /** @nullable */
+  issueId: string | null;
+  /** @nullable */
+  issueTitle: string | null;
+  createdAt: string;
+};
+
+export type GetMyScore200DailyItem = {
+  date: string;
+  totalAmount: number;
+  logs: GetMyScore200DailyItemLogsItem[];
+};
+
+export type GetMyScore200 = {
+  year: number;
+  totalScore: number;
+  daily: GetMyScore200DailyItem[];
+};
+
+export type GetMyScore401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyScore401 = {
+  error: GetMyScore401Error;
+};
+
+export type GetMyScoreLogsParams = {
+  /**
+   * @exclusiveMinimum 0
+   */
+  page?: number;
+  /**
+   * @maximum 100
+   * @exclusiveMinimum 0
+   */
+  limit?: number;
+};
+
+export type GetMyScoreLogs200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetMyScoreLogs200DataItem = {
+  id: string;
+  amount: number;
+  reason: string;
+  /** @nullable */
+  issueId: string | null;
+  /** @nullable */
+  issueTitle: string | null;
+  createdAt: string;
+};
+
+export type GetMyScoreLogs200 = {
+  meta: GetMyScoreLogs200Meta;
+  data: GetMyScoreLogs200DataItem[];
+};
+
+export type GetMyScoreLogs401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyScoreLogs401 = {
+  error: GetMyScoreLogs401Error;
 };
 
 export type GetNotifications200DataItem = {
@@ -3543,6 +3834,944 @@ export const usePostIssuesSuggest = <
 > => {
   return useMutation(getPostIssuesSuggestMutationOptions(options), queryClient);
 };
+
+/**
+ * 로그인한 사용자의 프로필 정보를 조회합니다.
+ * @summary 내 프로필 조회
+ */
+export const getMyProfile = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyProfile200>(
+    { url: `/users/me`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetMyProfileQueryKey = () => {
+  return [`/users/me`] as const;
+};
+
+export const getGetMyProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyProfileQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyProfile>>> = ({
+    signal,
+  }) => getMyProfile(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyProfile>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyProfile>>
+>;
+export type GetMyProfileQueryError = ErrorType<GetMyProfile401>;
+
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내 프로필 조회
+ */
+
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyProfileQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 이름, 프로필 이미지, 비밀번호를 수정합니다.
+ * @summary 내 프로필 수정
+ */
+export const updateMyProfile = (
+  updateMyProfileBody: BodyType<UpdateMyProfileBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<UpdateMyProfile200>(
+    {
+      url: `/users/me`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateMyProfileBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getUpdateMyProfileMutationOptions = <
+  TError = ErrorType<UpdateMyProfile400 | UpdateMyProfile401>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMyProfile>>,
+    TError,
+    { data: BodyType<UpdateMyProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMyProfile>>,
+  TError,
+  { data: BodyType<UpdateMyProfileBody> },
+  TContext
+> => {
+  const mutationKey = ['updateMyProfile'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMyProfile>>,
+    { data: BodyType<UpdateMyProfileBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateMyProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateMyProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateMyProfile>>
+>;
+export type UpdateMyProfileMutationBody = BodyType<UpdateMyProfileBody>;
+export type UpdateMyProfileMutationError = ErrorType<
+  UpdateMyProfile400 | UpdateMyProfile401
+>;
+
+/**
+ * @summary 내 프로필 수정
+ */
+export const useUpdateMyProfile = <
+  TError = ErrorType<UpdateMyProfile400 | UpdateMyProfile401>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateMyProfile>>,
+      TError,
+      { data: BodyType<UpdateMyProfileBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateMyProfile>>,
+  TError,
+  { data: BodyType<UpdateMyProfileBody> },
+  TContext
+> => {
+  return useMutation(getUpdateMyProfileMutationOptions(options), queryClient);
+};
+
+/**
+ * 특정 유저의 공개 프로필 정보를 조회합니다.
+ * @summary 다른 유저 프로필 조회
+ */
+export const getUserProfile = (
+  userId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetUserProfile200>(
+    { url: `/users/${userId}`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetUserProfileQueryKey = (userId: string) => {
+  return [`/users/${userId}`] as const;
+};
+
+export const getGetUserProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetUserProfileQueryKey(userId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserProfile>>> = ({
+    signal,
+  }) => getUserProfile(userId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!userId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUserProfile>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetUserProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUserProfile>>
+>;
+export type GetUserProfileQueryError = ErrorType<
+  GetUserProfile400 | GetUserProfile404
+>;
+
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getUserProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getUserProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 다른 유저 프로필 조회
+ */
+
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetUserProfileQueryOptions(userId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 로그인한 사용자가 작성한 이슈 목록을 페이지네이션으로 조회합니다.
+ * @summary 내가 작성한 이슈 목록
+ */
+export const getMyIssues = (
+  params?: GetMyIssuesParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyIssues200>(
+    { url: `/users/me/issues`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMyIssuesQueryKey = (params?: GetMyIssuesParams) => {
+  return [`/users/me/issues`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyIssuesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyIssuesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyIssues>>> = ({
+    signal,
+  }) => getMyIssues(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyIssues>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyIssuesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyIssues>>
+>;
+export type GetMyIssuesQueryError = ErrorType<GetMyIssues401>;
+
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params: undefined | GetMyIssuesParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyIssues>>,
+          TError,
+          Awaited<ReturnType<typeof getMyIssues>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyIssues>>,
+          TError,
+          Awaited<ReturnType<typeof getMyIssues>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내가 작성한 이슈 목록
+ */
+
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyIssuesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 내 댓글이 채택된 이슈 목록을 페이지네이션으로 조회합니다.
+ * @summary 내가 해결한 이슈 목록
+ */
+export const getMySolved = (
+  params?: GetMySolvedParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMySolved200>(
+    { url: `/users/me/solved`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMySolvedQueryKey = (params?: GetMySolvedParams) => {
+  return [`/users/me/solved`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMySolvedQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMySolvedQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMySolved>>> = ({
+    signal,
+  }) => getMySolved(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMySolved>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMySolvedQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMySolved>>
+>;
+export type GetMySolvedQueryError = ErrorType<GetMySolved401>;
+
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params: undefined | GetMySolvedParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMySolved>>,
+          TError,
+          Awaited<ReturnType<typeof getMySolved>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMySolved>>,
+          TError,
+          Awaited<ReturnType<typeof getMySolved>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내가 해결한 이슈 목록
+ */
+
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMySolvedQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 연도별 날짜별 점수 획득 내역을 조회합니다. year 미입력 시 현재 연도.
+ * @summary 점수 히스토리 (잔디 그래프용)
+ */
+export const getMyScore = (
+  params?: GetMyScoreParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyScore200>(
+    { url: `/users/me/score`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMyScoreQueryKey = (params?: GetMyScoreParams) => {
+  return [`/users/me/score`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyScoreQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyScoreQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyScore>>> = ({
+    signal,
+  }) => getMyScore(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyScore>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyScoreQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyScore>>
+>;
+export type GetMyScoreQueryError = ErrorType<GetMyScore401>;
+
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params: undefined | GetMyScoreParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScore>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScore>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScore>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScore>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 점수 히스토리 (잔디 그래프용)
+ */
+
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyScoreQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 점수 획득 내역을 페이지네이션으로 조회합니다. (마이페이지 점수 획득 목록 섹션)
+ * @summary 점수 획득 목록
+ */
+export const getMyScoreLogs = (
+  params?: GetMyScoreLogsParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyScoreLogs200>(
+    { url: `/users/me/score/logs`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMyScoreLogsQueryKey = (params?: GetMyScoreLogsParams) => {
+  return [`/users/me/score/logs`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyScoreLogsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyScoreLogsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyScoreLogs>>> = ({
+    signal,
+  }) => getMyScoreLogs(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyScoreLogs>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyScoreLogsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyScoreLogs>>
+>;
+export type GetMyScoreLogsQueryError = ErrorType<GetMyScoreLogs401>;
+
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params: undefined | GetMyScoreLogsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScoreLogs>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScoreLogs>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScoreLogs>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScoreLogs>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 점수 획득 목록
+ */
+
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyScoreLogsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * 로그인한 사용자의 알림 목록을 조회합니다.

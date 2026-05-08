@@ -375,10 +375,10 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
 }
 
 /* 이슈 상세 조회 */
-export async function getIssueDetail({
-  teamId,
-  issueId,
-}: GetIssueDetailParamsDto): Promise<GetIssueDetailResponseDto> {
+export async function getIssueDetail(
+  userId: string,
+  { teamId, issueId }: GetIssueDetailParamsDto,
+): Promise<GetIssueDetailResponseDto> {
   const issue = await prisma.errorIssue.findFirst({
     where: {
       id: issueId,
@@ -411,6 +411,8 @@ export async function getIssueDetail({
     content: issue.content ?? '',
     tag: issue.tags.map((item) => item.tagName),
     author: issue.user.name,
+    authorId: issue.userId,
+    isAuthor: issue.userId === userId,
     errorLog,
     isPublic: issue.isPublic,
     status: issue.status,
