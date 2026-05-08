@@ -213,7 +213,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/issues/public',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '최신 이슈 피드 조회',
     request: {
       query: z.object({
@@ -245,7 +245,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/teams/{teamId}/issues/{issueId}',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 상세 조회',
     description: '팀에 속한 특정 이슈의 상세 정보를 조회합니다.',
     request: {
@@ -284,7 +284,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/teams/{teamId}/issues',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 등록',
     description: '팀에 새로운 이슈를 등록합니다.',
     request: {
@@ -339,7 +339,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'patch',
     path: '/teams/{teamId}/issues/{issueId}',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 수정',
     description: '팀에 속한 특정 이슈를 수정합니다.',
     request: {
@@ -402,7 +402,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'delete',
     path: '/teams/{teamId}/issues/{issueId}',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 삭제',
     description: '팀에 속한 특정 이슈를 삭제합니다.',
     request: {
