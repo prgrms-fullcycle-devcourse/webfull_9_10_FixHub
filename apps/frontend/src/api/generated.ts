@@ -779,6 +779,47 @@ export type GetNotifications401 = {
   error: GetNotifications401Error;
 };
 
+export type ReadNotification200 = {
+  id: string;
+  isRead: boolean;
+};
+
+export type ReadNotification400Error = {
+  code: string;
+  message: string;
+};
+
+export type ReadNotification400 = {
+  error: ReadNotification400Error;
+};
+
+export type ReadNotification401Error = {
+  code: string;
+  message: string;
+};
+
+export type ReadNotification401 = {
+  error: ReadNotification401Error;
+};
+
+export type ReadNotification403Error = {
+  code: string;
+  message: string;
+};
+
+export type ReadNotification403 = {
+  error: ReadNotification403Error;
+};
+
+export type ReadNotification404Error = {
+  code: string;
+  message: string;
+};
+
+export type ReadNotification404 = {
+  error: ReadNotification404Error;
+};
+
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
@@ -3651,3 +3692,103 @@ export function useGetNotifications<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * 로그인한 사용자의 특정 알림을 읽음 상태로 변경합니다.
+ * @summary 알림 읽음 처리
+ */
+export const readNotification = (
+  id: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ReadNotification200>(
+    { url: `/notifications/${id}/read`, method: 'PATCH', signal },
+    options,
+  );
+};
+
+export const getReadNotificationMutationOptions = <
+  TError = ErrorType<
+    | ReadNotification400
+    | ReadNotification401
+    | ReadNotification403
+    | ReadNotification404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof readNotification>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof readNotification>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['readNotification'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof readNotification>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return readNotification(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReadNotificationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof readNotification>>
+>;
+
+export type ReadNotificationMutationError = ErrorType<
+  | ReadNotification400
+  | ReadNotification401
+  | ReadNotification403
+  | ReadNotification404
+>;
+
+/**
+ * @summary 알림 읽음 처리
+ */
+export const useReadNotification = <
+  TError = ErrorType<
+    | ReadNotification400
+    | ReadNotification401
+    | ReadNotification403
+    | ReadNotification404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof readNotification>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof readNotification>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getReadNotificationMutationOptions(options), queryClient);
+};

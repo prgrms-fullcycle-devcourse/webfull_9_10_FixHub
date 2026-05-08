@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { useGetNotifications } from '@/api/generated';
+import {
+  getGetNotificationsQueryKey,
+  useGetNotifications,
+  useReadNotification,
+} from '@/api/generated';
 
 type NotificationItem = {
   id: string;
@@ -44,6 +49,7 @@ const formatNotificationDate = (createdAt: string) => {
 
 function NotificationPopover() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [readNotificationIds, setReadNotificationIds] = useState<string[]>([]);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -68,25 +74,65 @@ function NotificationPopover() {
     (notification) => !notification.isRead,
   ).length;
 
+  const addReadNotificationId = (notificationId: string) => {
+    setReadNotificationIds((prevReadNotificationIds) => {
+      if (prevReadNotificationIds.includes(notificationId)) {
+        return prevReadNotificationIds;
+      }
+
+      return [...prevReadNotificationIds, notificationId];
+    });
+  };
+
+  const { mutate: readNotificationById, isPending: isReadingNotification } =
+    useReadNotification({
+      mutation: {
+        onSuccess: (readNotification) => {
+          addReadNotificationId(readNotification.id);
+        },
+        onError: (_, variables) => {
+          setReadNotificationIds((prevReadNotificationIds) =>
+            prevReadNotificationIds.filter(
+              (notificationId) => notificationId !== variables.id,
+            ),
+          );
+        },
+        onSettled: () => {
+          queryClient.invalidateQueries({
+            queryKey: getGetNotificationsQueryKey(),
+          });
+        },
+      },
+    });
+
   const markAllNotificationsAsRead = () => {
+    const unreadNotifications = notifications.filter(
+      (notification) => !notification.isRead,
+    );
+
+    if (unreadNotifications.length === 0) {
+      return;
+    }
+
     setReadNotificationIds((prevReadNotificationIds) =>
       Array.from(
         new Set([
           ...prevReadNotificationIds,
-          ...notifications.map((notification) => notification.id),
+          ...unreadNotifications.map((notification) => notification.id),
         ]),
       ),
     );
+
+    unreadNotifications.forEach((notification) => {
+      readNotificationById({ id: notification.id });
+    });
   };
 
   const readNotification = (selectedNotification: NotificationItem) => {
-    setReadNotificationIds((prevReadNotificationIds) => {
-      if (prevReadNotificationIds.includes(selectedNotification.id)) {
-        return prevReadNotificationIds;
-      }
-
-      return [...prevReadNotificationIds, selectedNotification.id];
-    });
+    if (!selectedNotification.isRead) {
+      addReadNotificationId(selectedNotification.id);
+      readNotificationById({ id: selectedNotification.id });
+    }
 
     if (selectedNotification.href) {
       navigate(selectedNotification.href);
@@ -145,7 +191,7 @@ function NotificationPopover() {
             <button
               type="button"
               onClick={markAllNotificationsAsRead}
-              disabled={unreadCount === 0 || isLoading}
+              disabled={unreadCount === 0 || isLoading || isReadingNotification}
               className="cursor-pointer rounded-sm px-3 py-1 typo-regular-14 text-(--primary) transition hover:bg-(--surface-selected) disabled:cursor-not-allowed disabled:text-(--text-muted)"
             >
               모두 읽음

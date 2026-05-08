@@ -1,6 +1,11 @@
+import { Errors } from '../../common/errors/AppError.js';
 import prisma from '../../common/config/prisma.js';
 
-import type { GetNotificationsResponseDto } from './notifications.dto.js';
+import type {
+  GetNotificationsResponseDto,
+  ReadNotificationParamsDto,
+  ReadNotificationResponseDto,
+} from './notifications.dto.js';
 
 export async function getNotifications(
   userId: string,
@@ -59,4 +64,48 @@ export async function getNotifications(
       };
     }),
   };
+}
+
+export async function readNotification(
+  params: ReadNotificationParamsDto,
+  userId: string,
+): Promise<ReadNotificationResponseDto> {
+  const notification = await prisma.notification.findUnique({
+    where: {
+      id: params.id,
+    },
+    select: {
+      id: true,
+      userId: true,
+      isRead: true,
+    },
+  });
+
+  if (!notification) {
+    throw Errors.NOT_FOUND;
+  }
+
+  if (notification.userId !== userId) {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (notification.isRead) {
+    return {
+      id: notification.id,
+      isRead: notification.isRead,
+    };
+  }
+
+  return prisma.notification.update({
+    where: {
+      id: notification.id,
+    },
+    data: {
+      isRead: true,
+    },
+    select: {
+      id: true,
+      isRead: true,
+    },
+  });
 }
