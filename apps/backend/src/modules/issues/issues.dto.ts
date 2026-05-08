@@ -21,7 +21,8 @@ export const SearchIssuesResponseSchema = z.object({
       title: z.string(),
       teamName: z.string(),
       author: z.string(),
-      tags: z.array(z.string()),
+      tag: z.array(z.string()),
+      status: z.enum(['UNSOLVED', 'SOLVED']),
       summary: z.string(),
       commentCount: z.number(),
       createdAt: z.string(),
@@ -62,6 +63,13 @@ export const getPublicIssuesQuerySchema = z.object({
 });
 
 export type GetPublicIssuesQuery = z.infer<typeof getPublicIssuesQuerySchema>;
+
+export const GetIssueFeedsParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export type GetIssueFeedsQuery = z.infer<typeof getPublicIssuesQuerySchema>;
+export type GetIssueFeedsParamsDto = z.infer<typeof GetIssueFeedsParamsSchema>;
 
 /* 이슈 상세 조회 */
 export const GetIssueDetailParamsSchema = z.object({
