@@ -10,13 +10,16 @@ type IssueListProps = {
   tags?: string[];
   sort?: IssueSort;
   team?: string;
+  authorId?: string;
 };
 
 export default function IssueList({
+  type = 'public',
   status,
   tags = [],
   sort,
   team,
+  authorId,
 }: IssueListProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -25,19 +28,30 @@ export default function IssueList({
 
   const searchString = useMemo(() => {
     const tokens: string[] = [];
-    searchParams.forEach((value, key) => {
-      if (key === 'title') {
-        tokens.push(value);
-      } else {
-        tokens.push(`${key}:${value}`);
-      }
-    });
+    if (type === 'public') {
+      searchParams.forEach((value, key) => {
+        if (key === 'title') {
+          tokens.push(value);
+        } else {
+          tokens.push(`${key}:${value}`);
+        }
+      });
+    }
     if (status) tokens.push(`status:${status}`);
     tokens.push(...tags.map((tag) => `tag:${tag}`));
     if (sort) tokens.push(`sort:${sort}`);
     if (team) tokens.push(`teamId:${team}`);
+
+    if (authorId) {
+      if (type === 'solved') {
+        tokens.push(`solvedBy:${authorId}`);
+      } else {
+        tokens.push(`authorId:${authorId}`);
+      }
+    }
+
     return tokens.join(' ');
-  }, [searchParams, status, tags, sort, team]);
+  }, [searchParams, status, tags, sort, team, authorId, type]);
 
   if (prevSearchString !== searchString) {
     setPrevSearchString(searchString);
@@ -46,9 +60,13 @@ export default function IssueList({
 
   const querySearchString = `${searchString} page:${currentPage}`;
 
-  const { data, isPending, isError } = useGetIssuesSearch({
-    search: querySearchString,
-  });
+  // mine/solved 타입은 authorId가 확정된 후에만 쿼리 실행
+  const isQueryEnabled = type === 'public' || !!authorId;
+
+  const { data, isPending, isError } = useGetIssuesSearch(
+    { search: querySearchString },
+    { query: { enabled: isQueryEnabled } },
+  );
 
   if (isPending) {
     return (
@@ -93,10 +111,15 @@ export default function IssueList({
                 <div className="flex items-start justify-between gap-6">
                   <div className="min-w-0 flex-1">
                     <div className="mb-4 flex items-center gap-3">
-                      <span className="rounded-full bg-(--status-unsaved) px-3 py-1 typo-regular-14 font-bold text-(--text-primary)">
+                      <span
+                        className={`rounded-full px-3 py-1 typo-regular-14 font-bold text-white ${
+                          issue.status === 'SOLVED'
+                            ? 'bg-[var(--palette-solved-status)]'
+                            : 'bg-[var(--palette-unsaved-status)]'
+                        }`}
+                      >
                         {issue.status === 'SOLVED' ? '해결' : '미해결'}
                       </span>
-
                       <h2 className="truncate typo-semibold-18 text-(--text-primary)">
                         {issue.title}
                       </h2>

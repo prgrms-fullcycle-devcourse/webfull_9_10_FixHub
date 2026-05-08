@@ -282,9 +282,13 @@ export default function MyPage() {
             </>
           )}
 
-          {activeTab === 'myIssues' && <IssueList type="mine" />}
+          {activeTab === 'myIssues' && (
+            <IssueList type="mine" authorId={profile.id} />
+          )}
 
-          {activeTab === 'solvedIssues' && <IssueList type="solved" />}
+          {activeTab === 'solvedIssues' && (
+            <IssueList type="solved" authorId={profile.id} />
+          )}
         </div>
       </div>
 

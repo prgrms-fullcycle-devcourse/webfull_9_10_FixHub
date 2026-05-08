@@ -39,6 +39,8 @@ export type SearchIssuesQueryObjectDto = {
   teamId?: string;
   title: string[];
   author?: string;
+  authorId?: string;
+  solvedBy?: string;
   tag: string[];
   status?: IssueStatus;
   content: string[];
