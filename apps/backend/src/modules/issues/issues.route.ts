@@ -13,9 +13,9 @@ import { authenticate } from '../../common/middlewares/authenticate.js';
 
 const router = Router();
 
-router.get('/search', getIssues);
-router.get('/public', getPublicIssues);
-router.post('/suggest', suggestIssue);
+router.get('/issues/search', getIssues);
+router.get('/issues/public', getPublicIssues);
+router.post('/issues/suggest', suggestIssue);
 
 /* 이슈 상세 조회 */
 router.get('/teams/:teamId/issues/:issueId', getIssueDetail);
