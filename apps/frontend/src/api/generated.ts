@@ -755,6 +755,8 @@ export type PostIssuesSuggest502 = {
   code: string;
   message: string;
   statusCode: number;
+};
+
 export type GetNotifications200DataItem = {
   id: string;
   type: string;
@@ -2708,6 +2710,7 @@ export function useGetIssuesFeeds<
 /**
  * @summary 통합 이슈 피드 조회
  */
+
 export function useGetIssuesFeeds<
   TData = Awaited<ReturnType<typeof getIssuesFeeds>>,
   TError = ErrorType<PublicBadRequest>,
@@ -2878,6 +2881,7 @@ export function useGetIssuesFeedsTeamId<
 /**
  * @summary 팀 이슈 피드 조회
  */
+
 export function useGetIssuesFeedsTeamId<
   TData = Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
   TError = ErrorType<PublicBadRequest>,
@@ -3423,15 +3427,6 @@ export const postIssuesSuggest = (
       data: postIssuesSuggestBody,
       signal,
     },
- * 로그인한 사용자의 알림 목록을 조회합니다.
- * @summary 알림 목록 조회
- */
-export const getNotifications = (
-  options?: SecondParameter<typeof customInstance>,
-  signal?: AbortSignal,
-) => {
-  return customInstance<GetNotifications200>(
-    { url: `/notifications`, method: 'GET', signal },
     options,
   );
 };
@@ -3495,6 +3490,33 @@ export const usePostIssuesSuggest = <
       TError,
       { data?: BodyType<PostIssuesSuggestBody> },
       TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postIssuesSuggest>>,
+  TError,
+  { data?: BodyType<PostIssuesSuggestBody> },
+  TContext
+> => {
+  return useMutation(getPostIssuesSuggestMutationOptions(options), queryClient);
+};
+
+/**
+ * 로그인한 사용자의 알림 목록을 조회합니다.
+ * @summary 알림 목록 조회
+ */
+export const getNotifications = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetNotifications200>(
+    { url: `/notifications`, method: 'GET', signal },
+    options,
+  );
+};
+
 export const getGetNotificationsQueryKey = () => {
   return [`/notifications`] as const;
 };
@@ -3617,14 +3639,6 @@ export function useGetNotifications<
     request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof postIssuesSuggest>>,
-  TError,
-  { data?: BodyType<PostIssuesSuggestBody> },
-  TContext
-> => {
-  return useMutation(getPostIssuesSuggestMutationOptions(options), queryClient);
-};
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
