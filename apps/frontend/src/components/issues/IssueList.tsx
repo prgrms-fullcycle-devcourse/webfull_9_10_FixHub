@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useGetIssuesPublic } from '@/api/generated';
+import { useGetIssuesFeeds, useGetIssuesFeedsTeamId } from '@/api/generated';
 import type { IssueSort, IssueStatus } from '@/types/issue';
 
 type IssueListProps = {
@@ -20,10 +20,25 @@ export default function IssueList({
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isPending, isError } = useGetIssuesPublic({
+  const publicFeedQuery = useGetIssuesFeeds({
     page: currentPage,
     limit: 20,
   });
+
+  const teamFeedQuery = useGetIssuesFeedsTeamId(
+    _team ?? '',
+    {
+      page: currentPage,
+      limit: 20,
+    },
+    {
+      query: {
+        enabled: Boolean(_team),
+      },
+    },
+  );
+
+  const { data, isPending, isError } = _team ? teamFeedQuery : publicFeedQuery;
 
   const issues = useMemo(() => {
     if (!data) return [];
@@ -72,7 +87,7 @@ export default function IssueList({
   if (issues.length === 0) {
     return (
       <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
-        공개된 이슈가 없습니다.
+        조회된 이슈가 없습니다.
       </div>
     );
   }

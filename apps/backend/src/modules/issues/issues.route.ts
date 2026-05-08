@@ -3,6 +3,8 @@ import { Router } from 'express';
 import {
   getIssues,
   getPublicIssues,
+  getIssueFeeds,
+  getTeamIssueFeeds,
   getIssueDetail,
   postIssue,
   patchIssue,
@@ -15,6 +17,8 @@ const router = Router();
 
 router.get('/search', getIssues);
 router.get('/public', getPublicIssues);
+router.get('/issues/feeds', getIssueFeeds);
+router.get('/issues/feeds/:teamId', getTeamIssueFeeds);
 router.post('/suggest', suggestIssue);
 
 /* 이슈 상세 조회 */
