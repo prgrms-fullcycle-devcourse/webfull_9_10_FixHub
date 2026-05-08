@@ -53,7 +53,10 @@ export function useDeleteIssue() {
     mutationFn: deleteIssue,
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['publicIssues'],
+        queryKey: ['/issues/public'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['/issues/feeds'],
       });
     },
   });

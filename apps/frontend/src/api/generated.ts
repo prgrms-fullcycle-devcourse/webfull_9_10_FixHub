@@ -621,6 +621,16 @@ export type GetIssuesPublicParams = {
   limit?: number;
 };
 
+export type GetIssuesFeedsParams = {
+  page?: number;
+  limit?: number;
+};
+
+export type GetIssuesFeedsTeamIdParams = {
+  page?: number;
+  limit?: number;
+};
+
 export type GetTeamsTeamIdIssuesIssueId200Status =
   (typeof GetTeamsTeamIdIssuesIssueId200Status)[keyof typeof GetTeamsTeamIdIssuesIssueId200Status];
 
@@ -2529,6 +2539,324 @@ export function useGetIssuesPublic<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetIssuesPublicQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary 통합 이슈 피드 조회
+ */
+export const getIssuesFeeds = (
+  params?: GetIssuesFeedsParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetPublicIssuesResponse>(
+    { url: `/issues/feeds`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetIssuesFeedsQueryKey = (params?: GetIssuesFeedsParams) => {
+  return [`/issues/feeds`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetIssuesFeedsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getIssuesFeeds>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  params?: GetIssuesFeedsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getIssuesFeeds>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetIssuesFeedsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getIssuesFeeds>>> = ({
+    signal,
+  }) => getIssuesFeeds(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getIssuesFeeds>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetIssuesFeedsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getIssuesFeeds>>
+>;
+export type GetIssuesFeedsQueryError = ErrorType<PublicBadRequest>;
+
+export function useGetIssuesFeeds<
+  TData = Awaited<ReturnType<typeof getIssuesFeeds>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  params: undefined | GetIssuesFeedsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getIssuesFeeds>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesFeeds>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesFeeds>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesFeeds<
+  TData = Awaited<ReturnType<typeof getIssuesFeeds>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  params?: GetIssuesFeedsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getIssuesFeeds>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesFeeds>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesFeeds>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesFeeds<
+  TData = Awaited<ReturnType<typeof getIssuesFeeds>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  params?: GetIssuesFeedsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getIssuesFeeds>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 통합 이슈 피드 조회
+ */
+export function useGetIssuesFeeds<
+  TData = Awaited<ReturnType<typeof getIssuesFeeds>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  params?: GetIssuesFeedsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getIssuesFeeds>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetIssuesFeedsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary 팀 이슈 피드 조회
+ */
+export const getIssuesFeedsTeamId = (
+  teamId: string,
+  params?: GetIssuesFeedsTeamIdParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetPublicIssuesResponse>(
+    { url: `/issues/feeds/${teamId}`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetIssuesFeedsTeamIdQueryKey = (
+  teamId: string,
+  params?: GetIssuesFeedsTeamIdParams,
+) => {
+  return [`/issues/feeds/${teamId}`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetIssuesFeedsTeamIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  teamId: string,
+  params?: GetIssuesFeedsTeamIdParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetIssuesFeedsTeamIdQueryKey(teamId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getIssuesFeedsTeamId>>
+  > = ({ signal }) =>
+    getIssuesFeedsTeamId(teamId, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!teamId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetIssuesFeedsTeamIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getIssuesFeedsTeamId>>
+>;
+export type GetIssuesFeedsTeamIdQueryError = ErrorType<PublicBadRequest>;
+
+export function useGetIssuesFeedsTeamId<
+  TData = Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  teamId: string,
+  params: undefined | GetIssuesFeedsTeamIdParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesFeedsTeamId>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesFeedsTeamId<
+  TData = Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  teamId: string,
+  params?: GetIssuesFeedsTeamIdParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+          TError,
+          Awaited<ReturnType<typeof getIssuesFeedsTeamId>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetIssuesFeedsTeamId<
+  TData = Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  teamId: string,
+  params?: GetIssuesFeedsTeamIdParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 팀 이슈 피드 조회
+ */
+export function useGetIssuesFeedsTeamId<
+  TData = Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+  TError = ErrorType<PublicBadRequest>,
+>(
+  teamId: string,
+  params?: GetIssuesFeedsTeamIdParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetIssuesFeedsTeamIdQueryOptions(
+    teamId,
+    params,
+    options,
+  );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

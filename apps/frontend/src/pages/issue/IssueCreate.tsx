@@ -2,21 +2,22 @@ import { useMemo, useState } from 'react';
 import { CircleHelp, FileImage, Plus, Sparkles } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { usePostTeamsTeamIdIssues } from '@/api/generated';
+import {
+  useGetTeams,
+  useGetTeamsTeamId,
+  usePostTeamsTeamIdIssues,
+} from '@/api/generated';
 import IssueMarkdown from '@/components/issues/IssueMarkdown';
-
-const allTags = ['JavaScript', 'Axios', 'React', 'frontend', 'ios'];
-const teamOptions = ['팀 A', '팀 B', '팀 C'];
-const memberOptions = ['김이름', '김하늘', '김병성'];
 
 function IssueCreate() {
   const navigate = useNavigate();
   const { teamId } = useParams();
   const { mutateAsync, isPending } = usePostTeamsTeamIdIssues();
+  const { data: teamsResponse } = useGetTeams();
 
   const [title, setTitle] = useState('');
   const [tagInput, setTagInput] = useState('');
-  const [selectedTags, setSelectedTags] = useState(['JavaScript', 'Axios']);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [errorLog, setErrorLog] = useState('');
   const [requestInfo, setRequestInfo] = useState('');
@@ -24,22 +25,54 @@ function IssueCreate() {
     'UNSOLVED',
   );
   const [visibility, setVisibility] = useState<'public' | 'private'>('private');
-  const [team, setTeam] = useState('팀');
-  const [member, setMember] = useState('팀 멤버');
+  const [selectedTeamId, setSelectedTeamId] = useState(teamId ?? '');
+  const [selectedMemberId, setSelectedMemberId] = useState('');
 
-  const filteredTags = useMemo(() => {
-    if (!tagInput.trim()) return [];
-    return allTags.filter(
-      (tag) =>
-        tag.toLowerCase().includes(tagInput.toLowerCase()) &&
-        !selectedTags.includes(tag),
+  const teams = useMemo(() => teamsResponse?.data ?? [], [teamsResponse?.data]);
+
+  const resolvedTeamId = selectedTeamId || teamId || teams[0]?.teamId || '';
+
+  const { data: selectedTeamDetail } = useGetTeamsTeamId(resolvedTeamId, {
+    query: {
+      enabled: Boolean(resolvedTeamId),
+    },
+  });
+
+  const teamMembers = useMemo(
+    () => selectedTeamDetail?.members ?? [],
+    [selectedTeamDetail?.members],
+  );
+
+  const resolvedMemberId = useMemo(() => {
+    if (teamMembers.length === 0) return '';
+
+    const hasSelectedMember = teamMembers.some(
+      (member) => member.userId === selectedMemberId,
     );
-  }, [tagInput, selectedTags]);
 
-  const addTag = (tag: string) => {
-    if (selectedTags.includes(tag)) return;
-    setSelectedTags((prev) => [...prev, tag]);
+    return hasSelectedMember
+      ? selectedMemberId
+      : (teamMembers[0]?.userId ?? '');
+  }, [selectedMemberId, teamMembers]);
+
+  const addTagFromInput = () => {
+    const value = tagInput.trim();
+
+    if (!value) return;
+    if (selectedTags.includes(value)) {
+      setTagInput('');
+      return;
+    }
+
+    setSelectedTags((prev) => [...prev, value]);
     setTagInput('');
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTagFromInput();
+    }
   };
 
   const removeTag = (tag: string) => {
@@ -47,7 +80,7 @@ function IssueCreate() {
   };
 
   const handleCreate = async () => {
-    if (!teamId) {
+    if (!resolvedTeamId) {
       alert('팀 정보가 없습니다.');
       return;
     }
@@ -87,7 +120,7 @@ function IssueCreate() {
 
     try {
       const response = await mutateAsync({
-        teamId,
+        teamId: resolvedTeamId,
         data: {
           title: title.trim(),
           content: description.trim(),
@@ -97,7 +130,7 @@ function IssueCreate() {
         },
       });
 
-      navigate(`/teams/${teamId}/issues/${response.id}`);
+      navigate(`/teams/${resolvedTeamId}/issues/${response.id}`);
     } catch (error) {
       const message =
         error instanceof Error
@@ -112,8 +145,10 @@ function IssueCreate() {
     navigate(-1);
   };
 
-  const handleAiSummary = () => {
-    alert('AI 도움받기 클릭');
+  const handleChangeTeam = (nextTeamId: string) => {
+    setSelectedTeamId(nextTeamId);
+    setSelectedMemberId('');
+    navigate(`/teams/${nextTeamId}/issues/new`, { replace: true });
   };
 
   return (
@@ -201,27 +236,23 @@ function IssueCreate() {
                   ))}
                 </div>
 
-                <input
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  placeholder="태그 검색 또는 입력 (예: JavaScript, frontend, ios)"
-                  className="w-full bg-transparent typo-regular-16 text-(--text-primary) outline-none placeholder:text-(--text-muted)"
-                />
+                <div className="flex gap-2">
+                  <input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagInputKeyDown}
+                    placeholder="태그 입력 후 Enter 또는 쉼표(,)를 누르세요."
+                    className="w-full bg-transparent typo-regular-16 text-(--text-primary) outline-none placeholder:text-(--text-muted)"
+                  />
 
-                {filteredTags.length > 0 && (
-                  <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 rounded-md border border-border bg-popover p-2 shadow-(--shadow)">
-                    {filteredTags.map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => addTag(tag)}
-                        className="block w-full cursor-pointer rounded-sm px-3 py-2 text-left typo-regular-14 text-popover-foreground hover:bg-(--surface-selected)"
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                  <button
+                    type="button"
+                    onClick={addTagFromInput}
+                    className="shrink-0 cursor-pointer rounded-sm bg-(--surface-selected) px-3 py-2 typo-regular-14 text-(--text-primary)"
+                  >
+                    추가
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -242,8 +273,8 @@ function IssueCreate() {
                   <div className="flex overflow-hidden rounded-2xl bg-(--surface-overlay)">
                     <button
                       type="button"
-                      onClick={() => alert('이미지 추가')}
-                      className="flex h-14 w-14 cursor-pointer items-center justify-center text-(--text-primary) hover:bg-(--surface-selected)"
+                      disabled
+                      className="flex h-14 w-14 items-center justify-center text-(--text-primary) opacity-50"
                       aria-label="이미지 추가"
                     >
                       <Plus size={32} strokeWidth={2.4} />
@@ -252,7 +283,7 @@ function IssueCreate() {
                     <button
                       type="button"
                       disabled
-                      className="flex h-14 w-14 items-center justify-center text-(--text-primary)"
+                      className="flex h-14 w-14 items-center justify-center text-(--text-primary) opacity-50"
                       aria-label="이미지 아이콘"
                     >
                       <FileImage size={28} strokeWidth={2.2} />
@@ -261,10 +292,8 @@ function IssueCreate() {
 
                   <button
                     type="button"
-                    onClick={handleAiSummary}
-                    className="flex h-14 cursor-pointer items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse)
-                      transition-all duration-200 ease-out
-                      hover:shadow-(--shadow)"
+                    disabled
+                    className="flex h-14 items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse) opacity-50"
                   >
                     <Sparkles size={16} />
                     AI 도움받기
@@ -503,8 +532,8 @@ function IssueCreate() {
             </label>
 
             <select
-              value={team}
-              onChange={(e) => setTeam(e.target.value)}
+              value={resolvedTeamId}
+              onChange={(e) => handleChangeTeam(e.target.value)}
               className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
                 transition-all duration-300
                 focus:border-primary
@@ -514,9 +543,11 @@ function IssueCreate() {
                 color: 'var(--text-primary)',
               }}
             >
-              <option>팀</option>
-              {teamOptions.map((item) => (
-                <option key={item}>{item}</option>
+              <option value="">팀</option>
+              {teams.map((item) => (
+                <option key={item.teamId} value={item.teamId}>
+                  {item.name}
+                </option>
               ))}
             </select>
 
@@ -527,8 +558,8 @@ function IssueCreate() {
             </label>
 
             <select
-              value={member}
-              onChange={(e) => setMember(e.target.value)}
+              value={resolvedMemberId}
+              onChange={(e) => setSelectedMemberId(e.target.value)}
               className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
                 transition-all duration-300
                 focus:border-primary
@@ -538,9 +569,11 @@ function IssueCreate() {
                 color: 'var(--text-primary)',
               }}
             >
-              <option>팀 멤버</option>
-              {memberOptions.map((item) => (
-                <option key={item}>{item}</option>
+              <option value="">팀 멤버</option>
+              {teamMembers.map((item) => (
+                <option key={item.userId} value={item.userId}>
+                  {item.name}
+                </option>
               ))}
             </select>
           </div>
