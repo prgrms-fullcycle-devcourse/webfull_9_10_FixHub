@@ -216,7 +216,9 @@ export async function searchIssues(input: string) {
   const data = issues.map((issue) => ({
     id: issue.id,
     title: issue.title,
+    teamId: issue.teamId,
     teamName: issue.team.name,
+    summary: issue.content?.slice(0, 100),
     author: issue.userId,
     tag: issue.tags.map((t) => t.tagName),
     status: issue.status,

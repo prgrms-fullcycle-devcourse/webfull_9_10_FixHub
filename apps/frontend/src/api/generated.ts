@@ -599,13 +599,22 @@ export type GetIssuesSearch200Meta = {
   totalPages: number;
 };
 
+export type GetIssuesSearch200DataItemStatus =
+  (typeof GetIssuesSearch200DataItemStatus)[keyof typeof GetIssuesSearch200DataItemStatus];
+
+export const GetIssuesSearch200DataItemStatus = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
 export type GetIssuesSearch200DataItem = {
   id: string;
   teamId: string;
   title: string;
   teamName: string;
   author: string;
-  tags: string[];
+  tag: string[];
+  status: GetIssuesSearch200DataItemStatus;
   summary: string;
   commentCount: number;
   createdAt: string;
@@ -729,6 +738,23 @@ export type PostTeamsTeamIdIssuesBody = {
 export type PostTeamsTeamIdIssues201 = {
   id: string;
   createdAt: string;
+};
+
+export type PostIssuesSuggestBody = {
+  /** @minLength 1 */
+  errorLog: string;
+};
+
+export type PostIssuesSuggest200 = {
+  title: string;
+  tags: string[];
+  summary: string;
+};
+
+export type PostIssuesSuggest502 = {
+  code: string;
+  message: string;
+  statusCode: number;
 };
 
 export type GetNotifications200DataItem = {
@@ -2684,6 +2710,7 @@ export function useGetIssuesFeeds<
 /**
  * @summary 통합 이슈 피드 조회
  */
+
 export function useGetIssuesFeeds<
   TData = Awaited<ReturnType<typeof getIssuesFeeds>>,
   TError = ErrorType<PublicBadRequest>,
@@ -2854,6 +2881,7 @@ export function useGetIssuesFeedsTeamId<
 /**
  * @summary 팀 이슈 피드 조회
  */
+
 export function useGetIssuesFeedsTeamId<
   TData = Awaited<ReturnType<typeof getIssuesFeedsTeamId>>,
   TError = ErrorType<PublicBadRequest>,
@@ -3380,6 +3408,99 @@ export const usePostTeamsTeamIdIssues = <
     getPostTeamsTeamIdIssuesMutationOptions(options),
     queryClient,
   );
+};
+
+/**
+ * 로그를 받아 ai가 이슈 제목, 태그, 내용을 생성합니다.
+ * @summary ai 이슈 자동 생성
+ */
+export const postIssuesSuggest = (
+  postIssuesSuggestBody?: BodyType<PostIssuesSuggestBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PostIssuesSuggest200>(
+    {
+      url: `/issues/suggest`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: postIssuesSuggestBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostIssuesSuggestMutationOptions = <
+  TError = ErrorType<PostIssuesSuggest502>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIssuesSuggest>>,
+    TError,
+    { data?: BodyType<PostIssuesSuggestBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postIssuesSuggest>>,
+  TError,
+  { data?: BodyType<PostIssuesSuggestBody> },
+  TContext
+> => {
+  const mutationKey = ['postIssuesSuggest'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postIssuesSuggest>>,
+    { data?: BodyType<PostIssuesSuggestBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postIssuesSuggest(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostIssuesSuggestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postIssuesSuggest>>
+>;
+export type PostIssuesSuggestMutationBody =
+  | BodyType<PostIssuesSuggestBody>
+  | undefined;
+export type PostIssuesSuggestMutationError = ErrorType<PostIssuesSuggest502>;
+
+/**
+ * @summary ai 이슈 자동 생성
+ */
+export const usePostIssuesSuggest = <
+  TError = ErrorType<PostIssuesSuggest502>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postIssuesSuggest>>,
+      TError,
+      { data?: BodyType<PostIssuesSuggestBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postIssuesSuggest>>,
+  TError,
+  { data?: BodyType<PostIssuesSuggestBody> },
+  TContext
+> => {
+  return useMutation(getPostIssuesSuggestMutationOptions(options), queryClient);
 };
 
 /**
