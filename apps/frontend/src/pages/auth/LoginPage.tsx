@@ -4,7 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SocialLoginButton } from '@/components/auth/SocialLoginButton';
 import { usePostAuthLogin } from '@/api/generated';
-import { validateLogin, parseAuthError } from './AuthValidation';
+import {
+  validateLogin,
+  parseAuthError,
+} from '../../utils/validations/AuthValidation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

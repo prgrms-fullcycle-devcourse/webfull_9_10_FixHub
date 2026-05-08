@@ -10,6 +10,13 @@ const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_EXPIRES_IN = '7d';
 
+// 랜덤 기본 프로필 이미지 선택 함수
+const getRandomDefaultProfile = () => {
+  const num = Math.floor(Math.random() * 6) + 1; // 1~6
+  const padded = String(num).padStart(2, '0'); // '01'~'06'
+  return `${process.env.CLIENT_URL}/images/default-profile${padded}.png`;
+};
+
 export const authService = {
   async signup(body: SignupBody) {
     const existing = await prisma.user.findUnique({
@@ -25,6 +32,7 @@ export const authService = {
         email: body.email,
         password: hashedPassword,
         provider: 'local',
+        profileImg: getRandomDefaultProfile(),
       },
     });
 

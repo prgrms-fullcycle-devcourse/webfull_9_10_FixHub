@@ -21,6 +21,9 @@ import { zod as z } from '../../common/lib/zod.js';
 const publicIssueItemSchema = z
   .object({
     id: z.string().openapi({ example: 'issue-uuid-020' }),
+    teamId: z
+      .string()
+      .openapi({ example: '019e01ab-d423-7766-bcd1-14742ce92467' }),
     title: z.string().openapi({ example: 'Spring Security 403 오류' }),
     teamName: z.string().openapi({ example: '백엔드 팀' }),
     author: z.string().openapi({ example: '홍길동' }),

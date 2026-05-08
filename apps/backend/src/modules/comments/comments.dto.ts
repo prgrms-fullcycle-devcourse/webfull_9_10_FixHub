@@ -1,12 +1,12 @@
 import { zod as z } from '../../common/lib/zod.js';
 
 export const CreateCommentParamsSchema = z.object({
-  id: z.string().min(1),
+  id: z.uuid(),
 });
 
 export const CreateCommentBodySchema = z.object({
   content: z.string().trim().min(1).max(1000),
-  parentId: z.string().min(1).nullable(),
+  parentId: z.uuid().nullable(),
 });
 
 export const CreateCommentResponseSchema = z.object({
@@ -31,8 +31,13 @@ const CommentResponseBaseSchema = z.object({
   content: z.string().openapi({
     example: '환경변수에서 Redis 호스트 설정을 확인해보세요.',
   }),
-  author: z.string().openapi({
-    example: '김철수',
+  author: z.object({
+    id: z.uuid().openapi({
+      example: '00000000-0000-0000-0000-000000000000',
+    }),
+    name: z.string().openapi({
+      example: '김철수',
+    }),
   }),
   parentId: z.string().nullable().openapi({
     example: null,
@@ -52,7 +57,7 @@ const CommentReplyResponseSchema = CommentResponseBaseSchema.extend({
 });
 
 export const GetCommentsParamsSchema = z.object({
-  id: z.string().min(1),
+  id: z.uuid(),
 });
 
 export const GetCommentsResponseSchema = z.object({
@@ -64,8 +69,8 @@ export const GetCommentsResponseSchema = z.object({
 });
 
 export const AdoptCommentParamsSchema = z.object({
-  id: z.string().min(1),
-  commentId: z.string().min(1),
+  id: z.uuid(),
+  commentId: z.uuid(),
 });
 
 export const AdoptCommentResponseSchema = z.object({
@@ -87,8 +92,8 @@ export const AdoptCommentResponseSchema = z.object({
 });
 
 export const UpdateCommentParamsSchema = z.object({
-  id: z.string().min(1),
-  commentId: z.string().min(1),
+  id: z.uuid(),
+  commentId: z.uuid(),
 });
 
 export const UpdateCommentBodySchema = z.object({
@@ -108,8 +113,8 @@ export const UpdateCommentResponseSchema = z.object({
 });
 
 export const DeleteCommentParamsSchema = z.object({
-  id: z.string().min(1),
-  commentId: z.string().min(1),
+  id: z.uuid(),
+  commentId: z.uuid(),
 });
 
 export const DeleteCommentResponseSchema = z.object({

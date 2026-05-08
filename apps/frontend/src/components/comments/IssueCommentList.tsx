@@ -1,40 +1,58 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Rocket } from 'lucide-react';
 
+import {
+  getGetCommentsQueryKey,
+  useAdoptComment,
+  useDeleteComment,
+  useUpdateComment,
+} from '@/api/generated';
 import { Button } from '@/components/ui/button';
 import CommonModal from '@/components/ui/CommonModal';
 
 export type IssueCommentItem = {
-  id: number;
-  authorId: string;
-  name: string;
+  id: string;
+  author: {
+    id: string;
+    name: string;
+  };
   selected: boolean;
   isReply: boolean;
   text: string;
+  createdAt: string;
 };
 
 type IssueCommentListProps = {
+  issueId: string;
   comments: IssueCommentItem[];
   currentUserId: string;
-  issueAuthorId: string;
+  isIssueAuthor: boolean;
 };
 
 function IssueCommentList({
+  issueId,
   comments,
   currentUserId,
-  issueAuthorId,
+  isIssueAuthor,
 }: IssueCommentListProps) {
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showAllComments, setShowAllComments] = useState(false);
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [editedCommentTexts, setEditedCommentTexts] = useState<
-    Record<number, string>
+    Record<string, string>
   >({});
   const [deleteConfirmCommentId, setDeleteConfirmCommentId] = useState<
-    number | null
+    string | null
   >(null);
-  const [deletedCommentIds, setDeletedCommentIds] = useState<number[]>([]);
+  const [deletedCommentIds, setDeletedCommentIds] = useState<string[]>([]);
+  const [adoptedCommentId, setAdoptedCommentId] = useState<string | null>(null);
+  const [adoptingCommentId, setAdoptingCommentId] = useState<string | null>(
+    null,
+  );
+  const [isAdoptErrorModalOpen, setIsAdoptErrorModalOpen] = useState(false);
 
   const remainingComments = comments.filter(
     (comment) => !deletedCommentIds.includes(comment.id),
@@ -42,10 +60,66 @@ function IssueCommentList({
   const visibleComments = showAllComments
     ? remainingComments
     : remainingComments.slice(0, 3);
-  const canAdoptComments = currentUserId === issueAuthorId;
+  const hasAdoptedComment = remainingComments.some(
+    (comment) => comment.selected || comment.id === adoptedCommentId,
+  );
   const deleteConfirmComment = remainingComments.find(
     (comment) => comment.id === deleteConfirmCommentId,
   );
+  const { mutate: adoptComment, isPending: isAdoptingComment } =
+    useAdoptComment({
+      mutation: {
+        onSuccess: (adoptedComment, variables) => {
+          setAdoptedCommentId(adoptedComment.commentId ?? variables.commentId);
+          queryClient.invalidateQueries({
+            queryKey: getGetCommentsQueryKey(issueId),
+          });
+        },
+        onError: () => {
+          setIsAdoptErrorModalOpen(true);
+        },
+        onSettled: () => {
+          setAdoptingCommentId(null);
+        },
+      },
+    });
+  const { mutate: updateComment, isPending: isUpdatingComment } =
+    useUpdateComment({
+      mutation: {
+        onSuccess: (updatedComment) => {
+          setEditedCommentTexts((prevTexts) => ({
+            ...prevTexts,
+            [updatedComment.id]: updatedComment.content,
+          }));
+          setEditingCommentId(null);
+          setEditingText('');
+          queryClient.invalidateQueries({
+            queryKey: getGetCommentsQueryKey(issueId),
+          });
+        },
+        onError: () => {
+          alert('댓글 수정에 실패했습니다.');
+        },
+      },
+    });
+  const { mutate: deleteComment, isPending: isDeletingComment } =
+    useDeleteComment({
+      mutation: {
+        onSuccess: (_, variables) => {
+          setDeletedCommentIds((prevCommentIds) => [
+            ...prevCommentIds,
+            variables.commentId,
+          ]);
+          setDeleteConfirmCommentId(null);
+          queryClient.invalidateQueries({
+            queryKey: getGetCommentsQueryKey(issueId),
+          });
+        },
+        onError: () => {
+          alert('댓글 삭제에 실패했습니다.');
+        },
+      },
+    });
 
   const startEditComment = (comment: IssueCommentItem) => {
     setEditingCommentId(comment.id);
@@ -59,7 +133,7 @@ function IssueCommentList({
     setEditingText('');
   };
 
-  const startDeleteComment = (commentId: number) => {
+  const startDeleteComment = (commentId: string) => {
     setDeleteConfirmCommentId(commentId);
     setEditingCommentId(null);
     setEditingText('');
@@ -70,31 +144,58 @@ function IssueCommentList({
     setDeleteConfirmCommentId(null);
   };
 
-  const confirmDeleteComment = () => {
-    if (deleteConfirmCommentId === null) {
+  const handleAdoptComment = (commentId: string) => {
+    if (!issueId || isAdoptingComment) {
       return;
     }
 
-    setDeletedCommentIds((prevCommentIds) => [
-      ...prevCommentIds,
-      deleteConfirmCommentId,
-    ]);
-    setDeleteConfirmCommentId(null);
+    setAdoptingCommentId(commentId);
+    adoptComment({
+      id: issueId,
+      commentId,
+    });
   };
 
-  const saveEditedComment = (commentId: number) => {
-    const nextText = editingText.trim();
-
-    if (!nextText) {
+  const confirmDeleteComment = () => {
+    if (deleteConfirmCommentId === null || isDeletingComment || !issueId) {
       return;
     }
 
-    setEditedCommentTexts((prevTexts) => ({
-      ...prevTexts,
-      [commentId]: nextText,
-    }));
-    setEditingCommentId(null);
-    setEditingText('');
+    deleteComment({
+      id: issueId,
+      commentId: deleteConfirmCommentId,
+    });
+  };
+
+  const saveEditedComment = (commentId: string) => {
+    const nextText = editingText.trim();
+
+    if (!nextText || !issueId) {
+      return;
+    }
+
+    updateComment({
+      id: issueId,
+      commentId,
+      data: {
+        content: nextText,
+      },
+    });
+  };
+
+  const formatCommentDate = (date: string) => {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return parsedDate.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short',
+    });
   };
 
   return (
@@ -110,7 +211,12 @@ function IssueCommentList({
               const isEditing = editingCommentId === comment.id;
               const displayedText =
                 editedCommentTexts[comment.id] ?? comment.text;
-              const canEditComment = comment.authorId === currentUserId;
+
+              const isCommentAuthor = comment.author.id === currentUserId;
+              const isSelectedComment =
+                comment.selected || adoptedCommentId === comment.id;
+              const canAdoptComment =
+                isIssueAuthor && !isCommentAuthor && !hasAdoptedComment;
               const canSaveEdit =
                 editingText.trim().length > 0 &&
                 editingText.trim() !== displayedText;
@@ -125,7 +231,7 @@ function IssueCommentList({
 
                   <div
                     className={`rounded-md bg-(--surface-comment) p-5 ${
-                      comment.selected
+                      isSelectedComment
                         ? 'border border-(--status-unsaved) shadow-[0_0_18px_rgba(228,99,101,0.35)]'
                         : ''
                     } ${
@@ -138,7 +244,7 @@ function IssueCommentList({
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-white" />
                         <span className="typo-medium-16 text-(--text-primary)">
-                          {comment.name}
+                          {comment.author.name}
                         </span>
 
                         {comment.isReply && (
@@ -155,25 +261,25 @@ function IssueCommentList({
                       </div>
 
                       <div className="relative flex items-center gap-3">
-                        {comment.selected ? (
+                        {isSelectedComment ? (
                           <span className="rounded-full border-transparent border bg-(--status-unsaved) px-4 py-2 text-xs font-bold text-(--status-error-foreground)">
-                            채택 +5
+                            채택 +10
                           </span>
-                        ) : canAdoptComments &&
-                          comment.authorId !== currentUserId ? (
+                        ) : canAdoptComment ? (
                           <button
                             type="button"
+                            disabled={isAdoptingComment}
                             className="flex gap-1 rounded-full border-1 px-4 py-2 text-xs font-bold transition duration-300 hover:bg-(--status-unsaved) hover:border-transparent cursor-pointer"
-                            onClick={() => {
-                              alert('채택하기 클릭');
-                            }}
+                            onClick={() => handleAdoptComment(comment.id)}
                           >
-                            채택
+                            {adoptingCommentId === comment.id
+                              ? '채택 중'
+                              : '채택'}
                             <Rocket size={18} />
                           </button>
                         ) : null}
 
-                        {!isEditing && canEditComment && (
+                        {!isEditing && isCommentAuthor && (
                           <Button
                             type="button"
                             variant="ghost"
@@ -192,24 +298,23 @@ function IssueCommentList({
 
                         {openMenuId === comment.id && (
                           <div className="absolute right-0 top-9 z-30 w-32 overflow-hidden rounded-sm border border-border bg-popover typo-regular-14 text-popover-foreground shadow-(--shadow)">
-                            {canEditComment && (
-                              <button
-                                type="button"
-                                onClick={() => startEditComment(comment)}
-                                className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
-                              >
-                                수정
-                              </button>
-                            )}
-
-                            {canEditComment && (
-                              <button
-                                type="button"
-                                onClick={() => startDeleteComment(comment.id)}
-                                className="block w-full cursor-pointer px-4 py-3 text-left text-(--status-error) hover:bg-(--surface-selected)"
-                              >
-                                삭제
-                              </button>
+                            {isCommentAuthor && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => startEditComment(comment)}
+                                  className="block w-full cursor-pointer px-4 py-3 text-left hover:bg-(--surface-selected)"
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => startDeleteComment(comment.id)}
+                                  className="block w-full cursor-pointer px-4 py-3 text-left text-(--status-error) hover:bg-(--surface-selected)"
+                                >
+                                  삭제
+                                </button>
+                              </>
                             )}
                           </div>
                         )}
@@ -242,11 +347,11 @@ function IssueCommentList({
                           <Button
                             type="button"
                             size="sm"
-                            disabled={!canSaveEdit}
+                            disabled={!canSaveEdit || isUpdatingComment}
                             onClick={() => saveEditedComment(comment.id)}
                             className="cursor-pointer bg-(--primary) text-(--primary-foreground) hover:opacity-90 disabled:cursor-not-allowed"
                           >
-                            저장
+                            {isUpdatingComment ? '저장 중' : '저장'}
                           </Button>
                         </div>
                       </div>
@@ -257,7 +362,7 @@ function IssueCommentList({
                     )}
 
                     <div className="mt-3 flex justify-between text-xs text-(--text-secondary)">
-                      <span>2026-04-25(토)</span>
+                      <span>{formatCommentDate(comment.createdAt)}</span>
 
                       <button
                         type="button"
@@ -292,16 +397,26 @@ function IssueCommentList({
         title="댓글 삭제"
         description={
           <>
-            {deleteConfirmComment?.name ?? '작성자'}님의 댓글을 삭제할까요?
+            {deleteConfirmComment?.author.name ?? '작성자'}님의 댓글을
+            삭제할까요?
             <br />
             삭제한 댓글은 목록에서 더 이상 보이지 않습니다.
           </>
         }
         cancelText="취소하기"
-        confirmText="삭제하기"
+        confirmText={isDeletingComment ? '삭제 중' : '삭제하기'}
         onClose={cancelDeleteComment}
         onConfirm={confirmDeleteComment}
         confirmButtonClassName="bg-(--status-error) text-(--status-error-foreground) hover:opacity-90"
+      />
+
+      <CommonModal
+        isOpen={isAdoptErrorModalOpen}
+        title="댓글 채택 실패"
+        description="댓글을 채택하지 못했습니다. 잠시 후 다시 시도해주세요."
+        confirmText="확인하기"
+        onClose={() => setIsAdoptErrorModalOpen(false)}
+        showCancelButton={false}
       />
     </aside>
   );

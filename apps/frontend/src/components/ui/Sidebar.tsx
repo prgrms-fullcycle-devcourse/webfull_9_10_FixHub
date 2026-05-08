@@ -28,10 +28,16 @@ export default function Sidebar() {
   const isMatch = (path: string) => Boolean(matchPath(path, location.pathname));
 
   const isIssueWriteActive =
-    isMatch('/issues/new') || isMatch('/issues/:issueId/edit');
+    isMatch('/teams/:teamId/issues/new') ||
+    isMatch('/teams/:teamId/issues/:issueId/edit');
+
+  const isMyPageActive = isMatch('/mypage');
 
   const isHomeActive =
-    isMatch('/') || (!isIssueWriteActive && isMatch('/issues/:issueId'));
+    isMatch('/') ||
+    (!isIssueWriteActive &&
+      !isMyPageActive &&
+      isMatch('/teams/:teamId/issues/:issueId'));
 
   const isTeamCreationActive = isMatch('/teams/new');
 
@@ -43,7 +49,7 @@ export default function Sidebar() {
     error,
   } = useGetTeams({
     query: {
-      enabled: isOpen,
+      enabled: true,
       queryFn: async () => {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teams`, {
           credentials: 'include',
@@ -91,7 +97,14 @@ export default function Sidebar() {
           icon={<CodingBoxIcon />}
           label="이슈 작성"
           active={isIssueWriteActive}
-          onClick={() => navigate('/issues/new')}
+          onClick={() => {
+            if (teams.length === 0) {
+              alert('먼저 팀에 속해 있어야 합니다.');
+              return;
+            }
+
+            navigate(`/teams/${teams[0].teamId}/issues/new`);
+          }}
         />
 
         <Divider />
@@ -155,7 +168,12 @@ export default function Sidebar() {
 
         <Divider />
 
-        <SidebarItem icon={<UserIcon />} label="마이페이지" />
+        <SidebarItem
+          icon={<UserIcon />}
+          label="마이페이지"
+          active={isMyPageActive}
+          onClick={() => navigate('/mypage')}
+        />
 
         <Divider />
 

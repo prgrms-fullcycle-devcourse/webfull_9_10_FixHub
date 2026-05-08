@@ -17,11 +17,12 @@ export const SearchIssuesResponseSchema = z.object({
   data: z.array(
     z.object({
       id: z.uuidv7(),
+      teamId: z.uuidv7(),
       title: z.string(),
       teamName: z.string(),
       author: z.string(),
-      tag: z.array(z.string()),
-      status: z.enum(['UNSOLVED', 'SOLVED']),
+      tags: z.array(z.string()),
+      summary: z.string(),
       commentCount: z.number(),
       createdAt: z.string(),
     }),

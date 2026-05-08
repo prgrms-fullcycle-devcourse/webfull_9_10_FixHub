@@ -14,6 +14,7 @@ import IssueFeed from '@/pages/issue/IssueFeed';
 import CreateTeamPage from '@/pages/teams/CreateTeamPage';
 import AdditionalInfoPage from '@/pages/auth/AdditionalInfoPage';
 import TeamDetailPage from '@/pages/teams/TeamDetailPage';
+import MyPage from '@/pages/users/MyPage';
 
 export const router = createBrowserRouter([
   {
@@ -29,11 +30,12 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: '/', element: <IssueFeed /> },
-      { path: '/issues/new', element: <IssueCreate /> },
+      { path: '/teams/:teamId/issues/new', element: <IssueCreate /> },
       { path: '/teams/new', element: <CreateTeamPage /> },
       { path: '/teams/:teamId', element: <TeamDetailPage /> },
-      { path: '/issues/:issueId', element: <IssueDetail /> },
-      { path: '/issues/:issueId/edit', element: <IssueEdit /> },
+      { path: '/teams/:teamId/issues/:issueId', element: <IssueDetail /> },
+      { path: '/teams/:teamId/issues/:issueId/edit', element: <IssueEdit /> },
+      { path: '/mypage', element: <MyPage /> },
     ],
   },
 ]);

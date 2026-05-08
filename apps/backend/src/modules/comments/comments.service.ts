@@ -16,7 +16,7 @@ import type {
   UpdateCommentResponseDto,
 } from './comments.dto.js';
 
-const ADOPT_COMMENT_REWARDED_SCORE = 5;
+const ADOPT_COMMENT_REWARDED_SCORE = 10;
 const SOLVED_STATUS = 'SOLVED' as const;
 
 export async function createComment(
@@ -129,13 +129,12 @@ export async function getComments(
       createdAt: true,
       user: {
         select: {
+          id: true,
           name: true,
         },
       },
       replies: {
-        orderBy: {
-          createdAt: 'asc',
-        },
+        orderBy: [{ isAdopted: 'desc' }, { createdAt: 'asc' }],
         select: {
           id: true,
           content: true,
@@ -144,6 +143,7 @@ export async function getComments(
           createdAt: true,
           user: {
             select: {
+              id: true,
               name: true,
             },
           },
@@ -152,18 +152,39 @@ export async function getComments(
     },
   });
 
+  const sortedComments = [...comments].sort((prevComment, nextComment) => {
+    const prevHasAdoptedComment =
+      prevComment.isAdopted ||
+      prevComment.replies.some((reply) => reply.isAdopted);
+    const nextHasAdoptedComment =
+      nextComment.isAdopted ||
+      nextComment.replies.some((reply) => reply.isAdopted);
+
+    if (prevHasAdoptedComment !== nextHasAdoptedComment) {
+      return prevHasAdoptedComment ? -1 : 1;
+    }
+
+    return prevComment.createdAt.getTime() - nextComment.createdAt.getTime();
+  });
+
   return {
-    data: comments.map((comment) => ({
+    data: sortedComments.map((comment) => ({
       id: comment.id,
       content: comment.content,
-      author: comment.user.name,
+      author: {
+        id: comment.user.id,
+        name: comment.user.name,
+      },
       parentId: comment.parentId,
       isAdopted: comment.isAdopted,
       createdAt: comment.createdAt.toISOString(),
       replies: comment.replies.map((reply) => ({
         id: reply.id,
         content: reply.content,
-        author: reply.user.name,
+        author: {
+          id: reply.user.id,
+          name: reply.user.name,
+        },
         parentId: reply.parentId,
         isAdopted: reply.isAdopted,
         createdAt: reply.createdAt.toISOString(),
@@ -353,6 +374,7 @@ export async function adoptComment(
         teamMemberId: teamMember.id,
         amount: ADOPT_COMMENT_REWARDED_SCORE,
         reason: ADOPT_COMMENT_REASON,
+        issueId: comment.issue.id,
       },
     });
 
