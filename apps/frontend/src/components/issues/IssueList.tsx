@@ -1,10 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useGetIssuesPublic } from '@/api/generated';
+import {
+  useGetIssuesPublic,
+  useGetMyIssues,
+  useGetMySolved,
+} from '@/api/generated';
 import type { IssueSort, IssueStatus } from '@/types/issue';
 
 type IssueListProps = {
+  type?: 'public' | 'mine' | 'solved';
   status?: IssueStatus;
   tags?: string[];
   sort?: IssueSort;
@@ -12,6 +17,7 @@ type IssueListProps = {
 };
 
 export default function IssueList({
+  type = 'public',
   status: _status,
   tags = [],
   sort,
@@ -20,10 +26,27 @@ export default function IssueList({
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isPending, isError } = useGetIssuesPublic({
-    page: currentPage,
-    limit: 20,
-  });
+  // 1. 공용 피드 (팀 페이지 등)
+  const publicRes = useGetIssuesPublic(
+    { page: currentPage, limit: 20 },
+    { query: { enabled: type === 'public' } },
+  );
+
+  // 2. 마이페이지 - 내가 작성한 이슈
+  const mineRes = useGetMyIssues(
+    { page: currentPage, limit: 10 },
+    { query: { enabled: type === 'mine' } },
+  );
+
+  // 3. 마이페이지 - 내가 해결한 이슈
+  const solvedRes = useGetMySolved(
+    { page: currentPage, limit: 10 },
+    { query: { enabled: type === 'solved' } },
+  );
+
+  const currentQuery =
+    type === 'public' ? publicRes : type === 'mine' ? mineRes : solvedRes;
+  const { data, isPending, isError } = currentQuery;
 
   const issues = useMemo(() => {
     if (!data) return [];
@@ -91,10 +114,17 @@ export default function IssueList({
             <div className="flex items-start justify-between gap-6">
               <div className="min-w-0 flex-1">
                 <div className="mb-4 flex items-center gap-3">
-                  <span className="rounded-full bg-(--surface-tag) px-3 py-1 typo-regular-14 text-(--text-primary)">
-                    공개
+                  <span
+                    className={`rounded-full px-3 py-1 typo-regular-14 ${
+                      'status' in issue && issue.status === 'SOLVED'
+                        ? 'bg-[var(--palette-solved-status)] text-white'
+                        : 'bg-[var(--palette-unsaved-status)] text-white'
+                    }`}
+                  >
+                    {'status' in issue && issue.status === 'SOLVED'
+                      ? '해결'
+                      : '미해결'}
                   </span>
-
                   <h2 className="truncate typo-semibold-18 text-(--text-primary)">
                     {issue.title}
                   </h2>
