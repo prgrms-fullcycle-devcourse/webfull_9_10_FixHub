@@ -1,56 +1,117 @@
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import SettingIcon from '@/assets/icons/setting.svg';
 import LetterIcon from '@/assets/icons/letter.svg';
 import ArrowIcon from '@/assets/icons/arrow.svg';
+import { useGetTeamsTeamId, useGetTeamsTeamIdMembers } from '@/api/generated';
 
 const mockIssues = Array.from({ length: 6 });
 
-// TODO: API로 데이터 가져오기
-const rankingMembers = [
-  {
-    rank: 1,
-    name: '김가영',
-    role: 'MEMBER',
-    score: 1000000,
-  },
-  {
-    rank: 2,
-    name: '김나영',
-    role: 'MEMBER',
-    score: 850000,
-    isMe: true,
-  },
-  {
-    rank: 3,
-    name: '박서준',
-    role: 'LEADER',
-    score: 720000,
-  },
-];
-
 export default function TeamDetailPage() {
+  const { teamId } = useParams<{ teamId: string }>();
+  const [showAllMembers, setShowAllMembers] = useState(false);
+
+  const {
+    data: teamDetail,
+    isLoading: isTeamDetailLoading,
+    error: teamDetailError,
+  } = useGetTeamsTeamId(teamId ?? '', {
+    query: {
+      enabled: Boolean(teamId),
+    },
+    request: {
+      withCredentials: true,
+    },
+  });
+
+  const {
+    data: teamMembersResponse,
+    isFetching: isTeamMembersFetching,
+    refetch: refetchTeamMembers,
+  } = useGetTeamsTeamIdMembers(teamId ?? '', {
+    query: {
+      enabled: false,
+    },
+    request: {
+      withCredentials: true,
+    },
+  });
+
+  const topMembers = teamDetail?.members ?? [];
+  const fullMembers = teamMembersResponse?.data ?? [];
+
+  const rankingMembers = showAllMembers ? fullMembers : topMembers;
+
+  const handleClickShowAllMembers = async () => {
+    if (!teamId) return;
+
+    if (!showAllMembers && fullMembers.length === 0) {
+      await refetchTeamMembers();
+    }
+
+    setShowAllMembers((prev) => !prev);
+  };
+
+  if (isTeamDetailLoading) {
+    return (
+      <main className="p-[60px]">
+        <div className="flex flex-col gap-[82px]">
+          <div className="flex flex-col gap-[48px] typo-medium-40">
+            로딩 중...
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (teamDetailError) {
+    console.error(teamDetailError);
+
+    return (
+      <main className="p-[60px]">
+        <div className="flex flex-col gap-[82px]">
+          <div className="flex flex-col gap-[48px] typo-medium-40">
+            팀 정보를 불러오지 못했습니다.
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="p-[60px]">
       <div className="flex flex-col gap-[82px]">
         <div className="flex flex-col gap-[48px]">
           {/* 팀 정보 */}
-          {/* <section className="bg-card rounded-md p-[32px] flex justify-between items-start"> */}
           <section className="bg-card rounded-lg p-10 flex flex-col gap-9">
             <div className="flex justify-between">
-              <h1 className="typo-medium-40">팀 A</h1>
+              <h1 className="typo-medium-40">{teamDetail?.name}</h1>
               <button className="flex gap-[10px] border border-white p-5 rounded-sm hover:bg-surface-selected transition">
                 <SettingIcon className="w-6 h-6" />
                 <span className="typo-bold-20 ">팀 설정</span>
               </button>
             </div>
-            <p className="typo-regular-20">
-              팀 서비스와 안정성과 품질 향상을 위해 협업하는 팀입니다.
-            </p>
+            <p className="typo-regular-20">{teamDetail?.description}</p>
           </section>
 
           {/* 팀 랭킹 */}
-          <section className="bg-card rounded-lg p-10">
+          <motion.section
+            layout
+            transition={{
+              layout: {
+                duration: 0.35,
+                ease: 'easeInOut',
+              },
+            }}
+            className="bg-card rounded-lg p-10"
+          >
             <div className="space-y-[39px]">
-              <div className="flex justify-between items-center">
+              <motion.div
+                layout="position"
+                className="flex justify-between items-center"
+              >
                 <h2 className="typo-medium-40">팀 랭킹</h2>
 
                 <button
@@ -63,20 +124,54 @@ export default function TeamDetailPage() {
                     멤버 초대
                   </span>
                 </button>
-              </div>
+              </motion.div>
 
-              <div className="space-y-[8px]">
-                {rankingMembers.map((member) => (
-                  <RankingItem key={member.rank} {...member} />
-                ))}
-              </div>
+              <motion.div
+                layout
+                transition={{
+                  layout: {
+                    duration: 0.35,
+                    ease: 'easeInOut',
+                  },
+                }}
+                className="space-y-[8px]"
+              >
+                <AnimatePresence initial={false} mode="popLayout">
+                  {rankingMembers.map((member, idx) => (
+                    <motion.div
+                      key={member.userId}
+                      layout
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                    >
+                      <RankingItem rank={idx + 1} {...member} />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
 
-              <div className="flex items-center gap-4 cursor-pointer mx-auto w-fit">
-                <span className="typo-regular-16">팀원 전체보기</span>
-                <ArrowIcon className="w-[12px] h-[12px]" />
-              </div>
+              {topMembers.length >= 3 && (
+                <motion.button
+                  layout="position"
+                  onClick={handleClickShowAllMembers}
+                  disabled={isTeamMembersFetching}
+                  className="flex items-center gap-4 cursor-pointer mx-auto w-fit"
+                >
+                  <span className="typo-regular-16">
+                    {showAllMembers ? '팀원 간단 보기' : '팀원 전체 보기'}
+                  </span>
+                  <ArrowIcon
+                    className={[
+                      'w-[12px] h-[12px] transition-transform duration-300 ease-in-out',
+                      showAllMembers ? 'rotate-0' : 'rotate-180',
+                    ].join(' ')}
+                  />
+                </motion.button>
+              )}
             </div>
-          </section>
+          </motion.section>
         </div>
         <div>
           {/* 안내 문구 */}

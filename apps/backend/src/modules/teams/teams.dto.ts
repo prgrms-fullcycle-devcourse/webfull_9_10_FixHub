@@ -29,3 +29,42 @@ export const GetMyTeamsResponseSchema = z.object({
 });
 
 export type GetMyTeamsResponseDto = z.infer<typeof GetMyTeamsResponseSchema>;
+
+// 팀 상세 조회
+export const GetTeamDetailResponseSchema = z.object({
+  teamId: z.uuidv7(),
+  name: z.string(),
+  description: z.string(),
+  ownerId: z.uuidv7(),
+  createdAt: z.iso.datetime(),
+  members: z.array(
+    z.object({
+      userId: z.uuidv7(),
+      name: z.string(),
+      role: z.enum(['LEADER', 'MEMBER']),
+      joinedAt: z.iso.datetime(),
+      score: z.number(),
+    }),
+  ),
+});
+
+export type GetTeamDetailResponseDto = z.infer<
+  typeof GetTeamDetailResponseSchema
+>;
+
+// 팀원 목록 조회
+export const GetTeamMembersResponseSchema = z.object({
+  data: z.array(
+    z.object({
+      userId: z.uuidv7(),
+      name: z.string(),
+      role: z.enum(['LEADER', 'MEMBER']),
+      joinedAt: z.iso.datetime().nullable(),
+      score: z.number(),
+    }),
+  ),
+});
+
+export type GetTeamMembersResponseDto = z.infer<
+  typeof GetTeamMembersResponseSchema
+>;

@@ -19,4 +19,9 @@ export const Errors = {
   UNAUTHORIZED: new AppError('UNAUTHORIZED', '인증이 필요합니다.', 401),
   FORBIDDEN: new AppError('FORBIDDEN', '권한이 없습니다.', 403),
   NOT_FOUND: new AppError('NOT_FOUND', '리소스를 찾을 수 없습니다.', 404),
+  TEAM_NOT_FOUND: new AppError(
+    'TEAM_NOT_FOUND',
+    '요청한 팀을 찾을 수 없습니다.',
+    404,
+  ),
 } as const;
