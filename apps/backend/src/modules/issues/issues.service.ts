@@ -6,6 +6,8 @@ import { AppError, Errors } from '../../common/errors/AppError.js';
 import {
   type SearchIssuesQueryObjectDto,
   type GetPublicIssuesQuery,
+  type GetIssueFeedsQuery,
+  type GetIssueFeedsParamsDto,
   type GetIssueDetailParamsDto,
   type GetIssueDetailResponseDto,
   type CreateIssueParamsDto,
@@ -96,10 +98,40 @@ function parseSearchQuery(input: string) {
   return result;
 }
 
+function mapFeedIssue(issue: {
+  id: string;
+  teamId: string;
+  title: string;
+  content: string | null;
+  team: { name: string };
+  user: { name: string | null } | null;
+  tags: Array<{ tagName: string }>;
+  _count: { comments: number };
+  createdAt: Date;
+}) {
+  return {
+    id: issue.id,
+    teamId: issue.teamId,
+    title: issue.title,
+    teamName: issue.team.name,
+    author: issue.user?.name ?? '',
+    tags: issue.tags.map((tag) => tag.tagName),
+    summary: toPlainSummary(issue.content ?? ''),
+    commentCount: issue._count.comments,
+    createdAt: issue.createdAt.toISOString(),
+  };
+}
+
 function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
   const andConditions: Prisma.ErrorIssueWhereInput[] = [];
 
-  andConditions.push(dto.teamId ? { teamId: dto.teamId } : { isPublic: true });
+  if (!dto.teamId && !dto.author) {
+    andConditions.push({ isPublic: true });
+  }
+
+  if (dto.teamId) {
+    andConditions.push({ teamId: dto.teamId });
+  }
 
   if (dto.title.length > 0) {
     andConditions.push(
@@ -190,7 +222,9 @@ export async function searchIssues(input: string) {
   const data = issues.map((issue) => ({
     id: issue.id,
     title: issue.title,
+    teamId: issue.teamId,
     teamName: issue.team.name,
+    summary: issue.content?.slice(0, 100),
     author: issue.userId,
     tag: issue.tags.map((t) => t.tagName),
     status: issue.status,
@@ -207,6 +241,91 @@ export async function searchIssues(input: string) {
       totalPages: Math.ceil(totalItemCount / itemsPerPage),
     },
     data,
+  };
+}
+
+export async function getIssueFeeds({ page, limit }: GetIssueFeedsQuery) {
+  const skip = (page - 1) * limit;
+
+  const [totalItemCount, issues] = await Promise.all([
+    prisma.errorIssue.count({
+      where: {
+        isPublic: true,
+      },
+    }),
+    prisma.errorIssue.findMany({
+      where: {
+        isPublic: true,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        tags: true,
+        user: true,
+        team: true,
+        _count: {
+          select: { comments: true },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    meta: {
+      totalItemCount,
+      currentItemCount: issues.length,
+      itemsPerPage: limit,
+      currentPage: page,
+      totalPages: Math.ceil(totalItemCount / limit) || 1,
+    },
+    data: issues.map(mapFeedIssue),
+  };
+}
+
+export async function getTeamIssueFeeds(
+  { teamId }: GetIssueFeedsParamsDto,
+  { page, limit }: GetIssueFeedsQuery,
+) {
+  const skip = (page - 1) * limit;
+
+  const [totalItemCount, issues] = await Promise.all([
+    prisma.errorIssue.count({
+      where: {
+        teamId,
+      },
+    }),
+    prisma.errorIssue.findMany({
+      where: {
+        teamId,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        tags: true,
+        user: true,
+        team: true,
+        _count: {
+          select: { comments: true },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    meta: {
+      totalItemCount,
+      currentItemCount: issues.length,
+      itemsPerPage: limit,
+      currentPage: page,
+      totalPages: Math.ceil(totalItemCount / limit) || 1,
+    },
+    data: issues.map(mapFeedIssue),
   };
 }
 
@@ -262,10 +381,10 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
 }
 
 /* 이슈 상세 조회 */
-export async function getIssueDetail({
-  teamId,
-  issueId,
-}: GetIssueDetailParamsDto): Promise<GetIssueDetailResponseDto> {
+export async function getIssueDetail(
+  userId: string,
+  { teamId, issueId }: GetIssueDetailParamsDto,
+): Promise<GetIssueDetailResponseDto> {
   const issue = await prisma.errorIssue.findFirst({
     where: {
       id: issueId,
@@ -298,6 +417,8 @@ export async function getIssueDetail({
     content: issue.content ?? '',
     tag: issue.tags.map((item) => item.tagName),
     author: issue.user.name,
+    authorId: issue.userId,
+    isAuthor: issue.userId === userId,
     errorLog,
     isPublic: issue.isPublic,
     status: issue.status,

@@ -3,6 +3,8 @@ import { Router } from 'express';
 import {
   getIssues,
   getPublicIssues,
+  getIssueFeeds,
+  getTeamIssueFeeds,
   getIssueDetail,
   postIssue,
   patchIssue,
@@ -13,12 +15,14 @@ import { authenticate } from '../../common/middlewares/authenticate.js';
 
 const router = Router();
 
-router.get('/search', getIssues);
-router.get('/public', getPublicIssues);
-router.post('/suggest', suggestIssue);
+router.get('/issues/search', getIssues);
+router.get('/issues/public', getPublicIssues);
+router.post('/issues/suggest', suggestIssue);
+router.get('/issues/feeds', getIssueFeeds);
+router.get('/issues/feeds/:teamId', getTeamIssueFeeds);
 
 /* 이슈 상세 조회 */
-router.get('/teams/:teamId/issues/:issueId', getIssueDetail);
+router.get('/teams/:teamId/issues/:issueId', authenticate, getIssueDetail);
 
 /* 이슈 등록 */
 router.post('/teams/:teamId/issues', authenticate, postIssue);
