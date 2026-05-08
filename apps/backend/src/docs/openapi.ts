@@ -8,6 +8,7 @@ import { registerHealthSwagger } from '../modules/health/health.swagger.js';
 import { registerAuthSwagger } from '../modules/auth/auth.swagger.js';
 import { registerTeamsSwagger } from '../modules/teams/teams.swagger.js';
 import { registerIssuesSwagger } from '../modules/issues/issues.swagger.js';
+import { registerUsersSwagger } from '../modules/users/users.swagger.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -16,6 +17,7 @@ registerHealthSwagger(registry);
 registerAuthSwagger(registry);
 registerTeamsSwagger(registry);
 registerIssuesSwagger(registry);
+registerUsersSwagger(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
