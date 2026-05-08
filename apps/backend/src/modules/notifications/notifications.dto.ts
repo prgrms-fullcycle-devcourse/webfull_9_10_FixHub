@@ -14,7 +14,7 @@ const NotificationResponseSchema = z.object({
     example: false,
   }),
   link: z.string().openapi({
-    example: '/issues/issue-uuid-010',
+    example: '/teams/team-uuid-010/issues/issue-uuid-010',
   }),
   createdAt: z.string().openapi({
     example: '2025-04-22T10:30:00.000Z',
