@@ -125,7 +125,13 @@ function mapFeedIssue(issue: {
 function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
   const andConditions: Prisma.ErrorIssueWhereInput[] = [];
 
-  andConditions.push(dto.teamId ? { teamId: dto.teamId } : { isPublic: true });
+  if (!dto.teamId && !dto.author) {
+    andConditions.push({ isPublic: true });
+  }
+
+  if (dto.teamId) {
+    andConditions.push({ teamId: dto.teamId });
+  }
 
   if (dto.title.length > 0) {
     andConditions.push(
