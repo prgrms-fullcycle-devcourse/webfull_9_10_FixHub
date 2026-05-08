@@ -64,6 +64,13 @@ export const getPublicIssuesQuerySchema = z.object({
 
 export type GetPublicIssuesQuery = z.infer<typeof getPublicIssuesQuerySchema>;
 
+export const GetIssueFeedsParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export type GetIssueFeedsQuery = z.infer<typeof getPublicIssuesQuerySchema>;
+export type GetIssueFeedsParamsDto = z.infer<typeof GetIssueFeedsParamsSchema>;
+
 /* 이슈 상세 조회 */
 export const GetIssueDetailParamsSchema = z.object({
   teamId: z.uuidv7(),

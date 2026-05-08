@@ -71,7 +71,7 @@ export default function IssueList({
   if (issues.length === 0) {
     return (
       <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
-        검색 결과가 없습니다.
+        조회된 이슈가 없습니다.
       </div>
     );
   }

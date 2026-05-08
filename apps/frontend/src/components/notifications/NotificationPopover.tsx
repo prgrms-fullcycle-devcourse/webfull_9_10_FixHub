@@ -3,73 +3,90 @@ import { useEffect, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { useGetNotifications } from '@/api/generated';
+
 type NotificationItem = {
-  id: number;
+  id: string;
   title: string;
   message: string;
   createdAt: string;
   isRead: boolean;
-  href?: string;
+  href: string;
 };
 
-const initialNotifications: NotificationItem[] = [
-  {
-    id: 1,
-    title: '새 댓글이 등록되었어요',
-    message: '로그인 시 500 에러 발생 이슈에 새로운 댓글이 달렸습니다.',
-    createdAt: '방금 전',
-    isRead: false,
-    href: '/issues/1',
-  },
-  {
-    id: 2,
-    title: '답변이 채택되었어요',
-    message: '작성한 해결 제안이 채택되어 점수를 획득했습니다.',
-    createdAt: '10분 전',
-    isRead: false,
-    href: '/issues/1',
-  },
-  {
-    id: 3,
-    title: '팀 초대가 도착했어요',
-    message: 'FixHub 팀에서 새로운 초대를 보냈습니다.',
-    createdAt: '어제',
-    isRead: true,
-    href: '/teams/new',
-  },
-];
+const NOTIFICATION_TITLES: Record<string, string> = {
+  ISSUE_COMMENT: '내 이슈에 제안이 등록되었어요',
+  NEW_REPLY: '내 제안에 답글이 달렸어요',
+  COMMENT_ADOPTED: '내 제안이 채택되었어요',
+  NEW_ISSUE: '내 팀의 새 이슈가 등록되었어요',
+  DEFAULT: '새 알림이 도착했어요',
+};
+
+const getNotificationTitle = (type: string) => {
+  return NOTIFICATION_TITLES[type] ?? NOTIFICATION_TITLES.DEFAULT;
+};
+
+const formatNotificationDate = (createdAt: string) => {
+  const parsedDate = new Date(createdAt);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return createdAt;
+  }
+
+  return parsedDate.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
 
 function NotificationPopover() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] =
-    useState<NotificationItem[]>(initialNotifications);
+  const [readNotificationIds, setReadNotificationIds] = useState<string[]>([]);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const {
+    data: notificationsResponse,
+    isError,
+    isLoading,
+  } = useGetNotifications();
+
+  const notifications: NotificationItem[] =
+    notificationsResponse?.data.map((notification) => ({
+      id: notification.id,
+      title: getNotificationTitle(notification.type),
+      message: notification.content,
+      createdAt: formatNotificationDate(notification.createdAt),
+      isRead:
+        notification.isRead || readNotificationIds.includes(notification.id),
+      href: notification.link,
+    })) ?? [];
 
   const unreadCount = notifications.filter(
     (notification) => !notification.isRead,
   ).length;
 
   const markAllNotificationsAsRead = () => {
-    setNotifications((prevNotifications) =>
-      prevNotifications.map((notification) => ({
-        ...notification,
-        isRead: true,
-      })),
+    setReadNotificationIds((prevReadNotificationIds) =>
+      Array.from(
+        new Set([
+          ...prevReadNotificationIds,
+          ...notifications.map((notification) => notification.id),
+        ]),
+      ),
     );
   };
 
   const readNotification = (selectedNotification: NotificationItem) => {
-    setNotifications((prevNotifications) =>
-      prevNotifications.map((notification) =>
-        notification.id === selectedNotification.id
-          ? {
-              ...notification,
-              isRead: true,
-            }
-          : notification,
-      ),
-    );
+    setReadNotificationIds((prevReadNotificationIds) => {
+      if (prevReadNotificationIds.includes(selectedNotification.id)) {
+        return prevReadNotificationIds;
+      }
+
+      return [...prevReadNotificationIds, selectedNotification.id];
+    });
 
     if (selectedNotification.href) {
       navigate(selectedNotification.href);
@@ -128,7 +145,7 @@ function NotificationPopover() {
             <button
               type="button"
               onClick={markAllNotificationsAsRead}
-              disabled={unreadCount === 0}
+              disabled={unreadCount === 0 || isLoading}
               className="cursor-pointer rounded-sm px-3 py-1 typo-regular-14 text-(--primary) transition hover:bg-(--surface-selected) disabled:cursor-not-allowed disabled:text-(--text-muted)"
             >
               모두 읽음
@@ -136,7 +153,15 @@ function NotificationPopover() {
           </div>
 
           <div className="space-y-3">
-            {notifications.length > 0 ? (
+            {isLoading ? (
+              <div className="rounded-sm bg-(--surface-comment) px-4 py-8 text-center typo-regular-14 text-(--text-secondary)">
+                알림을 불러오는 중입니다.
+              </div>
+            ) : isError ? (
+              <div className="rounded-sm bg-(--surface-comment) px-4 py-8 text-center typo-regular-14 text-(--status-error)">
+                알림을 불러오지 못했습니다.
+              </div>
+            ) : notifications.length > 0 ? (
               notifications.map((notification) => (
                 <button
                   key={notification.id}

@@ -15,6 +15,7 @@ import {
   DeleteIssueResponseSchema,
   SuggestIssueBodySchema,
   SuggestIssueResponseSchema,
+  GetIssueFeedsParamsSchema,
 } from './issues.dto.js';
 import { zod as z } from '../../common/lib/zod.js';
 
@@ -224,6 +225,69 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
     responses: {
       200: {
         description: '최신 이슈 피드 조회 성공',
+        content: {
+          'application/json': {
+            schema: getPublicIssuesResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: publicBadRequestSchema,
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/issues/feeds',
+    tags: ['Issues'],
+    summary: '통합 이슈 피드 조회',
+    request: {
+      query: z.object({
+        page: z.number().optional().openapi({ example: 1 }),
+        limit: z.number().optional().openapi({ example: 20 }),
+      }),
+    },
+    responses: {
+      200: {
+        description: '통합 이슈 피드 조회 성공',
+        content: {
+          'application/json': {
+            schema: getPublicIssuesResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: publicBadRequestSchema,
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/issues/feeds/{teamId}',
+    tags: ['Issues'],
+    summary: '팀 이슈 피드 조회',
+    request: {
+      params: GetIssueFeedsParamsSchema,
+      query: z.object({
+        page: z.number().optional().openapi({ example: 1 }),
+        limit: z.number().optional().openapi({ example: 20 }),
+      }),
+    },
+    responses: {
+      200: {
+        description: '팀 이슈 피드 조회 성공',
         content: {
           'application/json': {
             schema: getPublicIssuesResponseSchema,
