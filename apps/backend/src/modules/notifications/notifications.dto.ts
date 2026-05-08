@@ -25,6 +25,21 @@ export const GetNotificationsResponseSchema = z.object({
   data: z.array(NotificationResponseSchema),
 });
 
+export const ReadNotificationParamsSchema = z.object({
+  id: z.uuid().openapi({
+    example: '00000000-0000-0000-0000-000000000001',
+  }),
+});
+
+export const ReadNotificationResponseSchema = z.object({
+  id: z.string().openapi({
+    example: 'noti-uuid-001',
+  }),
+  isRead: z.boolean().openapi({
+    example: true,
+  }),
+});
+
 export const NotificationErrorResponseSchema = z.object({
   error: z.object({
     code: z.string().openapi({
@@ -38,4 +53,10 @@ export const NotificationErrorResponseSchema = z.object({
 
 export type GetNotificationsResponseDto = z.infer<
   typeof GetNotificationsResponseSchema
+>;
+export type ReadNotificationParamsDto = z.infer<
+  typeof ReadNotificationParamsSchema
+>;
+export type ReadNotificationResponseDto = z.infer<
+  typeof ReadNotificationResponseSchema
 >;
