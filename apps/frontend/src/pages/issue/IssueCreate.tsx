@@ -35,15 +35,19 @@ function IssueCreate() {
   const handleIssuesSuggest = async () => {
     if (errorLog.trim() === '') return;
 
-    const response = await issuesSuggest({
-      data: {
-        errorLog: errorLog,
-      },
-    });
+    try {
+      const response = await issuesSuggest({
+        data: {
+          errorLog: errorLog,
+        },
+      });
 
-    setTitle(response.title);
-    setSelectedTags(response.tags);
-    setDescription(response.summary);
+      setTitle(response.title);
+      setSelectedTags(response.tags);
+      setDescription(response.summary);
+    } catch (_error) {
+      alert('AI 요청 중 오류가 발생했습니다.');
+    }
   };
 
   const teams = useMemo(() => teamsResponse?.data ?? [], [teamsResponse?.data]);

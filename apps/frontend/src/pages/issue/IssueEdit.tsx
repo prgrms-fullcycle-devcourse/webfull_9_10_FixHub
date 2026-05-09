@@ -54,22 +54,26 @@ function IssueEdit() {
   const handleIssuesSuggest = async () => {
     if (errorLog.trim() === '') return;
 
-    const response = await issuesSuggest({
-      data: {
-        errorLog: errorLog,
-      },
-    });
-
-    if (draft != null) {
-      setDraft({
-        title: response.title,
-        selectedTags: response.tags,
-        description: response.summary,
-        errorLog: draft.errorLog,
-        requestInfo: draft.requestInfo,
-        issueStatus: draft.issueStatus,
-        visibility: draft.visibility,
+    try {
+      const response = await issuesSuggest({
+        data: {
+          errorLog: errorLog,
+        },
       });
+
+      if (draft != null) {
+        setDraft({
+          title: response.title,
+          selectedTags: response.tags,
+          description: response.summary,
+          errorLog: draft.errorLog,
+          requestInfo: draft.requestInfo,
+          issueStatus: draft.issueStatus,
+          visibility: draft.visibility,
+        });
+      }
+    } catch (_error) {
+      alert('AI 요청 중 오류가 발생했습니다.');
     }
   };
 
