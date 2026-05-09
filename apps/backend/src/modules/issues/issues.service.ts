@@ -25,6 +25,8 @@ import {
 const KEYS = [
   'title',
   'author',
+  'authorId',
+  'solvedBy',
   'tag',
   'status',
   'content',
@@ -83,6 +85,10 @@ function parseSearchQuery(input: string) {
         }
       } else if (key === 'author') {
         result.author = value;
+      } else if (key === 'authorId') {
+        result.authorId = value;
+      } else if (key === 'solvedBy') {
+        result.solvedBy = value;
       } else if (key === 'teamId') {
         result.teamId = value;
       } else if (key === 'sort') {
@@ -125,7 +131,7 @@ function mapFeedIssue(issue: {
 function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
   const andConditions: Prisma.ErrorIssueWhereInput[] = [];
 
-  if (!dto.teamId && !dto.author) {
+  if (!dto.teamId && !dto.author && !dto.authorId && !dto.solvedBy) {
     andConditions.push({ isPublic: true });
   }
 
@@ -161,6 +167,21 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
         name: {
           contains: dto.author,
           mode: Prisma.QueryMode.insensitive,
+        },
+      },
+    });
+  }
+
+  if (dto.authorId) {
+    andConditions.push({ userId: dto.authorId });
+  }
+
+  if (dto.solvedBy) {
+    andConditions.push({
+      comments: {
+        some: {
+          userId: dto.solvedBy,
+          isAdopted: true,
         },
       },
     });
