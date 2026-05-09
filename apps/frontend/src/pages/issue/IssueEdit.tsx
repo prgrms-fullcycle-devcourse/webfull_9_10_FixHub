@@ -7,6 +7,7 @@ import {
   useGetTeamsTeamId,
   useGetTeamsTeamIdIssuesIssueId,
   usePatchTeamsTeamIdIssuesIssueId,
+  usePostIssuesSuggest,
 } from '@/api/generated';
 import IssueMarkdown from '@/components/issues/IssueMarkdown';
 
@@ -46,6 +47,31 @@ function IssueEdit() {
   const [tagInput, setTagInput] = useState('');
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState('');
+
+  const { mutateAsync: issuesSuggest, isPending: isIssuesSuggestPending } =
+    usePostIssuesSuggest();
+
+  const handleIssuesSuggest = async () => {
+    if (errorLog.trim() === '') return;
+
+    const response = await issuesSuggest({
+      data: {
+        errorLog: errorLog,
+      },
+    });
+
+    if (draft != null) {
+      setDraft({
+        title: response.title,
+        selectedTags: response.tags,
+        description: response.summary,
+        errorLog: draft.errorLog,
+        requestInfo: draft.requestInfo,
+        issueStatus: draft.issueStatus,
+        visibility: draft.visibility,
+      });
+    }
+  };
 
   const teams = useMemo(() => teamsResponse?.data ?? [], [teamsResponse?.data]);
   const teamMembers = useMemo(
@@ -348,8 +374,9 @@ function IssueEdit() {
 
                   <button
                     type="button"
-                    disabled
-                    className="flex h-14 items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse) opacity-50"
+                    disabled={isIssuesSuggestPending || !errorLog}
+                    className="flex h-14 items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse) disabled:opacity-50"
+                    onClick={handleIssuesSuggest}
                   >
                     <Sparkles size={16} />
                     AI 도움받기
