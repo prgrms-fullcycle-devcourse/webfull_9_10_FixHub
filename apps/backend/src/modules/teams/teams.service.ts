@@ -93,7 +93,7 @@ export async function getTeamDetail(userId: string, teamId: string) {
     throw Errors.FORBIDDEN;
   }
 
-  // 팀 내 (점수, 먼저 가입) 상위 3명 조회
+  // 팀 내 (점수, 이름, 가입일) 상위 3명 조회
   const team = await prisma.team.findUnique({
     where: {
       id: teamId,
@@ -111,12 +111,13 @@ export async function getTeamDetail(userId: string, teamId: string) {
           },
         },
         orderBy: [
+          { score: 'desc' as const },
           {
-            score: 'desc',
+            user: {
+              name: 'asc' as const,
+            },
           },
-          {
-            joinedAt: 'asc',
-          },
+          { joinedAt: 'asc' as const },
         ],
         take: 3,
       },
@@ -155,7 +156,115 @@ export async function getTeamDetail(userId: string, teamId: string) {
   };
 }
 
-// 팀원 목록 조회
+// 팀 설정 조회
+// TODO: 알림 설정 추가
+export async function getTeamSettings(userId: string, teamId: string) {
+  // 인가 및 팀 존재 여부 확인
+  const membership = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!membership) {
+    const teamExists = await prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!teamExists) {
+      throw Errors.TEAM_NOT_FOUND;
+    }
+
+    throw Errors.FORBIDDEN;
+  }
+
+  if (membership.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  // 팀원 목록 조회 (정렬 순서: 이름, 가입일)
+  const team = await prisma.team.findUnique({
+    where: {
+      id: teamId,
+    },
+    include: {
+      teamMembers: {
+        where: {
+          status: 'ACTIVE',
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: [
+          {
+            user: {
+              name: 'asc' as const,
+            },
+          },
+          { joinedAt: 'asc' as const },
+        ],
+      },
+    },
+  });
+
+  if (!team) {
+    throw Errors.TEAM_NOT_FOUND;
+  }
+
+  // 리더 조회
+  const owner = await prisma.teamMember.findFirst({
+    where: {
+      teamId,
+      role: 'LEADER',
+      status: 'ACTIVE',
+    },
+    select: {
+      userId: true,
+    },
+  });
+
+  // 리더를 팀원 목록의 맨 위로 정렬
+  const leader = team.teamMembers.find(
+    (member) => member.userId === owner?.userId,
+  );
+
+  const membersExceptLeader = team.teamMembers.filter(
+    (member) => member.userId !== owner?.userId,
+  );
+
+  team.teamMembers = leader
+    ? [leader, ...membersExceptLeader]
+    : membersExceptLeader;
+
+  return {
+    teamId: team.id,
+    name: team.name,
+    description: team.description,
+    ownerId: owner?.userId ?? '',
+    createdAt: team.createdAt.toISOString(),
+    members: team.teamMembers.map((member) => ({
+      userId: member.userId,
+      name: member.user.name,
+      role: member.role,
+      joinedAt: member.joinedAt?.toISOString() ?? null,
+      score: member.score ?? 0,
+    })),
+  };
+}
+
+// 팀원 목록 조회 (정렬 순서: 점수, 이름, 가입일)
 export async function getTeamMembers(userId: string, teamId: string) {
   // 인가 및 팀 존재 여부 확인
   const membership = await prisma.teamMember.findUnique({
@@ -191,9 +300,15 @@ export async function getTeamMembers(userId: string, teamId: string) {
     include: {
       user: true,
     },
-    orderBy: {
-      score: 'desc',
-    },
+    orderBy: [
+      { score: 'desc' as const },
+      {
+        user: {
+          name: 'asc' as const,
+        },
+      },
+      { joinedAt: 'asc' as const },
+    ],
   });
 
   const data = members.map((member) => ({

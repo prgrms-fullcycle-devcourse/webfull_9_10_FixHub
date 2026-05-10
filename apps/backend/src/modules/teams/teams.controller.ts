@@ -7,6 +7,7 @@ import {
   getMyTeams as getMyTeamsService,
   getTeamMembers as getTeamMembersService,
   getTeamDetail as getTeamDetailService,
+  getTeamSettings as getTeamSettingsService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
@@ -59,6 +60,24 @@ export async function getTeamDetail(
     const teamId = String(req.params.teamId);
 
     const response = await getTeamDetailService(userId, teamId);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// 팀 설정 조회
+export async function getTeamSettings(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await getTeamSettingsService(userId, teamId);
 
     return res.status(200).json(response);
   } catch (error) {
