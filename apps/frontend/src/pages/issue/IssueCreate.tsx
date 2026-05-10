@@ -147,6 +147,7 @@ function IssueCreate() {
           title: title.trim(),
           content: description.trim(),
           tag: selectedTags,
+          status: issueStatus,
           isPublic: visibility === 'public',
           logs,
         },

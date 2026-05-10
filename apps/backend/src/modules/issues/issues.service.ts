@@ -488,6 +488,7 @@ export async function createIssue(
       teamId: params.teamId,
       title: body.title,
       content: body.content,
+      status: body.status,
       isPublic: body.isPublic,
       tags: {
         create: body.tag.map((tagName) => ({
@@ -569,6 +570,7 @@ export async function updateIssue(
     data: {
       title: body.title,
       content: body.content,
+      status: body.status,
       isPublic: body.isPublic,
       tags: {
         deleteMany: {},
