@@ -679,6 +679,14 @@ export type GetTeamsTeamIdIssuesIssueId200 = {
   logs: GetTeamsTeamIdIssuesIssueId200LogsItem[];
 };
 
+export type PatchTeamsTeamIdIssuesIssueIdBodyStatus =
+  (typeof PatchTeamsTeamIdIssuesIssueIdBodyStatus)[keyof typeof PatchTeamsTeamIdIssuesIssueIdBodyStatus];
+
+export const PatchTeamsTeamIdIssuesIssueIdBodyStatus = {
+  SOLVED: 'SOLVED',
+  UNSOLVED: 'UNSOLVED',
+} as const;
+
 export type PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType =
   (typeof PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType)[keyof typeof PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType];
 
@@ -699,6 +707,7 @@ export type PatchTeamsTeamIdIssuesIssueIdBody = {
   /** @minLength 1 */
   content: string;
   tags: string[];
+  status: PatchTeamsTeamIdIssuesIssueIdBodyStatus;
   isPublic: boolean;
   logs: PatchTeamsTeamIdIssuesIssueIdBodyLogsItem[];
 };
@@ -711,6 +720,14 @@ export type PatchTeamsTeamIdIssuesIssueId200 = {
 export type DeleteTeamsTeamIdIssuesIssueId200 = {
   success: boolean;
 };
+
+export type PostTeamsTeamIdIssuesBodyStatus =
+  (typeof PostTeamsTeamIdIssuesBodyStatus)[keyof typeof PostTeamsTeamIdIssuesBodyStatus];
+
+export const PostTeamsTeamIdIssuesBodyStatus = {
+  SOLVED: 'SOLVED',
+  UNSOLVED: 'UNSOLVED',
+} as const;
 
 export type PostTeamsTeamIdIssuesBodyLogsItemLogType =
   (typeof PostTeamsTeamIdIssuesBodyLogsItemLogType)[keyof typeof PostTeamsTeamIdIssuesBodyLogsItemLogType];
@@ -734,6 +751,7 @@ export type PostTeamsTeamIdIssuesBody = {
   /** @minLength 1 */
   content: string;
   tag: string[];
+  status: PostTeamsTeamIdIssuesBodyStatus;
   isPublic: boolean;
   logs: PostTeamsTeamIdIssuesBodyLogsItem[];
 };

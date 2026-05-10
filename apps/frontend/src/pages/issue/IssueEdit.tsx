@@ -207,6 +207,7 @@ function IssueEdit() {
           title: title.trim(),
           content: description.trim(),
           tags: selectedTags,
+          status: issueStatus,
           isPublic: visibility === 'public',
           logs,
         },

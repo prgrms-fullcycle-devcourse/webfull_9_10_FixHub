@@ -128,6 +128,7 @@ export const CreateIssueBodySchema = z.object({
       '## 문제\nRedis 연결 시 타임아웃이 발생합니다.\n\n## 시도한 것\n...',
   }),
   tag: z.array(z.string().min(1)).openapi({ example: ['BACKEND', 'INFRA'] }),
+  status: z.enum(['SOLVED', 'UNSOLVED']).openapi({ example: 'UNSOLVED' }),
   isPublic: z.boolean().openapi({ example: true }),
   logs: z.array(
     z.object({
@@ -160,6 +161,7 @@ export const UpdateIssueBodySchema = z.object({
   title: z.string().min(1).openapi({ example: '수정된 제목' }),
   content: z.string().min(1).openapi({ example: '수정된 내용입니다.' }),
   tags: z.array(z.string().min(1)).openapi({ example: ['BACKEND'] }),
+  status: z.enum(['SOLVED', 'UNSOLVED']).openapi({ example: 'UNSOLVED' }),
   isPublic: z.boolean().openapi({ example: false }),
   logs: z.array(
     z.object({
