@@ -69,10 +69,11 @@ export type GetTeamMembersResponseDto = z.infer<
   typeof GetTeamMembersResponseSchema
 >;
 
-// 팀 설정 관련 정보 조회
+// 팀 설정 조회
 export const GetTeamSettingsResponseSchema = z.object({
   data: z.array(
     z.object({
+      userId: z.uuidv7(),
       teamId: z.uuidv7(),
       name: z.string(),
       description: z.string(),

@@ -249,6 +249,7 @@ export async function getTeamSettings(userId: string, teamId: string) {
     : membersExceptLeader;
 
   return {
+    userId,
     teamId: team.id,
     name: team.name,
     description: team.description,
