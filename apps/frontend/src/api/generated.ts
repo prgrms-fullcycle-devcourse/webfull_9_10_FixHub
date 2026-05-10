@@ -672,6 +672,7 @@ export type GetTeamsTeamIdIssuesIssueId200 = {
   author: string;
   authorId: string;
   isAuthor: boolean;
+  createdAt: string;
   errorLog: string;
   isPublic: boolean;
   status: GetTeamsTeamIdIssuesIssueId200Status;

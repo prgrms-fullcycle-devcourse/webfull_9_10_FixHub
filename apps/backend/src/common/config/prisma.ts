@@ -94,6 +94,12 @@ const prisma = basePrisma.$extends({
 
         return query(args);
       },
+
+      async update({ args, query }) {
+        const data = args.data as Record<string, unknown>;
+        injectNestedIds(data);
+        return query(args);
+      },
     },
   },
 });

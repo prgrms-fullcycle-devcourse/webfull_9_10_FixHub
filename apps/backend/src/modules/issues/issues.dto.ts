@@ -91,6 +91,7 @@ export const GetIssueDetailResponseSchema = z.object({
     .string()
     .openapi({ example: '019e01ab-d423-7766-bcd1-14742ce92467' }),
   isAuthor: z.boolean().openapi({ example: true }),
+  createdAt: z.string().openapi({ example: '2026-04-25T10:00:00.000Z' }),
   errorLog: z.string().openapi({
     example: 'Error: connect ETIMEDOUT 127.0.0.1:6379\n    at TCPConnectWrap.',
   }),
