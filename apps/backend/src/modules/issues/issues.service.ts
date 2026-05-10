@@ -245,7 +245,7 @@ export async function searchIssues(input: string) {
     title: issue.title,
     teamId: issue.teamId,
     teamName: issue.team.name,
-    summary: issue.content?.slice(0, 100),
+    summary: toPlainSummary(issue.content ?? ''),
     author: issue.userId,
     tag: issue.tags.map((t) => t.tagName),
     status: issue.status,
@@ -440,6 +440,7 @@ export async function getIssueDetail(
     author: issue.user.name,
     authorId: issue.userId,
     isAuthor: issue.userId === userId,
+    createdAt: issue.createdAt.toISOString(),
     errorLog,
     isPublic: issue.isPublic,
     status: issue.status,
@@ -579,6 +580,7 @@ export async function updateIssue(
         deleteMany: {},
         create: body.logs.map((log) => ({
           logType: log.logType,
+          source: log.stackTrace,
           message: log.stackTrace,
           stackTrace: log.stackTrace,
           capturedAt: new Date(),
@@ -687,7 +689,6 @@ export async function generateIssue(
 
   const text = res.choices[0].message.content ?? '';
 
-  // JSON 파싱 + 검증
   try {
     const json = JSON.parse(text);
     return SuggestIssueResponseSchema.parse(json);

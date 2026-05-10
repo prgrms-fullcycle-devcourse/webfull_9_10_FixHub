@@ -23,7 +23,7 @@ enum LogType {
 }
 
 model User {
-  id            String         @id @db.Uuid
+  id            String         @id @default(uuid()) @db.Uuid
   name          String
   email         String         @unique
   password      String?
@@ -40,7 +40,7 @@ model User {
 }
 
 model ScoreLog {
-  id           String      @id @db.Uuid
+  id           String      @id @default(uuid()) @db.Uuid
   teamMemberId String      @map("team_member_id") @db.Uuid
   amount       Int
   reason       String
@@ -53,7 +53,7 @@ model ScoreLog {
 }
 
 model Team {
-  id              String       @id @db.Uuid
+  id              String       @id @default(uuid()) @db.Uuid
   name            String
   description     String?
   slackWebhookUrl String?      @map("slack_webhook_url")
@@ -65,7 +65,7 @@ model Team {
 }
 
 model TeamMember {
-  id        String     @id @db.Uuid
+  id        String     @id @default(uuid()) @db.Uuid
   teamId    String     @map("team_id") @db.Uuid
   userId    String     @map("user_id") @db.Uuid
   role      TeamRole   @default(MEMBER)
@@ -81,18 +81,18 @@ model TeamMember {
 }
 
 model ErrorIssue {
-  id        String        @id @db.Uuid
-  userId    String        @map("user_id") @db.Uuid
-  teamId    String        @map("team_id") @db.Uuid
+  id        String          @id @default(uuid()) @db.Uuid
+  userId    String          @map("user_id") @db.Uuid
+  teamId    String          @map("team_id") @db.Uuid
   title     String
   content   String?
-  isPublic  Boolean       @default(false) @map("is_public")
-  status    IssueStatus   @default(UNSOLVED)
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
+  isPublic  Boolean         @default(false) @map("is_public")
+  status    IssueStatus     @default(UNSOLVED)
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
   comments  Comment[]
-  team      Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   errorLogs ErrorLog[]
   tags      ErrorIssueTag[]
   scoreLogs ScoreLog[]
@@ -101,7 +101,7 @@ model ErrorIssue {
 }
 
 model ErrorIssueTag {
-  id      String @id @db.Uuid
+  id      String @id @default(uuid()) @db.Uuid
   issueId String @map("issue_id") @db.Uuid
   tagName String @map("tag_name")
 
@@ -112,9 +112,9 @@ model ErrorIssueTag {
 }
 
 model ErrorLog {
-  id           String     @id @db.Uuid
+  id           String     @id @default(uuid()) @db.Uuid
   issueId      String     @map("issue_id") @db.Uuid
-  logType      LogType    @map("log_type") @default(SENT)
+  logType      LogType    @default(SENT) @map("log_type")
   source       String?
   message      String?
   stackTrace   String?    @map("stack_trace") @db.Text
@@ -127,7 +127,7 @@ model ErrorLog {
 }
 
 model Comment {
-  id          String     @id @db.Uuid
+  id          String     @id @default(uuid()) @db.Uuid
   issueId     String     @map("issue_id") @db.Uuid
   userId      String     @map("user_id") @db.Uuid
   parentId    String?    @map("parent_id") @db.Uuid
@@ -145,7 +145,7 @@ model Comment {
 }
 
 model Notification {
-  id         String   @id @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   userId     String   @map("user_id") @db.Uuid
   resourceId String?  @map("resource_id") @db.Uuid
   type       String

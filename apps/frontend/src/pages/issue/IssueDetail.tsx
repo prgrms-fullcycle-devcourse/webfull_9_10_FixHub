@@ -36,6 +36,18 @@ function mapCommentToIssueCommentItem(
   };
 }
 
+function formatIssueDate(dateString: string) {
+  const date = new Date(dateString);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekday = weekdays[date.getDay()];
+
+  return `${year}-${month}-${day}(${weekday})`;
+}
+
 function IssueDetail() {
   const navigate = useNavigate();
   const { issueId, teamId } = useParams();
@@ -169,7 +181,7 @@ function IssueDetail() {
 
           <div className="flex items-center gap-2 typo-regular-14 text-(--text-primary)">
             <CalendarDays size={22} strokeWidth={1.8} />
-            <span>-</span>
+            <span>{formatIssueDate(issue.createdAt)}</span>
           </div>
         </div>
 
