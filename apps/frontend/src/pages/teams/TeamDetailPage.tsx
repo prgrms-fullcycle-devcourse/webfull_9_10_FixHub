@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import SettingIcon from '@/assets/icons/setting.svg';
@@ -10,6 +10,8 @@ import { useGetTeamsTeamId, useGetTeamsTeamIdMembers } from '@/api/generated';
 const mockIssues = Array.from({ length: 6 });
 
 export default function TeamDetailPage() {
+  const navigate = useNavigate();
+
   const { teamId } = useParams<{ teamId: string }>();
   const [showAllMembers, setShowAllMembers] = useState(false);
 
@@ -88,7 +90,13 @@ export default function TeamDetailPage() {
           <section className="bg-card rounded-lg p-10 flex flex-col gap-9">
             <div className="flex justify-between">
               <h1 className="typo-medium-40">{teamDetail?.name}</h1>
-              <button className="flex gap-[10px] border border-white p-5 rounded-sm hover:bg-surface-selected transition">
+              <button
+                onClick={() => navigate(`/teams/${teamId}/settings`)}
+                className="
+                  flex gap-[10px] border border-white p-5 rounded-sm 
+                  cursor-pointer
+                  hover:bg-(--surface-selected)"
+              >
                 <SettingIcon className="w-6 h-6" />
                 <span className="typo-bold-20 ">팀 설정</span>
               </button>
@@ -251,7 +259,7 @@ function RankingItem({ rank, name, role, score, isMe }: RankingItemProps) {
             </span>
           </div>
           {role == 'LEADER' && (
-            <span className="typo-regular-20 bg-[#544777] p-[10px] rounded-sm">
+            <span className="typo-regular-20 bg-[var(--color-gray-600)] p-[10px] rounded-sm">
               팀장
             </span>
           )}
