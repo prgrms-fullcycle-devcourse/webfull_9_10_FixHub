@@ -95,3 +95,20 @@ export const GetTeamSettingsResponseSchema = z.object({
 export type GetTeamSettingsResponseDto = z.infer<
   typeof GetTeamSettingsResponseSchema
 >;
+
+// 팀 수정
+export const UpdateTeamBodySchema = z.object({
+  name: z.string().min(1).max(50).optional(),
+  description: z.string().max(500).optional(),
+  ownerId: z.uuidv7().optional(),
+});
+
+export const UpdateTeamResponseSchema = z.object({
+  teamId: z.uuidv7(),
+  name: z.string(),
+  description: z.string().nullable(),
+});
+
+export type UpdateTeamBodyDto = z.infer<typeof UpdateTeamBodySchema>;
+
+export type UpdateTeamResponseDto = z.infer<typeof UpdateTeamResponseSchema>;

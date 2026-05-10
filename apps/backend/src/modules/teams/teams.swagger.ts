@@ -8,6 +8,8 @@ import {
   GetTeamDetailResponseSchema,
   GetTeamMembersResponseSchema,
   GetTeamSettingsResponseSchema,
+  UpdateTeamBodySchema,
+  UpdateTeamResponseSchema,
 } from './teams.dto.js';
 
 export const ErrorResponseSchema = z.object({
@@ -112,6 +114,70 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: GetTeamDetailResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '리소스 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀 수정
+  registry.registerPath({
+    method: 'patch',
+    path: '/teams/{teamId}',
+    tags: ['Teams'],
+    summary: '팀 수정',
+    description:
+      '팀 이름, 설명, 팀장을 수정합니다. 팀장 권한을 가진 사용자만 수정할 수 있습니다.',
+    request: {
+      params: z.object({
+        teamId: z.uuidv7(),
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: UpdateTeamBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '팀 수정 성공',
+        content: {
+          'application/json': {
+            schema: UpdateTeamResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '입력 값 오류',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
           },
         },
       },

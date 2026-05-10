@@ -1,4 +1,4 @@
-import { CreateTeamBodyDto } from './teams.dto.js';
+import { CreateTeamBodyDto, UpdateTeamBodyDto } from './teams.dto.js';
 import prisma from '../../common/config/prisma.js';
 import { Errors } from '../../common/errors/AppError.js';
 
@@ -320,4 +320,114 @@ export async function getTeamMembers(userId: string, teamId: string) {
   }));
 
   return { data };
+}
+
+// 팀 수정
+export async function updateTeam(
+  userId: string,
+  teamId: string,
+  body: UpdateTeamBodyDto,
+) {
+  // 인가 확인
+  const requesterMembership = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!requesterMembership) {
+    // 팀 존재 여부 확인
+    const teamExists = await prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!teamExists) {
+      throw Errors.TEAM_NOT_FOUND;
+    }
+
+    throw Errors.FORBIDDEN;
+  }
+
+  // 리더 여부 확인
+  if (
+    requesterMembership.status !== 'ACTIVE' ||
+    requesterMembership.role !== 'LEADER'
+  ) {
+    throw Errors.FORBIDDEN;
+  }
+
+  // 새 리더의 ownerId가 팀 내에 있는지 확인
+  if (body.ownerId) {
+    const nextOwnerMembership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId: body.ownerId,
+        },
+      },
+    });
+
+    if (!nextOwnerMembership || nextOwnerMembership.status !== 'ACTIVE') {
+      throw Errors.FORBIDDEN;
+    }
+  }
+
+  const updatedTeam = await prisma.$transaction(async (tx) => {
+    // 리더 업데이트
+    if (body.ownerId && body.ownerId !== userId) {
+      // 기존의 LEADER를 MEMBER로
+      await tx.teamMember.updateMany({
+        where: {
+          teamId,
+          role: 'LEADER',
+          status: 'ACTIVE',
+        },
+        data: {
+          role: 'MEMBER',
+        },
+      });
+
+      // 요청받은 ownerId의 사용자를 LEADER로
+      await tx.teamMember.update({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId: body.ownerId,
+          },
+        },
+        data: {
+          role: 'LEADER',
+        },
+      });
+    }
+
+    // 팀 설정 변경
+    return tx.team.update({
+      where: {
+        id: teamId,
+      },
+      data: {
+        ...(body.name !== undefined && {
+          name: body.name,
+        }),
+        ...(body.description !== undefined && {
+          description: body.description,
+        }),
+      },
+    });
+  });
+
+  return {
+    teamId: updatedTeam.id,
+    name: updatedTeam.name,
+    description: updatedTeam.description,
+  };
 }
