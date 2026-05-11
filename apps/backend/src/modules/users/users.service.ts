@@ -101,6 +101,15 @@ export async function updateMyProfile(
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw Errors.NOT_FOUND;
 
+  // 이메일 중복 체크 (이메일을 수정하려 할 때만)
+  if (body.email && body.email !== user.email) {
+    const existing = await prisma.user.findUnique({
+      where: { email: body.email },
+    });
+    if (existing)
+      throw new AppError('CONFLICT', '이미 사용 중인 이메일입니다.', 409);
+  }
+
   // 비밀번호 변경 처리
   let hashedPassword: string | undefined;
   if (body.password) {
@@ -126,6 +135,7 @@ export async function updateMyProfile(
     where: { id: userId },
     data: {
       ...(body.name !== undefined && { name: body.name }),
+      ...(body.email !== undefined && { email: body.email }),
       ...(body.profileImg !== undefined && { profileImg: body.profileImg }),
       ...(hashedPassword !== undefined && { password: hashedPassword }),
     },

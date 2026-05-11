@@ -1121,6 +1121,7 @@ export type UpdateMyProfileBody = {
    * @maxLength 50
    */
   name?: string;
+  email?: string;
   /** @nullable */
   profileImg?: string | null;
   password?: UpdateMyProfileBodyPassword;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import Logo from '@/assets/Logo_Login.svg';
 import CommonModal from '@/components/ui/CommonModal';
@@ -8,7 +8,10 @@ import { useAuth } from '@/hooks/useAuth';
 export default function AuthLayout() {
   const { isLoggedIn, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [modalDismissed, setModalDismissed] = useState(false);
+
+  const isOnboardingPage = location.pathname === '/signup/name';
 
   if (isLoading) return null;
 
@@ -32,7 +35,7 @@ export default function AuthLayout() {
       </div>
 
       <CommonModal
-        isOpen={isLoggedIn && !modalDismissed}
+        isOpen={isLoggedIn && !modalDismissed && !isOnboardingPage}
         title="이미 로그인 상태입니다"
         description="현재 로그인된 계정이 있습니다. 홈으로 이동합니다."
         confirmText="홈으로 이동"

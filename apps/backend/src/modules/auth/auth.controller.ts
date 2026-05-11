@@ -7,6 +7,10 @@ const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
   maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
+  domain:
+    process.env.NODE_ENV === 'production'
+      ? new URL(process.env.CLIENT_URL!).hostname
+      : 'localhost',
 };
 
 export const authController = {
@@ -50,9 +54,11 @@ export const authController = {
 
       res.cookie('token', accessToken, COOKIE_OPTIONS);
       if (isNewUser) {
-        res.redirect('http://localhost:5173/signup/name');
+        res.redirect(
+          `${process.env.CLIENT_URL || 'http://localhost:5173'}/signup/name`,
+        );
       } else {
-        res.redirect('http://localhost:5173/');
+        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/`);
       }
     } catch (err) {
       next(err);

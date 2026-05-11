@@ -45,6 +45,11 @@ export type GetMyProfileResponseDto = z.infer<
 // PATCH /users/me (내 프로필 수정)
 export const UpdateMyProfileBodySchema = z.object({
   name: z.string().min(1).max(50).optional().openapi({ example: '새이름' }),
+  email: z
+    .string()
+    .email()
+    .optional()
+    .openapi({ example: 'newemail@email.com' }),
   profileImg: z
     .string()
     .url()
