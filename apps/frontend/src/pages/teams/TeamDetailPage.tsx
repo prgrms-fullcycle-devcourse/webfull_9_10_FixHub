@@ -8,6 +8,7 @@ import ArrowIcon from '@/assets/icons/arrow.svg';
 import { useGetTeamsTeamId, useGetTeamsTeamIdMembers } from '@/api/generated';
 import IssueList from '@/components/issues/IssueList';
 import LanguageSelectModal from '@/components/issues/LanguageSelectModal';
+import CommonModal from '@/components/ui/CommonModal';
 import IssueFeedFilterBar from '@/components/issues/IssueFeedFilterBar';
 import type { IssueSort, IssueStatusFilter } from '@/types/issue';
 
@@ -16,7 +17,7 @@ export default function TeamDetailPage() {
 
   const { teamId } = useParams<{ teamId: string }>();
   const [showAllMembers, setShowAllMembers] = useState(false);
-
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] =
     useState<IssueStatusFilter>('ALL');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
@@ -35,6 +36,11 @@ export default function TeamDetailPage() {
     setSelectedStatus('ALL');
     setSelectedLanguages([]);
     setSort('latest');
+  };
+
+  const handleInvite = (emails: string[]) => {
+    console.log('초대 이메일:', emails);
+    // TODO: 초대 API
   };
 
   const {
@@ -148,6 +154,7 @@ export default function TeamDetailPage() {
                   className="flex items-center gap-[10px] px-[32px] py-[18px] rounded-sm bg-primary 
                             cursor-pointer
                             hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                  onClick={() => setIsInviteModalOpen(true)}
                 >
                   <LetterIcon className="w-8 h-8" />
                   <span className="text-primary-foreground typo-bold-20">
@@ -240,10 +247,16 @@ export default function TeamDetailPage() {
           />
         </>
       </div>
+      <TeamInviteModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onInvite={handleInvite}
+      />
     </main>
   );
 }
 
+// 랭킹 조회
 type RankingItemProps = {
   rank: number;
   name: string;
@@ -280,5 +293,114 @@ function RankingItem({ rank, name, role, score, isMe }: RankingItemProps) {
 
       <span className="typo-bold-20">{score.toLocaleString()}점</span>
     </div>
+  );
+}
+
+// 멤버 초대 모달창
+type TeamInviteModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onInvite: (emails: string[]) => void;
+};
+
+function TeamInviteModal({ isOpen, onClose, onInvite }: TeamInviteModalProps) {
+  const [emails, setEmails] = useState(['']);
+
+  const handleEmailChange = (index: number, value: string) => {
+    setEmails((prev) =>
+      prev.map((email, emailIndex) => (emailIndex === index ? value : email)),
+    );
+  };
+
+  const handleAddEmail = () => {
+    setEmails((prev) => [...prev, '']);
+  };
+
+  const handleRemoveEmail = (index: number) => {
+    setEmails((prev) => prev.filter((_, emailIndex) => emailIndex !== index));
+  };
+
+  const handleConfirm = () => {
+    const trimmedEmails = emails.map((email) => email.trim()).filter(Boolean);
+
+    if (trimmedEmails.length === 0) return;
+
+    onInvite(trimmedEmails);
+    setEmails(['']);
+    onClose();
+  };
+
+  const handleClose = () => {
+    setEmails(['']);
+    onClose();
+  };
+
+  return (
+    <CommonModal
+      isOpen={isOpen}
+      title="팀원 초대하기"
+      icon={<LetterIcon className="h-[195px] w-[195px]" />}
+      description={
+        <div className="flex flex-col gap-3 text-left">
+          <p className="pb-6 text-center typo-regular-14 text-(--text-primary)">
+            초대할 팀원의 이메일을 입력해주세요.
+          </p>
+
+          {emails.map((email, index) => {
+            const isLastInput = index === emails.length - 1;
+
+            return (
+              <div key={index} className="flex gap-4">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(index, e.target.value)}
+                  placeholder="example@email.com"
+                  className="flex-1 rounded-sm px-3 outline-none typo-regular-16
+                    transition-all duration-300
+                    focus:border-white
+                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                  style={{
+                    background: 'var(--surface-input)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+
+                {isLastInput ? (
+                  <button
+                    type="button"
+                    onClick={handleAddEmail}
+                    className="min-w-28 cursor-pointer rounded-sm border px-4 py-2 typo-regular-16 hover:bg-(--surface-selected)"
+                    style={{
+                      borderColor: 'var(--color-white)',
+                    }}
+                  >
+                    초대 추가
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveEmail(index)}
+                    className="min-w-28 cursor-pointer rounded-sm px-4 py-2 typo-regular-16 hover:bg-(--surface-selected)"
+                    style={{
+                      borderColor: 'var(--color-white)',
+                    }}
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      }
+      confirmText="초대하기"
+      cancelText="취소하기"
+      onClose={handleClose}
+      onConfirm={handleConfirm}
+      confirmButtonClassName={
+        emails.some((email) => email.trim()) ? '' : 'opacity-50'
+      }
+    />
   );
 }
