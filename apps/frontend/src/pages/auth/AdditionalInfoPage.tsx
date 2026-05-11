@@ -1,18 +1,61 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
+import { useUpdateMyProfile, getGetMyProfileQueryKey } from '@/api/generated';
 
 export default function OnboardingPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const { mutate: updateProfile, isPending } = useUpdateMyProfile({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: getGetMyProfileQueryKey(),
+        });
+
+        console.log('Profile update success');
+        navigate('/');
+      },
+      onError: (error) => {
+        console.error('Profile update error:', error);
+        const message =
+          error.response?.data?.error?.message ||
+          '정보 업데이트 중 오류가 발생했습니다.';
+        setErrorMessage(message);
+      },
+    },
+  });
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    // TODO: 백엔드 API 연동 시 이름, 이메일 업데이트 로직 추가
+    // 간단한 유효성 검사
+    if (!name.trim()) {
+      setErrorMessage('이름을 입력해주세요.');
+      return;
+    }
+    if (!email.trim() || !email.includes('@')) {
+      setErrorMessage('올바른 이메일 형식을 입력해주세요.');
+      return;
+    }
+
+    console.log('Updating profile with:', { name, email });
+    // PATCH /users/me 호출
+    updateProfile({
+      data: {
+        name,
+        email,
+      },
+    });
+
     console.log('설정된 이름:', name);
     navigate('/');
   };
@@ -23,6 +66,8 @@ export default function OnboardingPage() {
         <h1 className="typo-medium-40 text-white mb-8">반갑습니다!</h1>
         <p className="typo-regular-16 text-white">
           FixHub에서 사용할 이름, 이메일을 입력해주세요.
+          <br />
+          이메일은 이후에 수정할 수 없습니다.
         </p>
       </div>
 
@@ -33,7 +78,10 @@ export default function OnboardingPage() {
             type="text"
             placeholder="이름을 입력하세요"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setErrorMessage('');
+            }}
             autoFocus
             className="h-[66px] w-full rounded-[8px] border-none bg-input-background px-[20px] text-white placeholder:text-white/30 focus:outline-none typo-regular-14"
           />
@@ -44,16 +92,24 @@ export default function OnboardingPage() {
             type="email"
             placeholder="이메일을 입력하세요"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setErrorMessage('');
+            }}
             className="h-[66px] w-full rounded-[8px] border-none bg-input-background px-[20px] text-white placeholder:text-white/30 focus:outline-none typo-regular-14"
           />
         </div>
 
+        {errorMessage && (
+          <p className="text-red-400 text-sm typo-regular-14">{errorMessage}</p>
+        )}
+
         <Button
           type="submit"
+          disabled={isPending}
           className="mt-2 h-[69px] w-full rounded-[8px] bg-main-color font-bold text-black typo-semibold-18"
         >
-          시작하기
+          {isPending ? '처리 중...' : '시작하기'}
         </Button>
       </form>
     </>
