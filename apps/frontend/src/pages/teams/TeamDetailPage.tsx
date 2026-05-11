@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import SettingIcon from '@/assets/icons/setting.svg';
 import LetterIcon from '@/assets/icons/letter.svg';
 import ArrowIcon from '@/assets/icons/arrow.svg';
-import { useGetTeamsTeamId, useGetTeamsTeamIdMembers } from '@/api/generated';
+import {
+  useGetTeamsTeamId,
+  useGetTeamsTeamIdMembers,
+  useInviteTeamMembers,
+} from '@/api/generated';
 import IssueList from '@/components/issues/IssueList';
 import LanguageSelectModal from '@/components/issues/LanguageSelectModal';
 import CommonModal from '@/components/ui/CommonModal';
@@ -14,6 +19,7 @@ import type { IssueSort, IssueStatusFilter } from '@/types/issue';
 
 export default function TeamDetailPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { teamId } = useParams<{ teamId: string }>();
   const [showAllMembers, setShowAllMembers] = useState(false);
@@ -23,6 +29,26 @@ export default function TeamDetailPage() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [sort, setSort] = useState<IssueSort>('latest');
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+
+  const {
+    mutate: inviteMembers,
+    isSuccess: isInvitingSuccess,
+    error: invitingError,
+  } = useInviteTeamMembers({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['/teams/{teamId}/members'],
+        });
+
+        // setIsInviteModalOpen(false);
+      },
+
+      onError: (error) => {
+        console.error(error);
+      },
+    },
+  });
 
   const handleToggleLanguage = (language: string) => {
     setSelectedLanguages((prev) =>
@@ -39,8 +65,14 @@ export default function TeamDetailPage() {
   };
 
   const handleInvite = (emails: string[]) => {
-    console.log('초대 이메일:', emails);
-    // TODO: 초대 API
+    if (!teamId) return;
+
+    inviteMembers({
+      teamId,
+      data: {
+        emails,
+      },
+    });
   };
 
   const {
@@ -251,6 +283,8 @@ export default function TeamDetailPage() {
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
         onInvite={handleInvite}
+        invitingError={invitingError}
+        isInvitingSuccess={isInvitingSuccess}
       />
     </main>
   );
@@ -301,9 +335,17 @@ type TeamInviteModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onInvite: (emails: string[]) => void;
+  invitingError?: unknown;
+  isInvitingSuccess: boolean;
 };
 
-function TeamInviteModal({ isOpen, onClose, onInvite }: TeamInviteModalProps) {
+function TeamInviteModal({
+  isOpen,
+  onInvite,
+  onClose,
+  invitingError,
+  isInvitingSuccess,
+}: TeamInviteModalProps) {
   const [emails, setEmails] = useState(['']);
 
   const handleEmailChange = (index: number, value: string) => {
@@ -327,7 +369,7 @@ function TeamInviteModal({ isOpen, onClose, onInvite }: TeamInviteModalProps) {
 
     onInvite(trimmedEmails);
     setEmails(['']);
-    onClose();
+    // onClose();
   };
 
   const handleClose = () => {
@@ -392,6 +434,19 @@ function TeamInviteModal({ isOpen, onClose, onInvite }: TeamInviteModalProps) {
               </div>
             );
           })}
+
+          {invitingError instanceof Error && (
+            <p className="pt-4 text-[var(--status-error)] text-sm text-center typo-regular-14">
+              팀원 초대에 실패했습니다. 다시 시도해주세요.
+            </p>
+          )}
+
+          {isInvitingSuccess && (
+            <p className="pt-4 text-[var(--primary)] text-sm text-center typo-regular-14">
+              팀원에게 초대장을 보냈습니다. <br /> 상대방이 초대를 수락하면 팀원
+              추가가 완료됩니다.
+            </p>
+          )}
         </div>
       }
       confirmText="초대하기"
