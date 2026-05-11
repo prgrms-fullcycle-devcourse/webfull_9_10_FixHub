@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 
 import prisma from '../../common/config/prisma.js';
 import { AppError, Errors } from '../../common/errors/AppError.js';
+import { sendSlackNotificationToTeam } from '../../common/utils/slackNotification.js';
 import {
   type SearchIssuesQueryObjectDto,
   type GetPublicIssuesQuery,
@@ -510,8 +511,16 @@ export async function createIssue(
     },
     select: {
       id: true,
+      title: true,
       createdAt: true,
     },
+  });
+
+  await sendSlackNotificationToTeam({
+    teamId: params.teamId,
+    excludeUserId: userId,
+    enabledField: 'slackNotifyIssueCreated',
+    text: `내 팀의 새 이슈가 등록되었어요: ${createdIssue.title}`,
   });
 
   return {
