@@ -198,7 +198,10 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
       ...dto.tag.map((tag) => ({
         tags: {
           some: {
-            tagName: tag,
+            tagName: {
+              equals: tag,
+              mode: Prisma.QueryMode.insensitive,
+            },
           },
         },
       })),
