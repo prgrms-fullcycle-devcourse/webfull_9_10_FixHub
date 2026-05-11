@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
 import { useUpdateMyProfile, getGetMyProfileQueryKey } from '@/api/generated';
+import { validateAdditionalInfo } from '@/utils/validations/AuthValidation';
 
 export default function OnboardingPage() {
   const [name, setName] = useState('');
@@ -19,9 +20,6 @@ export default function OnboardingPage() {
         queryClient.invalidateQueries({
           queryKey: getGetMyProfileQueryKey(),
         });
-
-        console.log('Profile update success');
-        navigate('/');
       },
       onError: (error) => {
         console.error('Profile update error:', error);
@@ -35,19 +33,15 @@ export default function OnboardingPage() {
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    setErrorMessage('');
 
-    // 간단한 유효성 검사
-    if (!name.trim()) {
-      setErrorMessage('이름을 입력해주세요.');
-      return;
-    }
-    if (!email.trim() || !email.includes('@')) {
-      setErrorMessage('올바른 이메일 형식을 입력해주세요.');
+    const validationError = validateAdditionalInfo(name, email);
+
+    if (validationError) {
+      setErrorMessage(validationError);
       return;
     }
 
-    console.log('Updating profile with:', { name, email });
     // PATCH /users/me 호출
     updateProfile({
       data: {
@@ -71,7 +65,7 @@ export default function OnboardingPage() {
         </p>
       </div>
 
-      <form onSubmit={handleComplete} className="space-y-[32px]">
+      <form onSubmit={handleComplete} className="space-y-[32px]" noValidate>
         <div className="space-y-[10px]">
           <label className="block typo-regular-16 text-white">이름</label>
           <input
