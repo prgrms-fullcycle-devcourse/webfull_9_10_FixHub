@@ -1,42 +1,176 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 import Toggle from '@/components/ui/Toogle';
+import {
+  getGetTeamsTeamIdSettingsQueryKey,
+  useGetTeamsTeamIdSettings,
+  usePatchTeamsTeamId,
+} from '@/api/generated';
 
 export default function TeamSettingPage() {
-  // TODO: 초기값은 기존 정보로
+  const { teamId } = useParams<{ teamId: string }>();
+
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
 
-  const rankingMembers = [
-    {
-      userId: 'aaaa-bbbb',
-      name: '김지민',
-      role: 'LEADER',
-      score: 5421,
-      joinedAt: '2025-05-12',
+  const initializedRef = useRef(false); // 초기화 여부 기억
+  const queryClient = useQueryClient();
+
+  const {
+    data: teamSettings,
+    isLoading: isTeamSettingsLoading,
+    error: teamSettingsError,
+  } = useGetTeamsTeamIdSettings(teamId ?? '', {
+    query: {
+      enabled: Boolean(teamId),
     },
-    {
-      userId: 'cccc-dddd',
-      name: '한서영',
-      role: 'Member',
-      score: 21,
-      joinedAt: '2025-07-11',
+    request: {
+      withCredentials: true,
     },
-    {
-      userId: 'eeee-ffff',
-      name: '고현우',
-      role: 'Member',
-      score: 92,
-      joinedAt: '2025-07-21',
+  });
+
+  // 첫 렌더링 시에만 초기화
+  useEffect(() => {
+    if (!teamSettings || initializedRef.current) {
+      return;
+    }
+
+    setTeamName(teamSettings.name);
+    setTeamDescription(teamSettings.description ?? '');
+
+    initializedRef.current = true;
+  }, [teamSettings]);
+
+  // 팀 정보 수정
+  const {
+    mutate: updateTeam,
+    isSuccess: isUpdateTeamSuccess,
+    isPending: isUpdateTeamPending,
+    error: updateTeamError,
+  } = usePatchTeamsTeamId({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: getGetTeamsTeamIdSettingsQueryKey(teamId ?? ''),
+        });
+      },
     },
-    {
-      userId: 'gggg-hhhh',
-      name: '정하영',
-      role: 'Member',
-      score: 0,
-      joinedAt: '2026-07-21',
-    },
-  ];
+  });
+
+  const isLeader = teamSettings?.userId === teamSettings?.ownerId;
+
+  const handleSubmitUpdateTeam = () => {
+    if (!isLeader) return alert('수정 권한이 없습니다.');
+    if (!teamId) return console.error('teamId를 가져올 수 없습니다.');
+
+    // 변경된 값만 payload에 포함
+    const payload: {
+      name?: string;
+      description?: string;
+    } = {};
+
+    if (teamName !== teamSettings?.name) {
+      payload.name = teamName;
+    }
+
+    if (teamDescription !== teamSettings?.description) {
+      payload.description = teamDescription;
+    }
+
+    updateTeam({
+      teamId: teamId,
+      data: payload,
+    });
+  };
+
+  const teamNameElement = isLeader ? (
+    <input
+      value={teamName}
+      onChange={(e) => setTeamName(e.target.value)}
+      placeholder="팀 이름을 입력하세요."
+      className="w-full px-4 py-3 rounded-sm outline-none typo-regular-16
+        transition-all duration-300
+        focus:border-white
+        focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+      style={{
+        background: 'var(--surface-input)',
+        color: 'var(--text-primary)',
+      }}
+    />
+  ) : (
+    <div>{teamSettings?.name}</div>
+  );
+
+  const teamDescriptionElement = isLeader ? (
+    <textarea
+      value={teamDescription}
+      onChange={(e) => setTeamDescription(e.target.value)}
+      placeholder="팀에 대한 설명을 입력하세요."
+      className="w-full h-38 p-5 rounded-sm resize-none outline-none typo-regular-16
+        transition-all duration-300
+        focus:border-white
+        focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+      style={{
+        background: 'var(--surface-input)',
+        color: 'var(--text-primary)',
+      }}
+    />
+  ) : (
+    <div>{teamSettings?.description}</div>
+  );
+
+  const updateTeamElement = (
+    <div className="pt-6 flex flex-col items-end gap-4 border-t border-white/50">
+      {updateTeamError && (
+        <p className="text-[var(--status-error)] text-sm typo-regular-14">
+          팀 수정에 실패했습니다. 다시 시도해주세요.
+        </p>
+      )}
+      {isUpdateTeamSuccess && (
+        <p className="text-[var(--primary)] text-sm typo-regular-14">
+          팀 수정이 완료되었습니다.
+        </p>
+      )}
+      <button
+        onClick={handleSubmitUpdateTeam}
+        disabled={isUpdateTeamPending}
+        className="py-[18px] px-[32px] h-15 rounded-sm typo-regular-20 
+          cursor-pointer
+          transition-all duration-200 ease-out
+          hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+        style={{
+          background: 'var(--primary)',
+          color: 'var(--text-inverse)',
+        }}
+      >
+        {isUpdateTeamPending ? '수정 중...' : '수정하기'}
+      </button>
+    </div>
+  );
+
+  if (isTeamSettingsLoading) {
+    return (
+      <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
+        <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
+          불러오는 중...
+        </div>
+      </section>
+    );
+  }
+
+  if (teamSettingsError) {
+    console.error(teamSettingsError);
+
+    return (
+      <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
+        <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
+          팀 정보 가져오기에 실패했습니다.
+        </div>
+      </section>
+    );
+  }
 
   return (
     <main className="p-[60px]">
@@ -45,46 +179,20 @@ export default function TeamSettingPage() {
           {/* 팀 정보 수정 */}
           <section className="bg-card rounded-lg p-10 flex flex-col gap-9">
             <div className="flex justify-between">
-              <h1 className="typo-medium-40">팀 정보 수정</h1>
+              <h1 className="typo-medium-40">팀 정보</h1>
             </div>
             <div className="flex flex-col gap-8">
               {/* 팀 이름 */}
               <div className="flex flex-col gap-4">
                 <label className="typo-regular-20">팀 이름</label>
-                <input
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="팀 이름을 입력하세요."
-                  className="w-full px-4 py-3 rounded-sm outline-none typo-regular-16
-                    transition-all duration-300
-                    focus:border-white
-                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
-                  style={{
-                    background: 'var(--surface-input)',
-                    color: 'var(--text-primary)',
-                  }}
-                />
+                {teamNameElement}
               </div>
               {/* 팀 설명 */}
               <div className="flex flex-col gap-4">
-                <label className="typo-regular-20">
-                  팀 설명{' '}
-                  <span className="text-[var(--text-muted)]">(선택)</span>
-                </label>
-                <textarea
-                  value={teamDescription}
-                  onChange={(e) => setTeamDescription(e.target.value)}
-                  placeholder="팀에 대한 설명을 입력하세요."
-                  className="w-full h-38 p-5 rounded-sm resize-none outline-none typo-regular-16
-                    transition-all duration-300
-                    focus:border-white
-                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
-                  style={{
-                    background: 'var(--surface-input)',
-                    color: 'var(--text-primary)',
-                  }}
-                />
+                <label className="typo-regular-20">팀 설명</label>
+                {teamDescriptionElement}
               </div>
+              {isLeader && updateTeamElement}
             </div>
           </section>
 
@@ -96,7 +204,7 @@ export default function TeamSettingPage() {
               </div>
 
               <div className="space-y-[8px]">
-                {rankingMembers.map((member) => (
+                {teamSettings?.members.map((member) => (
                   <MemberListItem {...member} />
                 ))}
               </div>
