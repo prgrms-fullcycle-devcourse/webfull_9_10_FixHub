@@ -165,3 +165,16 @@ export const UpdateTeamResponseSchema = z.object({
 export type UpdateTeamBodyDto = z.infer<typeof UpdateTeamBodySchema>;
 
 export type UpdateTeamResponseDto = z.infer<typeof UpdateTeamResponseSchema>;
+
+// 팀원 초대
+export const InviteTeamMembersBodySchema = z.object({
+  emails: z.array(z.email()).min(1),
+});
+
+export const InviteTeamMembersResponseSchema = z.object({
+  userIds: z.array(z.uuidv7()),
+});
+
+export type InviteTeamMembersBodyDto = z.infer<
+  typeof InviteTeamMembersBodySchema
+>;

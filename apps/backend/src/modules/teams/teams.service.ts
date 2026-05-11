@@ -8,6 +8,7 @@ import type {
   SlackTestMessageResponseDto,
   UpdateSlackNotificationSettingsBodyDto,
   UpdateTeamBodyDto,
+  InviteTeamMembersBodyDto,
 } from './teams.dto.js';
 import prisma from '../../common/config/prisma.js';
 import { AppError, Errors } from '../../common/errors/AppError.js';
@@ -701,4 +702,83 @@ export async function updateSlackNotificationSettings(
   });
 
   return mapSlackNotificationSettings(updatedMembership);
+}
+
+// 팀원 초대
+export async function inviteTeamMembers(
+  userId: string,
+  teamId: string,
+  body: InviteTeamMembersBodyDto,
+) {
+  const requester = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!requester || requester.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (requester.role !== 'LEADER') {
+    throw Errors.FORBIDDEN;
+  }
+
+  const users = await prisma.user.findMany({
+    where: {
+      email: {
+        in: body.emails,
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+    },
+  });
+
+  if (users.length !== body.emails.length) {
+    throw Errors.USER_NOT_FOUND;
+  }
+
+  const inviteUserIds = await prisma.$transaction(async (tx) => {
+    const ids: string[] = [];
+
+    for (const user of users) {
+      const existingMember = await tx.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId: user.id,
+          },
+        },
+      });
+
+      // 이미 존재하는 멤버일 경우 업데이트 및 반환을 생략
+      if (existingMember) {
+        // ids.push(existingMember.id);
+        continue;
+      }
+
+      const createdMember = await tx.teamMember.create({
+        data: {
+          teamId,
+          userId: user.id,
+          role: 'MEMBER',
+          status: 'PENDING',
+          joinedAt: null,
+        },
+      });
+
+      ids.push(createdMember.userId);
+    }
+
+    return ids;
+  });
+
+  return {
+    inviteUserIds,
+  };
 }

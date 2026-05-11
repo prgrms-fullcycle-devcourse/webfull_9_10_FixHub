@@ -24,4 +24,9 @@ export const Errors = {
     '요청한 팀을 찾을 수 없습니다.',
     404,
   ),
+  USER_NOT_FOUND: new AppError(
+    'USER_NOT_FOUND',
+    '존재하지 않는 사용자입니다.',
+    404,
+  ),
 } as const;

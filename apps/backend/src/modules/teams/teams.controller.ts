@@ -5,6 +5,7 @@ import {
   SlackTestMessageBodySchema,
   UpdateSlackNotificationSettingsBodySchema,
   UpdateTeamBodySchema,
+  InviteTeamMembersBodySchema,
 } from './teams.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
 import {
@@ -20,6 +21,7 @@ import {
   sendSlackTestMessage as sendSlackTestMessageService,
   updateSlackNotificationSettings as updateSlackNotificationSettingsService,
   updateTeam as updateTeamService,
+  inviteTeamMembers as inviteTeamMembersService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
@@ -252,6 +254,34 @@ export async function patchSlackNotificationSettings(
     );
 
     return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// 팀원 초대
+export async function inviteTeamMembers(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedBody = InviteTeamMembersBodySchema.safeParse(req.body);
+
+  if (!parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await inviteTeamMembersService(
+      userId,
+      teamId,
+      parsedBody.data,
+    );
+
+    return res.status(201).json(response);
   } catch (error) {
     return next(error);
   }
