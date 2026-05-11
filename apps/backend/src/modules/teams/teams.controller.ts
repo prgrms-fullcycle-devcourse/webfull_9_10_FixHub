@@ -1,13 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CreateTeamBodySchema, UpdateTeamBodySchema } from './teams.dto.js';
+import {
+  CreateTeamBodySchema,
+  SlackTestMessageBodySchema,
+  UpdateTeamBodySchema,
+} from './teams.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
 import {
+  createSlackConnectUrl,
+  completeSlackOAuthConnection,
+  getSlackClientRedirectUrl,
   createTeam,
   getMyTeams as getMyTeamsService,
   getTeamMembers as getTeamMembersService,
   getTeamDetail as getTeamDetailService,
   getTeamSettings as getTeamSettingsService,
+  sendSlackTestMessage as sendSlackTestMessageService,
   updateTeam as updateTeamService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
@@ -121,6 +129,78 @@ export async function patchTeam(
     const teamId = String(req.params.teamId);
 
     const response = await updateTeamService(userId, teamId, parsedBody.data);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function getSlackConnect(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+    const slackAuthorizeUrl = await createSlackConnectUrl(userId, teamId);
+
+    return res.redirect(slackAuthorizeUrl);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function getSlackOAuthCallback(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = (req as AuthRequest).userId;
+    const { code, state, error } = req.query;
+
+    if (error) {
+      return res.redirect(getSlackClientRedirectUrl(null));
+    }
+
+    if (typeof code !== 'string' || typeof state !== 'string') {
+      return res.redirect(getSlackClientRedirectUrl(null));
+    }
+
+    const connectedSlack = await completeSlackOAuthConnection(
+      userId,
+      code,
+      state,
+    );
+
+    return res.redirect(getSlackClientRedirectUrl(connectedSlack.teamId));
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function postSlackTestMessage(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedBody = SlackTestMessageBodySchema.safeParse(req.body);
+
+  if (!parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await sendSlackTestMessageService(
+      userId,
+      teamId,
+      parsedBody.data,
+    );
 
     return res.status(200).json(response);
   } catch (error) {

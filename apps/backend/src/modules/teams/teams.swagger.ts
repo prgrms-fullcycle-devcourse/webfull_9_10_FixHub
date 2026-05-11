@@ -8,6 +8,11 @@ import {
   GetTeamDetailResponseSchema,
   GetTeamMembersResponseSchema,
   GetTeamSettingsResponseSchema,
+  SlackConnectParamsSchema,
+  SlackOAuthCallbackQuerySchema,
+  SlackTestMessageBodySchema,
+  SlackTestMessageParamsSchema,
+  SlackTestMessageResponseSchema,
   UpdateTeamBodySchema,
   UpdateTeamResponseSchema,
 } from './teams.dto.js';
@@ -135,6 +140,161 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       404: {
         description: '리소스 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 슬랙 연동 시작
+  registry.registerPath({
+    method: 'get',
+    path: '/teams/{teamId}/slack/connect',
+    tags: ['Teams'],
+    summary: 'Slack 연동 시작',
+    description:
+      '로그인한 사용자를 Slack OAuth 승인 화면으로 이동시켜 Incoming Webhook 연동을 시작합니다.',
+    request: {
+      params: SlackConnectParamsSchema,
+    },
+    responses: {
+      302: {
+        description: 'Slack OAuth 승인 화면으로 리다이렉트',
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀을 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 슬랙 OAuth 콜백
+  registry.registerPath({
+    method: 'get',
+    path: '/teams/slack/oauth/callback',
+    tags: ['Teams'],
+    summary: 'Slack OAuth callback',
+    description:
+      'Slack OAuth code를 Incoming Webhook URL로 교환하고 현재 사용자의 팀 멤버 설정에 저장합니다.',
+    request: {
+      query: SlackOAuthCallbackQuerySchema,
+    },
+    responses: {
+      302: {
+        description: '팀 설정 페이지로 리다이렉트',
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      502: {
+        description: 'Slack OAuth 연동 실패',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 슬랙 테스트 메시지 전송
+  registry.registerPath({
+    method: 'post',
+    path: '/teams/{teamId}/slack/test-message',
+    operationId: 'sendSlackTestMessage',
+    tags: ['Teams'],
+    summary: 'Slack 테스트 메시지 전송',
+    description:
+      '현재 로그인한 사용자의 팀 멤버 설정에 저장된 Slack Incoming Webhook으로 테스트 메시지를 전송합니다.',
+    request: {
+      params: SlackTestMessageParamsSchema,
+      body: {
+        content: {
+          'application/json': {
+            schema: SlackTestMessageBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Slack 테스트 메시지 전송 성공',
+        content: {
+          'application/json': {
+            schema: SlackTestMessageResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '입력 값 오류 또는 Slack 미연동',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀을 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      502: {
+        description: 'Slack 메시지 전송 실패',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,
