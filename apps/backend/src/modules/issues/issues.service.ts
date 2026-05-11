@@ -29,6 +29,8 @@ import {
 const KEYS = [
   'title',
   'author',
+  'authorId',
+  'solvedBy',
   'tag',
   'status',
   'content',
@@ -87,6 +89,10 @@ function parseSearchQuery(input: string) {
         }
       } else if (key === 'author') {
         result.author = value;
+      } else if (key === 'authorId') {
+        result.authorId = value;
+      } else if (key === 'solvedBy') {
+        result.solvedBy = value;
       } else if (key === 'teamId') {
         result.teamId = value;
       } else if (key === 'sort') {
@@ -129,7 +135,13 @@ function mapFeedIssue(issue: {
 function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
   const andConditions: Prisma.ErrorIssueWhereInput[] = [];
 
-  andConditions.push(dto.teamId ? { teamId: dto.teamId } : { isPublic: true });
+  if (!dto.teamId && !dto.author && !dto.authorId && !dto.solvedBy) {
+    andConditions.push({ isPublic: true });
+  }
+
+  if (dto.teamId) {
+    andConditions.push({ teamId: dto.teamId });
+  }
 
   if (dto.title.length > 0) {
     andConditions.push(
@@ -164,6 +176,21 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
     });
   }
 
+  if (dto.authorId) {
+    andConditions.push({ userId: dto.authorId });
+  }
+
+  if (dto.solvedBy) {
+    andConditions.push({
+      comments: {
+        some: {
+          userId: dto.solvedBy,
+          isAdopted: true,
+        },
+      },
+    });
+  }
+
   if (dto.status) {
     andConditions.push({
       status: dto.status,
@@ -175,7 +202,10 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
       ...dto.tag.map((tag) => ({
         tags: {
           some: {
-            tagName: tag,
+            tagName: {
+              equals: tag,
+              mode: Prisma.QueryMode.insensitive,
+            },
           },
         },
       })),
@@ -222,7 +252,7 @@ export async function searchIssues(input: string) {
     title: issue.title,
     teamId: issue.teamId,
     teamName: issue.team.name,
-    summary: issue.content?.slice(0, 100),
+    summary: toPlainSummary(issue.content ?? ''),
     author: issue.userId,
     tag: issue.tags.map((t) => t.tagName),
     status: issue.status,
@@ -379,10 +409,10 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
 }
 
 /* 이슈 상세 조회 */
-export async function getIssueDetail({
-  teamId,
-  issueId,
-}: GetIssueDetailParamsDto): Promise<GetIssueDetailResponseDto> {
+export async function getIssueDetail(
+  userId: string,
+  { teamId, issueId }: GetIssueDetailParamsDto,
+): Promise<GetIssueDetailResponseDto> {
   const issue = await prisma.errorIssue.findFirst({
     where: {
       id: issueId,
@@ -415,6 +445,9 @@ export async function getIssueDetail({
     content: issue.content ?? '',
     tag: issue.tags.map((item) => item.tagName),
     author: issue.user.name,
+    authorId: issue.userId,
+    isAuthor: issue.userId === userId,
+    createdAt: issue.createdAt.toISOString(),
     errorLog,
     isPublic: issue.isPublic,
     status: issue.status,
@@ -467,6 +500,7 @@ export async function createIssue(
       teamId: params.teamId,
       title: body.title,
       content: body.content,
+      status: body.status,
       isPublic: body.isPublic,
       tags: {
         create: body.tag.map((tagName) => ({
@@ -557,6 +591,7 @@ export async function updateIssue(
     data: {
       title: body.title,
       content: body.content,
+      status: body.status,
       isPublic: body.isPublic,
       tags: {
         deleteMany: {},
@@ -568,6 +603,7 @@ export async function updateIssue(
         deleteMany: {},
         create: body.logs.map((log) => ({
           logType: log.logType,
+          source: log.stackTrace,
           message: log.stackTrace,
           stackTrace: log.stackTrace,
           capturedAt: new Date(),
@@ -676,7 +712,6 @@ export async function generateIssue(
 
   const text = res.choices[0].message.content ?? '';
 
-  // JSON 파싱 + 검증
   try {
     const json = JSON.parse(text);
     return SuggestIssueResponseSchema.parse(json);

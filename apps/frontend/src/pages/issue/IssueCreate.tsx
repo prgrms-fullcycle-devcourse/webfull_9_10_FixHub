@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   useGetTeams,
   useGetTeamsTeamId,
+  usePostIssuesSuggest,
   usePostTeamsTeamIdIssues,
 } from '@/api/generated';
 import IssueMarkdown from '@/components/issues/IssueMarkdown';
@@ -27,6 +28,27 @@ function IssueCreate() {
   const [visibility, setVisibility] = useState<'public' | 'private'>('private');
   const [selectedTeamId, setSelectedTeamId] = useState(teamId ?? '');
   const [selectedMemberId, setSelectedMemberId] = useState('');
+
+  const { mutateAsync: issuesSuggest, isPending: isIssuesSuggestPending } =
+    usePostIssuesSuggest();
+
+  const handleIssuesSuggest = async () => {
+    if (errorLog.trim() === '') return;
+
+    try {
+      const response = await issuesSuggest({
+        data: {
+          errorLog: errorLog,
+        },
+      });
+
+      setTitle(response.title);
+      setSelectedTags(response.tags);
+      setDescription(response.summary);
+    } catch (_error) {
+      alert('AI 요청 중 오류가 발생했습니다.');
+    }
+  };
 
   const teams = useMemo(() => teamsResponse?.data ?? [], [teamsResponse?.data]);
 
@@ -125,6 +147,7 @@ function IssueCreate() {
           title: title.trim(),
           content: description.trim(),
           tag: selectedTags,
+          status: issueStatus,
           isPublic: visibility === 'public',
           logs,
         },
@@ -292,8 +315,9 @@ function IssueCreate() {
 
                   <button
                     type="button"
-                    disabled
-                    className="flex h-14 items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse) opacity-50"
+                    disabled={isIssuesSuggestPending || !errorLog}
+                    className="flex h-14 items-center gap-2 rounded-full bg-primary px-5 typo-medium-16 text-(--text-inverse) disabled:opacity-50"
+                    onClick={handleIssuesSuggest}
                   >
                     <Sparkles size={16} />
                     AI 도움받기

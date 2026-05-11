@@ -42,3 +42,19 @@ export const validateParams = (schema: z.ZodSchema) => {
     }
   };
 };
+
+export const validateQuery = (schema: z.ZodSchema) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const parsed = await schema.parseAsync(req.query);
+      Object.assign(req.query, parsed);
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const errorMessage = getZodErrorMessage(error);
+        return next(new AppError('BAD_REQUEST', errorMessage, 400));
+      }
+      next(error);
+    }
+  };
+};

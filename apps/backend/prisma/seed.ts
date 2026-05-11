@@ -1,16 +1,12 @@
-import { PrismaClient } from '@prisma/client';
+import { type User, type TeamMember } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { faker } from '@faker-js/faker/locale/ko';
 
-const prisma = new PrismaClient();
-
-// ─── 헬퍼 ────────────────────────────────────────────────────────────────────
+import prisma from '../src/common/config/prisma.js';
 
 function randomItem<T>(arr: T[]): T {
   return faker.helpers.arrayElement(arr);
 }
-
-// ─── 더미 데이터 풀 ──────────────────────────────────────────────────────────
 
 const tagOptions = [
   'typescript',
@@ -107,69 +103,61 @@ const sources = [
   'team-service',
 ];
 
-// ─── 시드 메인 ───────────────────────────────────────────────────────────────
-
 async function main() {
   console.log('🌱 Seeding started...\n');
 
-  // 1. 유저 생성
   console.log('👤 Creating users...');
   const hashedPw = await hash('password1234!', 10);
 
-  const users = await Promise.all(
-    Array.from({ length: 7 }).map(() =>
-      prisma.user.upsert({
-        where: { email: faker.internet.email() },
-        update: {},
-        create: {
-          name: faker.person.fullName(),
-          email: faker.internet.email(),
-          password: hashedPw,
-          profileImg: faker.image.avatar(),
-          provider: 'local',
-        },
-      }),
-    ),
-  );
+  const users: User[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const email = faker.internet.email();
+
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        name: faker.person.fullName(),
+        email,
+        password: hashedPw,
+        profileImg: faker.image.avatar(),
+        provider: 'local',
+      },
+    });
+
+    users.push(user);
+  }
   console.log(`  ✅ ${users.length} users created\n`);
 
-  // 2. 팀 생성
   console.log('🏢 Creating team...');
-  const team = await prisma.team.upsert({
-    where: { id: '00000000-0000-0000-0000-000000000001' },
-    update: {},
-    create: {
-      id: '00000000-0000-0000-0000-000000000001',
+  const team = await prisma.team.create({
+    data: {
       name: `${faker.company.name()} Dev Team`,
       description: faker.company.catchPhrase(),
-      slackWebhookUrl: null,
     },
   });
   console.log(`  ✅ Team "${team.name}" ready\n`);
 
-  // 3. 팀 멤버 생성 (첫 번째 유저 = LEADER)
   console.log('👥 Creating team members...');
-  const teamMembers = await Promise.all(
-    users.map(async (user, idx) => {
-      const existing = await prisma.teamMember.findFirst({
-        where: { teamId: team.id, userId: user.id },
-      });
-      if (existing) return existing;
-      return prisma.teamMember.create({
-        data: {
-          teamId: team.id,
-          userId: user.id,
-          role: idx === 0 ? 'LEADER' : 'MEMBER',
-          status: 'ACTIVE',
-          score: faker.number.int({ min: 0, max: 300 }),
-          joinedAt: faker.date.past({ years: 1 }),
-        },
-      });
-    }),
-  );
+  const teamMembers: TeamMember[] = [];
+
+  for (const [idx, user] of users.entries()) {
+    const teamMember = await prisma.teamMember.create({
+      data: {
+        teamId: team.id,
+        userId: user.id,
+        role: idx === 0 ? 'LEADER' : 'MEMBER',
+        status: 'ACTIVE',
+        score: faker.number.int({ min: 0, max: 300 }),
+        joinedAt: faker.date.past({ years: 1 }),
+      },
+    });
+
+    teamMembers.push(teamMember);
+  }
   console.log(`  ✅ ${teamMembers.length} team members created\n`);
 
-  // 4. 이슈 대량 생성
   const ISSUE_COUNT = 50;
   console.log(`📋 Creating ${ISSUE_COUNT} issues...`);
 
@@ -188,13 +176,13 @@ async function main() {
         status: isSolved ? 'SOLVED' : 'UNSOLVED',
         createdAt,
         updatedAt: createdAt,
-
         tags: {
           create: faker.helpers
             .arrayElements(tagOptions, { min: 2, max: 3 })
-            .map((tagName) => ({ tagName })),
+            .map((tagName) => ({
+              tagName,
+            })),
         },
-
         errorLogs: {
           create: Array.from({
             length: faker.number.int({ min: 1, max: 2 }),
@@ -218,7 +206,6 @@ async function main() {
             capturedAt: createdAt,
           })),
         },
-
         comments: {
           create: Array.from({
             length: faker.number.int({ min: 0, max: 4 }),
@@ -228,6 +215,7 @@ async function main() {
               isSolved &&
               ci === 0 &&
               faker.datatype.boolean({ probability: 0.5 });
+
             return {
               userId: commentAuthor.id,
               content: randomItem(commentContents),
@@ -263,23 +251,19 @@ async function main() {
     }
   }
 
-  // 5. 알림 샘플 생성
   console.log('\n🔔 Creating sample notifications...');
-  await Promise.all(
-    users.slice(0, 3).map((user) =>
-      prisma.notification.create({
-        data: {
-          userId: user.id,
-          type: randomItem(['ISSUE_COMMENT', 'ISSUE_SOLVED', 'TEAM_INVITE']),
-          content: randomItem(commentContents),
-          isRead: faker.datatype.boolean(),
-        },
-      }),
-    ),
-  );
+  for (const user of users.slice(0, 3)) {
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        type: randomItem(['ISSUE_COMMENT', 'ISSUE_SOLVED', 'TEAM_INVITE']),
+        content: randomItem(commentContents),
+        isRead: faker.datatype.boolean(),
+      },
+    });
+  }
   console.log('  ✅ Notifications created\n');
 
-  // ─── 요약 ────────────────────────────────────────────────────────────────
   const [issueCount, commentCount, logCount, scoreLogCount] = await Promise.all(
     [
       prisma.errorIssue.count(),

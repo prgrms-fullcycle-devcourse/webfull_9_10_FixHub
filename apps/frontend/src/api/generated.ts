@@ -539,6 +539,315 @@ export type GetTeamsTeamId404 = {
   error: GetTeamsTeamId404Error;
 };
 
+export type PatchTeamsTeamIdBody = {
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  ownerId?: string;
+};
+
+export type PatchTeamsTeamId200 = {
+  teamId: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+};
+
+export type PatchTeamsTeamId400Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId400 = {
+  error: PatchTeamsTeamId400Error;
+};
+
+export type PatchTeamsTeamId401Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId401 = {
+  error: PatchTeamsTeamId401Error;
+};
+
+export type PatchTeamsTeamId403Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId403 = {
+  error: PatchTeamsTeamId403Error;
+};
+
+export type PatchTeamsTeamId404Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId404 = {
+  error: PatchTeamsTeamId404Error;
+};
+
+export type GetTeamsTeamIdSlackConnect401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSlackConnect401 = {
+  error: GetTeamsTeamIdSlackConnect401Error;
+};
+
+export type GetTeamsTeamIdSlackConnect403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSlackConnect403 = {
+  error: GetTeamsTeamIdSlackConnect403Error;
+};
+
+export type GetTeamsTeamIdSlackConnect404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSlackConnect404 = {
+  error: GetTeamsTeamIdSlackConnect404Error;
+};
+
+export type GetTeamsSlackOauthCallbackParams = {
+  code?: string;
+  state?: string;
+  error?: string;
+};
+
+export type GetTeamsSlackOauthCallback401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsSlackOauthCallback401 = {
+  error: GetTeamsSlackOauthCallback401Error;
+};
+
+export type GetTeamsSlackOauthCallback403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsSlackOauthCallback403 = {
+  error: GetTeamsSlackOauthCallback403Error;
+};
+
+export type GetTeamsSlackOauthCallback502Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsSlackOauthCallback502 = {
+  error: GetTeamsSlackOauthCallback502Error;
+};
+
+export type GetSlackNotificationSettings200 = {
+  issueCreated: boolean;
+  commentOnMyIssue: boolean;
+  replyOnMyComment: boolean;
+  commentAdopted: boolean;
+};
+
+export type GetSlackNotificationSettings401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetSlackNotificationSettings401 = {
+  error: GetSlackNotificationSettings401Error;
+};
+
+export type GetSlackNotificationSettings403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetSlackNotificationSettings403 = {
+  error: GetSlackNotificationSettings403Error;
+};
+
+export type GetSlackNotificationSettings404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetSlackNotificationSettings404 = {
+  error: GetSlackNotificationSettings404Error;
+};
+
+export type UpdateSlackNotificationSettingsBody = {
+  issueCreated: boolean;
+  commentOnMyIssue: boolean;
+  replyOnMyComment: boolean;
+  commentAdopted: boolean;
+};
+
+export type UpdateSlackNotificationSettings200 = {
+  issueCreated: boolean;
+  commentOnMyIssue: boolean;
+  replyOnMyComment: boolean;
+  commentAdopted: boolean;
+};
+
+export type UpdateSlackNotificationSettings400Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings400 = {
+  error: UpdateSlackNotificationSettings400Error;
+};
+
+export type UpdateSlackNotificationSettings401Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings401 = {
+  error: UpdateSlackNotificationSettings401Error;
+};
+
+export type UpdateSlackNotificationSettings403Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings403 = {
+  error: UpdateSlackNotificationSettings403Error;
+};
+
+export type UpdateSlackNotificationSettings404Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings404 = {
+  error: UpdateSlackNotificationSettings404Error;
+};
+
+export type SendSlackTestMessageBody = {
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  message: string;
+};
+
+export type SendSlackTestMessage200 = {
+  success: boolean;
+};
+
+export type SendSlackTestMessage400Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage400 = {
+  error: SendSlackTestMessage400Error;
+};
+
+export type SendSlackTestMessage401Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage401 = {
+  error: SendSlackTestMessage401Error;
+};
+
+export type SendSlackTestMessage403Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage403 = {
+  error: SendSlackTestMessage403Error;
+};
+
+export type SendSlackTestMessage404Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage404 = {
+  error: SendSlackTestMessage404Error;
+};
+
+export type SendSlackTestMessage502Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage502 = {
+  error: SendSlackTestMessage502Error;
+};
+
+export type GetTeamsTeamIdSettings200MembersItemRole =
+  (typeof GetTeamsTeamIdSettings200MembersItemRole)[keyof typeof GetTeamsTeamIdSettings200MembersItemRole];
+
+export const GetTeamsTeamIdSettings200MembersItemRole = {
+  LEADER: 'LEADER',
+  MEMBER: 'MEMBER',
+} as const;
+
+export type GetTeamsTeamIdSettings200MembersItem = {
+  userId: string;
+  name: string;
+  role: GetTeamsTeamIdSettings200MembersItemRole;
+  joinedAt: string;
+  score: number;
+};
+
+export type GetTeamsTeamIdSettings200 = {
+  userId: string;
+  teamId: string;
+  name: string;
+  description: string;
+  ownerId: string;
+  isSlackConnected: boolean;
+  createdAt: string;
+  members: GetTeamsTeamIdSettings200MembersItem[];
+};
+
+export type GetTeamsTeamIdSettings401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSettings401 = {
+  error: GetTeamsTeamIdSettings401Error;
+};
+
+export type GetTeamsTeamIdSettings403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSettings403 = {
+  error: GetTeamsTeamIdSettings403Error;
+};
+
+export type GetTeamsTeamIdSettings404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSettings404 = {
+  error: GetTeamsTeamIdSettings404Error;
+};
+
 export type GetTeamsTeamIdMembers200DataItemRole =
   (typeof GetTeamsTeamIdMembers200DataItemRole)[keyof typeof GetTeamsTeamIdMembers200DataItemRole];
 
@@ -670,11 +979,22 @@ export type GetTeamsTeamIdIssuesIssueId200 = {
   content: string;
   tag: string[];
   author: string;
+  authorId: string;
+  isAuthor: boolean;
+  createdAt: string;
   errorLog: string;
   isPublic: boolean;
   status: GetTeamsTeamIdIssuesIssueId200Status;
   logs: GetTeamsTeamIdIssuesIssueId200LogsItem[];
 };
+
+export type PatchTeamsTeamIdIssuesIssueIdBodyStatus =
+  (typeof PatchTeamsTeamIdIssuesIssueIdBodyStatus)[keyof typeof PatchTeamsTeamIdIssuesIssueIdBodyStatus];
+
+export const PatchTeamsTeamIdIssuesIssueIdBodyStatus = {
+  SOLVED: 'SOLVED',
+  UNSOLVED: 'UNSOLVED',
+} as const;
 
 export type PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType =
   (typeof PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType)[keyof typeof PatchTeamsTeamIdIssuesIssueIdBodyLogsItemLogType];
@@ -696,6 +1016,7 @@ export type PatchTeamsTeamIdIssuesIssueIdBody = {
   /** @minLength 1 */
   content: string;
   tags: string[];
+  status: PatchTeamsTeamIdIssuesIssueIdBodyStatus;
   isPublic: boolean;
   logs: PatchTeamsTeamIdIssuesIssueIdBodyLogsItem[];
 };
@@ -708,6 +1029,14 @@ export type PatchTeamsTeamIdIssuesIssueId200 = {
 export type DeleteTeamsTeamIdIssuesIssueId200 = {
   success: boolean;
 };
+
+export type PostTeamsTeamIdIssuesBodyStatus =
+  (typeof PostTeamsTeamIdIssuesBodyStatus)[keyof typeof PostTeamsTeamIdIssuesBodyStatus];
+
+export const PostTeamsTeamIdIssuesBodyStatus = {
+  SOLVED: 'SOLVED',
+  UNSOLVED: 'UNSOLVED',
+} as const;
 
 export type PostTeamsTeamIdIssuesBodyLogsItemLogType =
   (typeof PostTeamsTeamIdIssuesBodyLogsItemLogType)[keyof typeof PostTeamsTeamIdIssuesBodyLogsItemLogType];
@@ -731,6 +1060,7 @@ export type PostTeamsTeamIdIssuesBody = {
   /** @minLength 1 */
   content: string;
   tag: string[];
+  status: PostTeamsTeamIdIssuesBodyStatus;
   isPublic: boolean;
   logs: PostTeamsTeamIdIssuesBodyLogsItem[];
 };
@@ -755,6 +1085,295 @@ export type PostIssuesSuggest502 = {
   code: string;
   message: string;
   statusCode: number;
+};
+
+export type GetMyProfile200 = {
+  id: string;
+  name: string;
+  email: string;
+  /** @nullable */
+  profileImg: string | null;
+  createdAt: string;
+  totalScore: number;
+  issueCount: number;
+  solvedCount: number;
+};
+
+export type GetMyProfile401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyProfile401 = {
+  error: GetMyProfile401Error;
+};
+
+export type UpdateMyProfileBodyPassword = {
+  /** @minLength 8 */
+  current: string;
+  /** @minLength 8 */
+  next: string;
+};
+
+export type UpdateMyProfileBody = {
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
+  name?: string;
+  /** @nullable */
+  profileImg?: string | null;
+  password?: UpdateMyProfileBodyPassword;
+};
+
+export type UpdateMyProfile200 = {
+  id: string;
+  name: string;
+  /** @nullable */
+  profileImg: string | null;
+  updatedAt: string;
+};
+
+export type UpdateMyProfile400Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateMyProfile400 = {
+  error: UpdateMyProfile400Error;
+};
+
+export type UpdateMyProfile401Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateMyProfile401 = {
+  error: UpdateMyProfile401Error;
+};
+
+export type GetUserProfile200 = {
+  id: string;
+  name: string;
+  /** @nullable */
+  profileImg: string | null;
+  createdAt: string;
+  totalScore: number;
+  issueCount: number;
+  solvedCount: number;
+};
+
+export type GetUserProfile400Error = {
+  code: string;
+  message: string;
+};
+
+export type GetUserProfile400 = {
+  error: GetUserProfile400Error;
+};
+
+export type GetUserProfile404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetUserProfile404 = {
+  error: GetUserProfile404Error;
+};
+
+export type GetMyIssuesParams = {
+  /**
+   * @exclusiveMinimum 0
+   */
+  page?: number;
+  /**
+   * @maximum 100
+   * @exclusiveMinimum 0
+   */
+  limit?: number;
+};
+
+export type GetMyIssues200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetMyIssues200DataItemStatus =
+  (typeof GetMyIssues200DataItemStatus)[keyof typeof GetMyIssues200DataItemStatus];
+
+export const GetMyIssues200DataItemStatus = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
+export type GetMyIssues200DataItem = {
+  id: string;
+  title: string;
+  status: GetMyIssues200DataItemStatus;
+  tags: string[];
+  summary: string;
+  commentCount: number;
+  adoptedCount: number;
+  createdAt: string;
+  teamId: string;
+  teamName: string;
+};
+
+export type GetMyIssues200 = {
+  meta: GetMyIssues200Meta;
+  data: GetMyIssues200DataItem[];
+};
+
+export type GetMyIssues401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyIssues401 = {
+  error: GetMyIssues401Error;
+};
+
+export type GetMySolvedParams = {
+  /**
+   * @exclusiveMinimum 0
+   */
+  page?: number;
+  /**
+   * @maximum 100
+   * @exclusiveMinimum 0
+   */
+  limit?: number;
+};
+
+export type GetMySolved200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetMySolved200DataItemStatus =
+  (typeof GetMySolved200DataItemStatus)[keyof typeof GetMySolved200DataItemStatus];
+
+export const GetMySolved200DataItemStatus = {
+  UNSOLVED: 'UNSOLVED',
+  SOLVED: 'SOLVED',
+} as const;
+
+export type GetMySolved200DataItem = {
+  id: string;
+  title: string;
+  status: GetMySolved200DataItemStatus;
+  tags: string[];
+  summary: string;
+  commentCount: number;
+  adoptedCount: number;
+  createdAt: string;
+  teamId: string;
+  teamName: string;
+  myAdoptedCommentId: string;
+};
+
+export type GetMySolved200 = {
+  meta: GetMySolved200Meta;
+  data: GetMySolved200DataItem[];
+};
+
+export type GetMySolved401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMySolved401 = {
+  error: GetMySolved401Error;
+};
+
+export type GetMyScoreParams = {
+  /**
+   * @minimum 2020
+   */
+  year?: number;
+};
+
+export type GetMyScore200DailyItemLogsItem = {
+  id: string;
+  amount: number;
+  reason: string;
+  /** @nullable */
+  issueId: string | null;
+  /** @nullable */
+  issueTitle: string | null;
+  createdAt: string;
+};
+
+export type GetMyScore200DailyItem = {
+  date: string;
+  totalAmount: number;
+  logs: GetMyScore200DailyItemLogsItem[];
+};
+
+export type GetMyScore200 = {
+  year: number;
+  totalScore: number;
+  daily: GetMyScore200DailyItem[];
+};
+
+export type GetMyScore401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyScore401 = {
+  error: GetMyScore401Error;
+};
+
+export type GetMyScoreLogsParams = {
+  /**
+   * @exclusiveMinimum 0
+   */
+  page?: number;
+  /**
+   * @maximum 100
+   * @exclusiveMinimum 0
+   */
+  limit?: number;
+};
+
+export type GetMyScoreLogs200Meta = {
+  totalItemCount: number;
+  currentItemCount: number;
+  itemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export type GetMyScoreLogs200DataItem = {
+  id: string;
+  amount: number;
+  reason: string;
+  /** @nullable */
+  issueId: string | null;
+  /** @nullable */
+  issueTitle: string | null;
+  createdAt: string;
+};
+
+export type GetMyScoreLogs200 = {
+  meta: GetMyScoreLogs200Meta;
+  data: GetMyScoreLogs200DataItem[];
+};
+
+export type GetMyScoreLogs401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetMyScoreLogs401 = {
+  error: GetMyScoreLogs401Error;
 };
 
 export type GetNotifications200DataItem = {
@@ -2118,6 +2737,1131 @@ export function useGetTeamsTeamId<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetTeamsTeamIdQueryOptions(teamId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 팀 이름, 설명, 팀장을 수정합니다. 팀장 권한을 가진 사용자만 수정할 수 있습니다.
+ * @summary 팀 수정
+ */
+export const patchTeamsTeamId = (
+  teamId: string,
+  patchTeamsTeamIdBody?: BodyType<PatchTeamsTeamIdBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PatchTeamsTeamId200>(
+    {
+      url: `/teams/${teamId}`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: patchTeamsTeamIdBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPatchTeamsTeamIdMutationOptions = <
+  TError = ErrorType<
+    | PatchTeamsTeamId400
+    | PatchTeamsTeamId401
+    | PatchTeamsTeamId403
+    | PatchTeamsTeamId404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchTeamsTeamId>>,
+    TError,
+    { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchTeamsTeamId>>,
+  TError,
+  { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+  TContext
+> => {
+  const mutationKey = ['patchTeamsTeamId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchTeamsTeamId>>,
+    { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return patchTeamsTeamId(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PatchTeamsTeamIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchTeamsTeamId>>
+>;
+export type PatchTeamsTeamIdMutationBody =
+  | BodyType<PatchTeamsTeamIdBody>
+  | undefined;
+export type PatchTeamsTeamIdMutationError = ErrorType<
+  | PatchTeamsTeamId400
+  | PatchTeamsTeamId401
+  | PatchTeamsTeamId403
+  | PatchTeamsTeamId404
+>;
+
+/**
+ * @summary 팀 수정
+ */
+export const usePatchTeamsTeamId = <
+  TError = ErrorType<
+    | PatchTeamsTeamId400
+    | PatchTeamsTeamId401
+    | PatchTeamsTeamId403
+    | PatchTeamsTeamId404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof patchTeamsTeamId>>,
+      TError,
+      { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof patchTeamsTeamId>>,
+  TError,
+  { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+  TContext
+> => {
+  return useMutation(getPatchTeamsTeamIdMutationOptions(options), queryClient);
+};
+
+/**
+ * 로그인한 사용자를 Slack OAuth 승인 화면으로 이동시켜 Incoming Webhook 연동을 시작합니다.
+ * @summary Slack 연동 시작
+ */
+export const getTeamsTeamIdSlackConnect = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<unknown>(
+    { url: `/teams/${teamId}/slack/connect`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetTeamsTeamIdSlackConnectQueryKey = (teamId: string) => {
+  return [`/teams/${teamId}/slack/connect`] as const;
+};
+
+export const getGetTeamsTeamIdSlackConnectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTeamsTeamIdSlackConnectQueryKey(teamId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+  > = ({ signal }) =>
+    getTeamsTeamIdSlackConnect(teamId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!teamId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsTeamIdSlackConnectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+>;
+export type GetTeamsTeamIdSlackConnectQueryError = ErrorType<
+  | void
+  | GetTeamsTeamIdSlackConnect401
+  | GetTeamsTeamIdSlackConnect403
+  | GetTeamsTeamIdSlackConnect404
+>;
+
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Slack 연동 시작
+ */
+
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsTeamIdSlackConnectQueryOptions(
+    teamId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Slack OAuth code를 Incoming Webhook URL로 교환하고 현재 사용자의 팀 멤버 설정에 저장합니다.
+ * @summary Slack OAuth callback
+ */
+export const getTeamsSlackOauthCallback = (
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<unknown>(
+    { url: `/teams/slack/oauth/callback`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetTeamsSlackOauthCallbackQueryKey = (
+  params?: GetTeamsSlackOauthCallbackParams,
+) => {
+  return [`/teams/slack/oauth/callback`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetTeamsSlackOauthCallbackQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTeamsSlackOauthCallbackQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+  > = ({ signal }) =>
+    getTeamsSlackOauthCallback(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsSlackOauthCallbackQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+>;
+export type GetTeamsSlackOauthCallbackQueryError = ErrorType<
+  | void
+  | GetTeamsSlackOauthCallback401
+  | GetTeamsSlackOauthCallback403
+  | GetTeamsSlackOauthCallback502
+>;
+
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params: undefined | GetTeamsSlackOauthCallbackParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Slack OAuth callback
+ */
+
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsSlackOauthCallbackQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 현재 로그인한 사용자의 특정 팀 Slack 알림 이벤트 수신 설정을 조회합니다.
+ * @summary Slack 알림 설정 조회
+ */
+export const getSlackNotificationSettings = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetSlackNotificationSettings200>(
+    {
+      url: `/teams/${teamId}/slack/notification-settings`,
+      method: 'GET',
+      signal,
+    },
+    options,
+  );
+};
+
+export const getGetSlackNotificationSettingsQueryKey = (teamId: string) => {
+  return [`/teams/${teamId}/slack/notification-settings`] as const;
+};
+
+export const getGetSlackNotificationSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSlackNotificationSettingsQueryKey(teamId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSlackNotificationSettings>>
+  > = ({ signal }) =>
+    getSlackNotificationSettings(teamId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!teamId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSlackNotificationSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSlackNotificationSettings>>
+>;
+export type GetSlackNotificationSettingsQueryError = ErrorType<
+  | GetSlackNotificationSettings401
+  | GetSlackNotificationSettings403
+  | GetSlackNotificationSettings404
+>;
+
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Slack 알림 설정 조회
+ */
+
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetSlackNotificationSettingsQueryOptions(
+    teamId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 현재 로그인한 사용자의 특정 팀 Slack 알림 이벤트 수신 설정을 저장합니다.
+ * @summary Slack 알림 설정 저장
+ */
+export const updateSlackNotificationSettings = (
+  teamId: string,
+  updateSlackNotificationSettingsBody?: BodyType<UpdateSlackNotificationSettingsBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<UpdateSlackNotificationSettings200>(
+    {
+      url: `/teams/${teamId}/slack/notification-settings`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateSlackNotificationSettingsBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getUpdateSlackNotificationSettingsMutationOptions = <
+  TError = ErrorType<
+    | UpdateSlackNotificationSettings400
+    | UpdateSlackNotificationSettings401
+    | UpdateSlackNotificationSettings403
+    | UpdateSlackNotificationSettings404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+    TError,
+    { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+  TError,
+  { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+  TContext
+> => {
+  const mutationKey = ['updateSlackNotificationSettings'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+    { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return updateSlackNotificationSettings(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSlackNotificationSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSlackNotificationSettings>>
+>;
+export type UpdateSlackNotificationSettingsMutationBody =
+  | BodyType<UpdateSlackNotificationSettingsBody>
+  | undefined;
+export type UpdateSlackNotificationSettingsMutationError = ErrorType<
+  | UpdateSlackNotificationSettings400
+  | UpdateSlackNotificationSettings401
+  | UpdateSlackNotificationSettings403
+  | UpdateSlackNotificationSettings404
+>;
+
+/**
+ * @summary Slack 알림 설정 저장
+ */
+export const useUpdateSlackNotificationSettings = <
+  TError = ErrorType<
+    | UpdateSlackNotificationSettings400
+    | UpdateSlackNotificationSettings401
+    | UpdateSlackNotificationSettings403
+    | UpdateSlackNotificationSettings404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+      TError,
+      { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+  TError,
+  { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+  TContext
+> => {
+  return useMutation(
+    getUpdateSlackNotificationSettingsMutationOptions(options),
+    queryClient,
+  );
+};
+
+/**
+ * 현재 로그인한 사용자의 팀 멤버 설정에 저장된 Slack Incoming Webhook으로 테스트 메시지를 전송합니다.
+ * @summary Slack 테스트 메시지 전송
+ */
+export const sendSlackTestMessage = (
+  teamId: string,
+  sendSlackTestMessageBody?: BodyType<SendSlackTestMessageBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<SendSlackTestMessage200>(
+    {
+      url: `/teams/${teamId}/slack/test-message`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: sendSlackTestMessageBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getSendSlackTestMessageMutationOptions = <
+  TError = ErrorType<
+    | SendSlackTestMessage400
+    | SendSlackTestMessage401
+    | SendSlackTestMessage403
+    | SendSlackTestMessage404
+    | SendSlackTestMessage502
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendSlackTestMessage>>,
+    TError,
+    { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendSlackTestMessage>>,
+  TError,
+  { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+  TContext
+> => {
+  const mutationKey = ['sendSlackTestMessage'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendSlackTestMessage>>,
+    { teamId: string; data?: BodyType<SendSlackTestMessageBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return sendSlackTestMessage(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SendSlackTestMessageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendSlackTestMessage>>
+>;
+export type SendSlackTestMessageMutationBody =
+  | BodyType<SendSlackTestMessageBody>
+  | undefined;
+export type SendSlackTestMessageMutationError = ErrorType<
+  | SendSlackTestMessage400
+  | SendSlackTestMessage401
+  | SendSlackTestMessage403
+  | SendSlackTestMessage404
+  | SendSlackTestMessage502
+>;
+
+/**
+ * @summary Slack 테스트 메시지 전송
+ */
+export const useSendSlackTestMessage = <
+  TError = ErrorType<
+    | SendSlackTestMessage400
+    | SendSlackTestMessage401
+    | SendSlackTestMessage403
+    | SendSlackTestMessage404
+    | SendSlackTestMessage502
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof sendSlackTestMessage>>,
+      TError,
+      { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof sendSlackTestMessage>>,
+  TError,
+  { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+  TContext
+> => {
+  return useMutation(
+    getSendSlackTestMessageMutationOptions(options),
+    queryClient,
+  );
+};
+
+/**
+ * 팀 설정 페이지에서 사용하는 팀 정보와 팀원 목록을 조회합니다. 팀원 목록은 이름순, 가입일순으로 정렬되며 리더가 항상 맨 위에 표시됩니다.
+ * @summary 팀 설정 조회
+ */
+export const getTeamsTeamIdSettings = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetTeamsTeamIdSettings200>(
+    { url: `/teams/${teamId}/settings`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetTeamsTeamIdSettingsQueryKey = (teamId: string) => {
+  return [`/teams/${teamId}/settings`] as const;
+};
+
+export const getGetTeamsTeamIdSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTeamsTeamIdSettingsQueryKey(teamId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+  > = ({ signal }) => getTeamsTeamIdSettings(teamId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!teamId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsTeamIdSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+>;
+export type GetTeamsTeamIdSettingsQueryError = ErrorType<
+  | GetTeamsTeamIdSettings401
+  | GetTeamsTeamIdSettings403
+  | GetTeamsTeamIdSettings404
+>;
+
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 팀 설정 조회
+ */
+
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsTeamIdSettingsQueryOptions(teamId, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -3543,6 +5287,944 @@ export const usePostIssuesSuggest = <
 > => {
   return useMutation(getPostIssuesSuggestMutationOptions(options), queryClient);
 };
+
+/**
+ * 로그인한 사용자의 프로필 정보를 조회합니다.
+ * @summary 내 프로필 조회
+ */
+export const getMyProfile = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyProfile200>(
+    { url: `/users/me`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetMyProfileQueryKey = () => {
+  return [`/users/me`] as const;
+};
+
+export const getGetMyProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyProfileQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyProfile>>> = ({
+    signal,
+  }) => getMyProfile(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyProfile>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyProfile>>
+>;
+export type GetMyProfileQueryError = ErrorType<GetMyProfile401>;
+
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getMyProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내 프로필 조회
+ */
+
+export function useGetMyProfile<
+  TData = Awaited<ReturnType<typeof getMyProfile>>,
+  TError = ErrorType<GetMyProfile401>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyProfileQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 이름, 프로필 이미지, 비밀번호를 수정합니다.
+ * @summary 내 프로필 수정
+ */
+export const updateMyProfile = (
+  updateMyProfileBody: BodyType<UpdateMyProfileBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<UpdateMyProfile200>(
+    {
+      url: `/users/me`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateMyProfileBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getUpdateMyProfileMutationOptions = <
+  TError = ErrorType<UpdateMyProfile400 | UpdateMyProfile401>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMyProfile>>,
+    TError,
+    { data: BodyType<UpdateMyProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMyProfile>>,
+  TError,
+  { data: BodyType<UpdateMyProfileBody> },
+  TContext
+> => {
+  const mutationKey = ['updateMyProfile'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMyProfile>>,
+    { data: BodyType<UpdateMyProfileBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateMyProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateMyProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateMyProfile>>
+>;
+export type UpdateMyProfileMutationBody = BodyType<UpdateMyProfileBody>;
+export type UpdateMyProfileMutationError = ErrorType<
+  UpdateMyProfile400 | UpdateMyProfile401
+>;
+
+/**
+ * @summary 내 프로필 수정
+ */
+export const useUpdateMyProfile = <
+  TError = ErrorType<UpdateMyProfile400 | UpdateMyProfile401>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateMyProfile>>,
+      TError,
+      { data: BodyType<UpdateMyProfileBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateMyProfile>>,
+  TError,
+  { data: BodyType<UpdateMyProfileBody> },
+  TContext
+> => {
+  return useMutation(getUpdateMyProfileMutationOptions(options), queryClient);
+};
+
+/**
+ * 특정 유저의 공개 프로필 정보를 조회합니다.
+ * @summary 다른 유저 프로필 조회
+ */
+export const getUserProfile = (
+  userId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetUserProfile200>(
+    { url: `/users/${userId}`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetUserProfileQueryKey = (userId: string) => {
+  return [`/users/${userId}`] as const;
+};
+
+export const getGetUserProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetUserProfileQueryKey(userId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserProfile>>> = ({
+    signal,
+  }) => getUserProfile(userId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!userId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUserProfile>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetUserProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUserProfile>>
+>;
+export type GetUserProfileQueryError = ErrorType<
+  GetUserProfile400 | GetUserProfile404
+>;
+
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getUserProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getUserProfile>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 다른 유저 프로필 조회
+ */
+
+export function useGetUserProfile<
+  TData = Awaited<ReturnType<typeof getUserProfile>>,
+  TError = ErrorType<GetUserProfile400 | GetUserProfile404>,
+>(
+  userId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getUserProfile>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetUserProfileQueryOptions(userId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 로그인한 사용자가 작성한 이슈 목록을 페이지네이션으로 조회합니다.
+ * @summary 내가 작성한 이슈 목록
+ */
+export const getMyIssues = (
+  params?: GetMyIssuesParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyIssues200>(
+    { url: `/users/me/issues`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMyIssuesQueryKey = (params?: GetMyIssuesParams) => {
+  return [`/users/me/issues`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyIssuesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyIssuesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyIssues>>> = ({
+    signal,
+  }) => getMyIssues(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyIssues>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyIssuesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyIssues>>
+>;
+export type GetMyIssuesQueryError = ErrorType<GetMyIssues401>;
+
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params: undefined | GetMyIssuesParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyIssues>>,
+          TError,
+          Awaited<ReturnType<typeof getMyIssues>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyIssues>>,
+          TError,
+          Awaited<ReturnType<typeof getMyIssues>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내가 작성한 이슈 목록
+ */
+
+export function useGetMyIssues<
+  TData = Awaited<ReturnType<typeof getMyIssues>>,
+  TError = ErrorType<GetMyIssues401>,
+>(
+  params?: GetMyIssuesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyIssues>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyIssuesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 내 댓글이 채택된 이슈 목록을 페이지네이션으로 조회합니다.
+ * @summary 내가 해결한 이슈 목록
+ */
+export const getMySolved = (
+  params?: GetMySolvedParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMySolved200>(
+    { url: `/users/me/solved`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMySolvedQueryKey = (params?: GetMySolvedParams) => {
+  return [`/users/me/solved`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMySolvedQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMySolvedQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMySolved>>> = ({
+    signal,
+  }) => getMySolved(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMySolved>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMySolvedQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMySolved>>
+>;
+export type GetMySolvedQueryError = ErrorType<GetMySolved401>;
+
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params: undefined | GetMySolvedParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMySolved>>,
+          TError,
+          Awaited<ReturnType<typeof getMySolved>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMySolved>>,
+          TError,
+          Awaited<ReturnType<typeof getMySolved>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내가 해결한 이슈 목록
+ */
+
+export function useGetMySolved<
+  TData = Awaited<ReturnType<typeof getMySolved>>,
+  TError = ErrorType<GetMySolved401>,
+>(
+  params?: GetMySolvedParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMySolved>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMySolvedQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 연도별 날짜별 점수 획득 내역을 조회합니다. year 미입력 시 현재 연도.
+ * @summary 점수 히스토리 (잔디 그래프용)
+ */
+export const getMyScore = (
+  params?: GetMyScoreParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyScore200>(
+    { url: `/users/me/score`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMyScoreQueryKey = (params?: GetMyScoreParams) => {
+  return [`/users/me/score`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyScoreQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyScoreQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyScore>>> = ({
+    signal,
+  }) => getMyScore(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyScore>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyScoreQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyScore>>
+>;
+export type GetMyScoreQueryError = ErrorType<GetMyScore401>;
+
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params: undefined | GetMyScoreParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScore>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScore>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScore>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScore>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 점수 히스토리 (잔디 그래프용)
+ */
+
+export function useGetMyScore<
+  TData = Awaited<ReturnType<typeof getMyScore>>,
+  TError = ErrorType<GetMyScore401>,
+>(
+  params?: GetMyScoreParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScore>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyScoreQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 점수 획득 내역을 페이지네이션으로 조회합니다. (마이페이지 점수 획득 목록 섹션)
+ * @summary 점수 획득 목록
+ */
+export const getMyScoreLogs = (
+  params?: GetMyScoreLogsParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetMyScoreLogs200>(
+    { url: `/users/me/score/logs`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetMyScoreLogsQueryKey = (params?: GetMyScoreLogsParams) => {
+  return [`/users/me/score/logs`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyScoreLogsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyScoreLogsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyScoreLogs>>> = ({
+    signal,
+  }) => getMyScoreLogs(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyScoreLogs>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMyScoreLogsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyScoreLogs>>
+>;
+export type GetMyScoreLogsQueryError = ErrorType<GetMyScoreLogs401>;
+
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params: undefined | GetMyScoreLogsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScoreLogs>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScoreLogs>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyScoreLogs>>,
+          TError,
+          Awaited<ReturnType<typeof getMyScoreLogs>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 점수 획득 목록
+ */
+
+export function useGetMyScoreLogs<
+  TData = Awaited<ReturnType<typeof getMyScoreLogs>>,
+  TError = ErrorType<GetMyScoreLogs401>,
+>(
+  params?: GetMyScoreLogsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMyScoreLogs>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMyScoreLogsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * 로그인한 사용자의 알림 목록을 조회합니다.

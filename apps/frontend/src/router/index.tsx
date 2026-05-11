@@ -15,6 +15,7 @@ import CreateTeamPage from '@/pages/teams/CreateTeamPage';
 import AdditionalInfoPage from '@/pages/auth/AdditionalInfoPage';
 import TeamDetailPage from '@/pages/teams/TeamDetailPage';
 import MyPage from '@/pages/users/MyPage';
+import TeamSettingPage from '@/pages/teams/TeamSettingPage';
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: '/teams/:teamId/issues/new', element: <IssueCreate /> },
       { path: '/teams/new', element: <CreateTeamPage /> },
       { path: '/teams/:teamId', element: <TeamDetailPage /> },
+      { path: '/teams/:teamId/settings', element: <TeamSettingPage /> },
       { path: '/teams/:teamId/issues/:issueId', element: <IssueDetail /> },
       { path: '/teams/:teamId/issues/:issueId/edit', element: <IssueEdit /> },
       { path: '/mypage', element: <MyPage /> },

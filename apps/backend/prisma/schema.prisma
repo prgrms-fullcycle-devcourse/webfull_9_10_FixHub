@@ -8,18 +8,18 @@ datasource db {
 }
 
 enum TeamRole {
- LEADER
- MEMBER
+  LEADER
+  MEMBER
 }
 
 enum IssueStatus {
- UNSOLVED
- SOLVED
+  UNSOLVED
+  SOLVED
 }
 
 enum LogType {
- SENT
- RECEIVED
+  SENT
+  RECEIVED
 }
 
 model User {
@@ -40,40 +40,45 @@ model User {
 }
 
 model ScoreLog {
-  id           String     @id @default(uuid()) @db.Uuid
-  teamMemberId String     @map("team_member_id") @db.Uuid
+  id           String      @id @default(uuid()) @db.Uuid
+  teamMemberId String      @map("team_member_id") @db.Uuid
   amount       Int
   reason       String
   issueId      String?     @map("issue_id") @db.Uuid
-  createdAt    DateTime   @default(now()) @map("created_at")
-  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  teamMember   TeamMember  @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
   issue        ErrorIssue? @relation(fields: [issueId], references: [id], onDelete: SetNull)
+
   @@map("score_logs")
 }
 
 model Team {
-  id              String       @id @default(uuid()) @db.Uuid
-  name            String
-  description     String?
-  slackWebhookUrl String?      @map("slack_webhook_url")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  errorIssues     ErrorIssue[]
-  teamMembers     TeamMember[]
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  errorIssues ErrorIssue[]
+  teamMembers TeamMember[]
 
   @@map("teams")
 }
 
 model TeamMember {
-  id        String     @id @default(uuid()) @db.Uuid
-  teamId    String     @map("team_id") @db.Uuid
-  userId    String     @map("user_id") @db.Uuid
-  role      TeamRole   @default(MEMBER)
-  status    String     @default("PENDING")
-  score     Int        @default(0)
-  joinedAt  DateTime?  @map("joined_at")
-  scoreLogs ScoreLog[]
-  team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                          String     @id @default(uuid()) @db.Uuid
+  teamId                      String     @map("team_id") @db.Uuid
+  userId                      String     @map("user_id") @db.Uuid
+  role                        TeamRole   @default(MEMBER)
+  status                      String     @default("PENDING")
+  score                       Int        @default(0)
+  joinedAt                    DateTime?  @map("joined_at")
+  slackWebhookUrl             String?    @map("slack_webhook_url")
+  slackNotifyIssueCreated     Boolean    @default(true) @map("slack_notify_issue_created")
+  slackNotifyCommentOnMyIssue Boolean    @default(true) @map("slack_notify_comment_on_my_issue")
+  slackNotifyReplyOnMyComment Boolean    @default(true) @map("slack_notify_reply_on_my_comment")
+  slackNotifyCommentAdopted   Boolean    @default(true) @map("slack_notify_comment_adopted")
+  scoreLogs                   ScoreLog[]
+  team                        Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user                        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
   @@map("team_members")
@@ -113,7 +118,7 @@ model ErrorIssueTag {
 model ErrorLog {
   id           String     @id @default(uuid()) @db.Uuid
   issueId      String     @map("issue_id") @db.Uuid
-  logType      LogType    @map("log_type") @default(SENT)
+  logType      LogType    @default(SENT) @map("log_type")
   source       String?
   message      String?
   stackTrace   String?    @map("stack_trace") @db.Text
