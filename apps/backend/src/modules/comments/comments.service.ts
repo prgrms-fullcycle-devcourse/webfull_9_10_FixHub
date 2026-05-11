@@ -451,12 +451,14 @@ export async function adoptComment(
     content: '회원님의 댓글이 해결책으로 채택되었습니다.',
   });
 
-  await sendSlackNotificationToTeamMember({
-    teamId: adoptedComment.slackNotification.teamId,
-    userId: adoptedComment.slackNotification.userId,
-    enabledField: 'slackNotifyCommentAdopted',
-    text: `회원님의 제안이 해결책으로 채택되었어요: ${adoptedComment.slackNotification.issueTitle}`,
-  });
+  if (adoptedComment.slackNotification.userId !== userId) {
+    await sendSlackNotificationToTeamMember({
+      teamId: adoptedComment.slackNotification.teamId,
+      userId: adoptedComment.slackNotification.userId,
+      enabledField: 'slackNotifyCommentAdopted',
+      text: `회원님의 제안이 해결책으로 채택되었어요: ${adoptedComment.slackNotification.issueTitle}`,
+    });
+  }
 
   return adoptedComment.response;
 }
