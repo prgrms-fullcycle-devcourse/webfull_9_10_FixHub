@@ -53,28 +53,28 @@ model ScoreLog {
 }
 
 model Team {
-  id              String       @id @default(uuid()) @db.Uuid
-  name            String
-  description     String?
-  slackWebhookUrl String?      @map("slack_webhook_url")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  errorIssues     ErrorIssue[]
-  teamMembers     TeamMember[]
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  errorIssues ErrorIssue[]
+  teamMembers TeamMember[]
 
   @@map("teams")
 }
 
 model TeamMember {
-  id        String     @id @default(uuid()) @db.Uuid
-  teamId    String     @map("team_id") @db.Uuid
-  userId    String     @map("user_id") @db.Uuid
-  role      TeamRole   @default(MEMBER)
-  status    String     @default("PENDING")
-  score     Int        @default(0)
-  joinedAt  DateTime?  @map("joined_at")
-  scoreLogs ScoreLog[]
-  team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String     @id @default(uuid()) @db.Uuid
+  teamId          String     @map("team_id") @db.Uuid
+  userId          String     @map("user_id") @db.Uuid
+  role            TeamRole   @default(MEMBER)
+  status          String     @default("PENDING")
+  score           Int        @default(0)
+  joinedAt        DateTime?  @map("joined_at")
+  slackWebhookUrl String?    @map("slack_webhook_url")
+  scoreLogs       ScoreLog[]
+  team            Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
   @@map("team_members")

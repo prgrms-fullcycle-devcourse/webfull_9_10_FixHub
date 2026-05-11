@@ -135,7 +135,6 @@ async function main() {
     data: {
       name: `${faker.company.name()} Dev Team`,
       description: faker.company.catchPhrase(),
-      slackWebhookUrl: null,
     },
   });
   console.log(`  ✅ Team "${team.name}" ready\n`);
