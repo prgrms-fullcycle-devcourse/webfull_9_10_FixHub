@@ -1,5 +1,9 @@
 import { Errors } from '../../common/errors/AppError.js';
 import prisma from '../../common/config/prisma.js';
+import {
+  APP_NOTIFICATION_TYPE,
+  createAppNotification,
+} from '../../common/utils/appNotification.js';
 import { formatKoreanDate } from '../../common/utils/formatDate.js';
 import { sendSlackNotificationToTeamMember } from '../../common/utils/slackNotification.js';
 import type {

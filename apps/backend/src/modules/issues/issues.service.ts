@@ -5,6 +5,10 @@ import prisma from '../../common/config/prisma.js';
 import { AppError, Errors } from '../../common/errors/AppError.js';
 import { sendSlackNotificationToTeam } from '../../common/utils/slackNotification.js';
 import {
+  APP_NOTIFICATION_TYPE,
+  createTeamAppNotifications,
+} from '../../common/utils/appNotification.js';
+import {
   type SearchIssuesQueryObjectDto,
   type GetPublicIssuesQuery,
   type GetIssueFeedsQuery,
@@ -473,6 +477,11 @@ export async function createIssue(
     select: {
       id: true,
       status: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 
