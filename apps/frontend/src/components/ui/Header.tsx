@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import Logo from '@/assets/logo.svg';
 import NotificationPopover from '@/components/notifications/NotificationPopover';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoggedIn, user } = useAuth();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -36,7 +38,10 @@ export default function Header() {
   return (
     <header className="flex justify-between items-center w-full border-b border-ring py-4 px-15 fixed bg-main-background/50 text-foreground backdrop-blur-[12px] z-50">
       {/* 로고 */}
-      <Logo className="h-10 w-40" onClick={() => navigate('/')} />
+      <Logo
+        className="h-10 w-40 cursor-pointer"
+        onClick={() => navigate('/')}
+      />
 
       {/* 검색 */}
       <div className="flex justify-start items-center bg-input w-111.5 h-14.5 rounded-[20px] py-3.5 px-5 gap-3">
@@ -49,15 +54,35 @@ export default function Header() {
         />
       </div>
 
-      {/* 알림, 프로필 */}
+      {/* 알림, 프로필 / 로그인 버튼 */}
       <div className="flex items-center gap-8">
-        <NotificationPopover />
-        <div className="flex justify-end gap-4 items-center">
-          <div className="w-12 h-12 rounded-full bg-white">
-            <img src="" alt="" />
-          </div>
-          <span className="text-secondary-foreground text-base">김이름</span>
-        </div>
+        {isLoggedIn ? (
+          <>
+            <NotificationPopover />
+            <button
+              onClick={() => navigate('/mypage')}
+              className="flex justify-end gap-4 items-center hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <div className="w-12 h-12 rounded-full bg-white overflow-hidden">
+                <img
+                  src={user?.profileImg ?? ''}
+                  alt={user?.name ?? '프로필'}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-secondary-foreground text-base">
+                {user?.name ?? ''}
+              </span>
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => navigate('/login')}
+            className="px-5 py-2 rounded-[20px] bg-main-color font-bold text-black typo-semibold-18 text-base font-medium hover:opacity-80 transition-opacity cursor-pointer"
+          >
+            로그인하기
+          </button>
+        )}
       </div>
     </header>
   );
