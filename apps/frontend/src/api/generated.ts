@@ -539,6 +539,113 @@ export type GetTeamsTeamId404 = {
   error: GetTeamsTeamId404Error;
 };
 
+export type PatchTeamsTeamIdBody = {
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
+  name?: string;
+  /** @maxLength 500 */
+  description?: string;
+  ownerId?: string;
+};
+
+export type PatchTeamsTeamId200 = {
+  teamId: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+};
+
+export type PatchTeamsTeamId400Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId400 = {
+  error: PatchTeamsTeamId400Error;
+};
+
+export type PatchTeamsTeamId401Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId401 = {
+  error: PatchTeamsTeamId401Error;
+};
+
+export type PatchTeamsTeamId403Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId403 = {
+  error: PatchTeamsTeamId403Error;
+};
+
+export type PatchTeamsTeamId404Error = {
+  code: string;
+  message: string;
+};
+
+export type PatchTeamsTeamId404 = {
+  error: PatchTeamsTeamId404Error;
+};
+
+export type GetTeamsTeamIdSettings200MembersItemRole =
+  (typeof GetTeamsTeamIdSettings200MembersItemRole)[keyof typeof GetTeamsTeamIdSettings200MembersItemRole];
+
+export const GetTeamsTeamIdSettings200MembersItemRole = {
+  LEADER: 'LEADER',
+  MEMBER: 'MEMBER',
+} as const;
+
+export type GetTeamsTeamIdSettings200MembersItem = {
+  userId: string;
+  name: string;
+  role: GetTeamsTeamIdSettings200MembersItemRole;
+  joinedAt: string;
+  score: number;
+};
+
+export type GetTeamsTeamIdSettings200 = {
+  userId: string;
+  teamId: string;
+  name: string;
+  description: string;
+  ownerId: string;
+  createdAt: string;
+  members: GetTeamsTeamIdSettings200MembersItem[];
+};
+
+export type GetTeamsTeamIdSettings401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSettings401 = {
+  error: GetTeamsTeamIdSettings401Error;
+};
+
+export type GetTeamsTeamIdSettings403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSettings403 = {
+  error: GetTeamsTeamIdSettings403Error;
+};
+
+export type GetTeamsTeamIdSettings404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSettings404 = {
+  error: GetTeamsTeamIdSettings404Error;
+};
+
 export type GetTeamsTeamIdMembers200DataItemRole =
   (typeof GetTeamsTeamIdMembers200DataItemRole)[keyof typeof GetTeamsTeamIdMembers200DataItemRole];
 
@@ -2428,6 +2535,306 @@ export function useGetTeamsTeamId<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetTeamsTeamIdQueryOptions(teamId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 팀 이름, 설명, 팀장을 수정합니다. 팀장 권한을 가진 사용자만 수정할 수 있습니다.
+ * @summary 팀 수정
+ */
+export const patchTeamsTeamId = (
+  teamId: string,
+  patchTeamsTeamIdBody?: BodyType<PatchTeamsTeamIdBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PatchTeamsTeamId200>(
+    {
+      url: `/teams/${teamId}`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: patchTeamsTeamIdBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPatchTeamsTeamIdMutationOptions = <
+  TError = ErrorType<
+    | PatchTeamsTeamId400
+    | PatchTeamsTeamId401
+    | PatchTeamsTeamId403
+    | PatchTeamsTeamId404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchTeamsTeamId>>,
+    TError,
+    { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchTeamsTeamId>>,
+  TError,
+  { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+  TContext
+> => {
+  const mutationKey = ['patchTeamsTeamId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchTeamsTeamId>>,
+    { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return patchTeamsTeamId(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PatchTeamsTeamIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchTeamsTeamId>>
+>;
+export type PatchTeamsTeamIdMutationBody =
+  | BodyType<PatchTeamsTeamIdBody>
+  | undefined;
+export type PatchTeamsTeamIdMutationError = ErrorType<
+  | PatchTeamsTeamId400
+  | PatchTeamsTeamId401
+  | PatchTeamsTeamId403
+  | PatchTeamsTeamId404
+>;
+
+/**
+ * @summary 팀 수정
+ */
+export const usePatchTeamsTeamId = <
+  TError = ErrorType<
+    | PatchTeamsTeamId400
+    | PatchTeamsTeamId401
+    | PatchTeamsTeamId403
+    | PatchTeamsTeamId404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof patchTeamsTeamId>>,
+      TError,
+      { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof patchTeamsTeamId>>,
+  TError,
+  { teamId: string; data?: BodyType<PatchTeamsTeamIdBody> },
+  TContext
+> => {
+  return useMutation(getPatchTeamsTeamIdMutationOptions(options), queryClient);
+};
+
+/**
+ * 팀 설정 페이지에서 사용하는 팀 정보와 팀원 목록을 조회합니다. 팀원 목록은 이름순, 가입일순으로 정렬되며 리더가 항상 맨 위에 표시됩니다.
+ * @summary 팀 설정 조회
+ */
+export const getTeamsTeamIdSettings = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetTeamsTeamIdSettings200>(
+    { url: `/teams/${teamId}/settings`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetTeamsTeamIdSettingsQueryKey = (teamId: string) => {
+  return [`/teams/${teamId}/settings`] as const;
+};
+
+export const getGetTeamsTeamIdSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTeamsTeamIdSettingsQueryKey(teamId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+  > = ({ signal }) => getTeamsTeamIdSettings(teamId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!teamId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsTeamIdSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+>;
+export type GetTeamsTeamIdSettingsQueryError = ErrorType<
+  | GetTeamsTeamIdSettings401
+  | GetTeamsTeamIdSettings403
+  | GetTeamsTeamIdSettings404
+>;
+
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 팀 설정 조회
+ */
+
+export function useGetTeamsTeamIdSettings<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+  TError = ErrorType<
+    | GetTeamsTeamIdSettings401
+    | GetTeamsTeamIdSettings403
+    | GetTeamsTeamIdSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsTeamIdSettingsQueryOptions(teamId, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

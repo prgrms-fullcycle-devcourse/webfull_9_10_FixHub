@@ -7,6 +7,9 @@ import {
   GetMyTeamsResponseSchema,
   GetTeamDetailResponseSchema,
   GetTeamMembersResponseSchema,
+  GetTeamSettingsResponseSchema,
+  UpdateTeamBodySchema,
+  UpdateTeamResponseSchema,
 } from './teams.dto.js';
 
 export const ErrorResponseSchema = z.object({
@@ -111,6 +114,119 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: GetTeamDetailResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '리소스 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀 수정
+  registry.registerPath({
+    method: 'patch',
+    path: '/teams/{teamId}',
+    tags: ['Teams'],
+    summary: '팀 수정',
+    description:
+      '팀 이름, 설명, 팀장을 수정합니다. 팀장 권한을 가진 사용자만 수정할 수 있습니다.',
+    request: {
+      params: z.object({
+        teamId: z.uuidv7(),
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: UpdateTeamBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '팀 수정 성공',
+        content: {
+          'application/json': {
+            schema: UpdateTeamResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '입력 값 오류',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '리소스 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀 설정 조회
+  registry.registerPath({
+    method: 'get',
+    path: '/teams/{teamId}/settings',
+    tags: ['Teams'],
+    summary: '팀 설정 조회',
+    description:
+      '팀 설정 페이지에서 사용하는 팀 정보와 팀원 목록을 조회합니다. 팀원 목록은 이름순, 가입일순으로 정렬되며 리더가 항상 맨 위에 표시됩니다.',
+    request: {
+      params: z.object({
+        teamId: z.uuidv7(),
+      }),
+    },
+    responses: {
+      200: {
+        description: '팀 설정 조회 성공',
+        content: {
+          'application/json': {
+            schema: GetTeamSettingsResponseSchema,
           },
         },
       },

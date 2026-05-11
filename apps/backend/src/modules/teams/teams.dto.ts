@@ -68,3 +68,44 @@ export const GetTeamMembersResponseSchema = z.object({
 export type GetTeamMembersResponseDto = z.infer<
   typeof GetTeamMembersResponseSchema
 >;
+
+// 팀 설정 조회
+export const GetTeamSettingsResponseSchema = z.object({
+  userId: z.uuidv7(),
+  teamId: z.uuidv7(),
+  name: z.string(),
+  description: z.string(),
+  ownerId: z.uuidv7(),
+  createdAt: z.iso.datetime(),
+  members: z.array(
+    z.object({
+      userId: z.uuidv7(),
+      name: z.string(),
+      role: z.enum(['LEADER', 'MEMBER']),
+      joinedAt: z.iso.datetime(),
+      score: z.number(),
+    }),
+  ),
+  // TODO: 향후 알림 설정 추가
+});
+
+export type GetTeamSettingsResponseDto = z.infer<
+  typeof GetTeamSettingsResponseSchema
+>;
+
+// 팀 수정
+export const UpdateTeamBodySchema = z.object({
+  name: z.string().min(1).max(50).optional(),
+  description: z.string().max(500).optional(),
+  ownerId: z.uuidv7().optional(),
+});
+
+export const UpdateTeamResponseSchema = z.object({
+  teamId: z.uuidv7(),
+  name: z.string(),
+  description: z.string().nullable(),
+});
+
+export type UpdateTeamBodyDto = z.infer<typeof UpdateTeamBodySchema>;
+
+export type UpdateTeamResponseDto = z.infer<typeof UpdateTeamResponseSchema>;

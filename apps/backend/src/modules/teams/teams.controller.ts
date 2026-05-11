@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { CreateTeamBodySchema } from './teams.dto.js';
+import { CreateTeamBodySchema, UpdateTeamBodySchema } from './teams.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
 import {
   createTeam,
   getMyTeams as getMyTeamsService,
   getTeamMembers as getTeamMembersService,
   getTeamDetail as getTeamDetailService,
+  getTeamSettings as getTeamSettingsService,
+  updateTeam as updateTeamService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
@@ -66,6 +68,24 @@ export async function getTeamDetail(
   }
 }
 
+// 팀 설정 조회
+export async function getTeamSettings(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await getTeamSettingsService(userId, teamId);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 // 팀원 목록 조회
 export async function getTeamMembers(
   req: Request,
@@ -77,6 +97,30 @@ export async function getTeamMembers(
     const teamId = String(req.params.teamId);
 
     const response = await getTeamMembersService(userId, teamId);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// 팀 수정
+export async function patchTeam(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedBody = UpdateTeamBodySchema.safeParse(req.body);
+
+  if (!parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await updateTeamService(userId, teamId, parsedBody.data);
 
     return res.status(200).json(response);
   } catch (error) {
