@@ -3,8 +3,10 @@ import jwt from 'jsonwebtoken';
 
 import type {
   CreateTeamBodyDto,
+  SlackNotificationSettingsDto,
   SlackTestMessageBodyDto,
   SlackTestMessageResponseDto,
+  UpdateSlackNotificationSettingsBodyDto,
   UpdateTeamBodyDto,
 } from './teams.dto.js';
 import prisma from '../../common/config/prisma.js';
@@ -29,6 +31,24 @@ type SlackOAuthAccessResponse = {
     url?: string;
   };
 };
+
+type SlackNotificationSettingsSource = {
+  slackNotifyIssueCreated: boolean;
+  slackNotifyCommentOnMyIssue: boolean;
+  slackNotifyReplyOnMyComment: boolean;
+  slackNotifyCommentAdopted: boolean;
+};
+
+function mapSlackNotificationSettings(
+  source: SlackNotificationSettingsSource,
+): SlackNotificationSettingsDto {
+  return {
+    issueCreated: source.slackNotifyIssueCreated,
+    commentOnMyIssue: source.slackNotifyCommentOnMyIssue,
+    replyOnMyComment: source.slackNotifyReplyOnMyComment,
+    commentAdopted: source.slackNotifyCommentAdopted,
+  };
+}
 
 function getRequiredEnv(name: string) {
   const value = process.env[name];
@@ -647,4 +667,38 @@ export async function sendSlackTestMessage(
   return {
     success: true,
   };
+}
+
+export async function getSlackNotificationSettings(
+  userId: string,
+  teamId: string,
+): Promise<SlackNotificationSettingsDto> {
+  const requesterMembership = await ensureActiveTeamMember(userId, teamId);
+
+  return mapSlackNotificationSettings(requesterMembership);
+}
+
+export async function updateSlackNotificationSettings(
+  userId: string,
+  teamId: string,
+  body: UpdateSlackNotificationSettingsBodyDto,
+): Promise<SlackNotificationSettingsDto> {
+  await ensureActiveTeamMember(userId, teamId);
+
+  const updatedMembership = await prisma.teamMember.update({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+    data: {
+      slackNotifyIssueCreated: body.issueCreated,
+      slackNotifyCommentOnMyIssue: body.commentOnMyIssue,
+      slackNotifyReplyOnMyComment: body.replyOnMyComment,
+      slackNotifyCommentAdopted: body.commentAdopted,
+    },
+  });
+
+  return mapSlackNotificationSettings(updatedMembership);
 }

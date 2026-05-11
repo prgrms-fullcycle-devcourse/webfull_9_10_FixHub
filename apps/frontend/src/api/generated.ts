@@ -653,6 +653,90 @@ export type GetTeamsSlackOauthCallback502 = {
   error: GetTeamsSlackOauthCallback502Error;
 };
 
+export type GetSlackNotificationSettings200 = {
+  issueCreated: boolean;
+  commentOnMyIssue: boolean;
+  replyOnMyComment: boolean;
+  commentAdopted: boolean;
+};
+
+export type GetSlackNotificationSettings401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetSlackNotificationSettings401 = {
+  error: GetSlackNotificationSettings401Error;
+};
+
+export type GetSlackNotificationSettings403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetSlackNotificationSettings403 = {
+  error: GetSlackNotificationSettings403Error;
+};
+
+export type GetSlackNotificationSettings404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetSlackNotificationSettings404 = {
+  error: GetSlackNotificationSettings404Error;
+};
+
+export type UpdateSlackNotificationSettingsBody = {
+  issueCreated: boolean;
+  commentOnMyIssue: boolean;
+  replyOnMyComment: boolean;
+  commentAdopted: boolean;
+};
+
+export type UpdateSlackNotificationSettings200 = {
+  issueCreated: boolean;
+  commentOnMyIssue: boolean;
+  replyOnMyComment: boolean;
+  commentAdopted: boolean;
+};
+
+export type UpdateSlackNotificationSettings400Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings400 = {
+  error: UpdateSlackNotificationSettings400Error;
+};
+
+export type UpdateSlackNotificationSettings401Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings401 = {
+  error: UpdateSlackNotificationSettings401Error;
+};
+
+export type UpdateSlackNotificationSettings403Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings403 = {
+  error: UpdateSlackNotificationSettings403Error;
+};
+
+export type UpdateSlackNotificationSettings404Error = {
+  code: string;
+  message: string;
+};
+
+export type UpdateSlackNotificationSettings404 = {
+  error: UpdateSlackNotificationSettings404Error;
+};
+
 export type SendSlackTestMessageBody = {
   /**
    * @minLength 1
@@ -3169,6 +3253,317 @@ export function useGetTeamsSlackOauthCallback<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * 현재 로그인한 사용자의 특정 팀 Slack 알림 이벤트 수신 설정을 조회합니다.
+ * @summary Slack 알림 설정 조회
+ */
+export const getSlackNotificationSettings = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<GetSlackNotificationSettings200>(
+    {
+      url: `/teams/${teamId}/slack/notification-settings`,
+      method: 'GET',
+      signal,
+    },
+    options,
+  );
+};
+
+export const getGetSlackNotificationSettingsQueryKey = (teamId: string) => {
+  return [`/teams/${teamId}/slack/notification-settings`] as const;
+};
+
+export const getGetSlackNotificationSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSlackNotificationSettingsQueryKey(teamId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSlackNotificationSettings>>
+  > = ({ signal }) =>
+    getSlackNotificationSettings(teamId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!teamId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSlackNotificationSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSlackNotificationSettings>>
+>;
+export type GetSlackNotificationSettingsQueryError = ErrorType<
+  | GetSlackNotificationSettings401
+  | GetSlackNotificationSettings403
+  | GetSlackNotificationSettings404
+>;
+
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getSlackNotificationSettings>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Slack 알림 설정 조회
+ */
+
+export function useGetSlackNotificationSettings<
+  TData = Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+  TError = ErrorType<
+    | GetSlackNotificationSettings401
+    | GetSlackNotificationSettings403
+    | GetSlackNotificationSettings404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSlackNotificationSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetSlackNotificationSettingsQueryOptions(
+    teamId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * 현재 로그인한 사용자의 특정 팀 Slack 알림 이벤트 수신 설정을 저장합니다.
+ * @summary Slack 알림 설정 저장
+ */
+export const updateSlackNotificationSettings = (
+  teamId: string,
+  updateSlackNotificationSettingsBody?: BodyType<UpdateSlackNotificationSettingsBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<UpdateSlackNotificationSettings200>(
+    {
+      url: `/teams/${teamId}/slack/notification-settings`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateSlackNotificationSettingsBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getUpdateSlackNotificationSettingsMutationOptions = <
+  TError = ErrorType<
+    | UpdateSlackNotificationSettings400
+    | UpdateSlackNotificationSettings401
+    | UpdateSlackNotificationSettings403
+    | UpdateSlackNotificationSettings404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+    TError,
+    { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+  TError,
+  { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+  TContext
+> => {
+  const mutationKey = ['updateSlackNotificationSettings'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+    { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return updateSlackNotificationSettings(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSlackNotificationSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSlackNotificationSettings>>
+>;
+export type UpdateSlackNotificationSettingsMutationBody =
+  | BodyType<UpdateSlackNotificationSettingsBody>
+  | undefined;
+export type UpdateSlackNotificationSettingsMutationError = ErrorType<
+  | UpdateSlackNotificationSettings400
+  | UpdateSlackNotificationSettings401
+  | UpdateSlackNotificationSettings403
+  | UpdateSlackNotificationSettings404
+>;
+
+/**
+ * @summary Slack 알림 설정 저장
+ */
+export const useUpdateSlackNotificationSettings = <
+  TError = ErrorType<
+    | UpdateSlackNotificationSettings400
+    | UpdateSlackNotificationSettings401
+    | UpdateSlackNotificationSettings403
+    | UpdateSlackNotificationSettings404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+      TError,
+      { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateSlackNotificationSettings>>,
+  TError,
+  { teamId: string; data?: BodyType<UpdateSlackNotificationSettingsBody> },
+  TContext
+> => {
+  return useMutation(
+    getUpdateSlackNotificationSettingsMutationOptions(options),
+    queryClient,
+  );
+};
 
 /**
  * 현재 로그인한 사용자의 팀 멤버 설정에 저장된 Slack Incoming Webhook으로 테스트 메시지를 전송합니다.

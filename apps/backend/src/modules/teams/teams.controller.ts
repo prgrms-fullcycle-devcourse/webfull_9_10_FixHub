@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import {
   CreateTeamBodySchema,
   SlackTestMessageBodySchema,
+  UpdateSlackNotificationSettingsBodySchema,
   UpdateTeamBodySchema,
 } from './teams.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
@@ -11,11 +12,13 @@ import {
   completeSlackOAuthConnection,
   getSlackClientRedirectUrl,
   createTeam,
+  getSlackNotificationSettings as getSlackNotificationSettingsService,
   getMyTeams as getMyTeamsService,
   getTeamMembers as getTeamMembersService,
   getTeamDetail as getTeamDetailService,
   getTeamSettings as getTeamSettingsService,
   sendSlackTestMessage as sendSlackTestMessageService,
+  updateSlackNotificationSettings as updateSlackNotificationSettingsService,
   updateTeam as updateTeamService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
@@ -197,6 +200,52 @@ export async function postSlackTestMessage(
     const teamId = String(req.params.teamId);
 
     const response = await sendSlackTestMessageService(
+      userId,
+      teamId,
+      parsedBody.data,
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function getSlackNotificationSettings(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await getSlackNotificationSettingsService(userId, teamId);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function patchSlackNotificationSettings(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedBody = UpdateSlackNotificationSettingsBodySchema.safeParse(
+    req.body,
+  );
+
+  if (!parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await updateSlackNotificationSettingsService(
       userId,
       teamId,
       parsedBody.data,
