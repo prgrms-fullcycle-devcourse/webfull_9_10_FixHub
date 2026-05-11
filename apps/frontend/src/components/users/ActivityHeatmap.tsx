@@ -18,6 +18,9 @@ function getOneYearAgo() {
 }
 
 export default function ActivityHeatmap({ values }: ActivityHeatmapProps) {
+  const maxCount =
+    values.length > 0 ? Math.max(...values.map((v) => v.count)) : 1;
+
   return (
     <div className="w-full">
       <style>{`
@@ -36,9 +39,14 @@ export default function ActivityHeatmap({ values }: ActivityHeatmapProps) {
         values={values}
         classForValue={(value) => {
           if (!value || value.count === 0) return 'color-empty';
-          if (value.count <= 2) return 'color-scale-1';
-          if (value.count <= 4) return 'color-scale-2';
-          if (value.count <= 7) return 'color-scale-3';
+
+          // 2. 최댓값 대비 비율 계산 (0 ~ 1 사이)
+          const percentage = value.count / maxCount;
+
+          // 3. 비율에 따른 클래스 부여 (25%, 50%, 75%, 100%)
+          if (percentage <= 0.25) return 'color-scale-1';
+          if (percentage <= 0.5) return 'color-scale-2';
+          if (percentage <= 0.75) return 'color-scale-3';
           return 'color-scale-4';
         }}
         showWeekdayLabels
