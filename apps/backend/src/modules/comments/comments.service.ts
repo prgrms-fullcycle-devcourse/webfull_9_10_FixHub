@@ -341,9 +341,9 @@ export async function adoptComment(
         issue: {
           select: {
             id: true,
+            title: true,
             userId: true,
             teamId: true,
-            title: true,
             status: true,
           },
         },
@@ -428,17 +428,17 @@ export async function adoptComment(
 
     return {
       notificationUserId: comment.userId,
-      slackNotification: {
-        teamId: comment.issue.teamId,
-        userId: comment.userId,
-        issueTitle: comment.issue.title,
-      },
       response: {
         issueId: comment.issue.id,
         commentId: comment.id,
         rewardedScore: ADOPT_COMMENT_REWARDED_SCORE,
         reason: ADOPT_COMMENT_REASON,
         status: SOLVED_STATUS,
+      },
+      slackNotification: {
+        teamId: comment.issue.teamId,
+        userId: comment.userId,
+        issueTitle: comment.issue.title,
       },
     };
   });

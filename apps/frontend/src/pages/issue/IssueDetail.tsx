@@ -14,6 +14,7 @@ import IssueCommentList, {
 } from '@/components/comments/IssueCommentList';
 import IssueDeleteButton from '@/pages/issue/IssueDeleteButton';
 import IssueMarkdown from '@/components/issues/IssueMarkdown';
+import { useAuth } from '@/hooks/useAuth';
 
 type ApiCommentItem =
   | GetComments200DataItem
@@ -51,6 +52,7 @@ function formatIssueDate(dateString: string) {
 function IssueDetail() {
   const navigate = useNavigate();
   const { issueId, teamId } = useParams();
+  const { user } = useAuth();
 
   const {
     data: issue,
@@ -96,6 +98,7 @@ function IssueDetail() {
   const isPublic = issue.isPublic;
   const visibilityText = isPublic ? '전체공개' : '비공개';
   const isIssueAuthor = 'isAuthor' in issue ? issue.isAuthor === true : false;
+  const currentUserId = user?.id ?? (isIssueAuthor ? issue.authorId : '');
 
   const comments: IssueCommentItem[] =
     commentsResponse?.data.flatMap((comment) => [
@@ -224,7 +227,7 @@ function IssueDetail() {
         ) : (
           <IssueCommentList
             comments={comments}
-            currentUserId=""
+            currentUserId={currentUserId}
             isIssueAuthor={isIssueAuthor}
             issueId={issueId ?? ''}
           />
