@@ -68,10 +68,12 @@ function IssueCommentList({
     const closeMenuOnOutsideClick = (event: PointerEvent) => {
       const target = event.target;
 
-      if (
-        target instanceof Element &&
-        target.closest('[data-comment-menu-root]')
-      ) {
+      const menuRoot =
+        target instanceof Element
+          ? target.closest('[data-comment-menu-root]')
+          : null;
+
+      if (menuRoot?.getAttribute('data-comment-menu-root') === openMenuId) {
         return;
       }
 
@@ -349,7 +351,7 @@ function IssueCommentList({
 
                       <div
                         className="relative flex items-center gap-3"
-                        data-comment-menu-root
+                        data-comment-menu-root={comment.id}
                       >
                         {isSelectedComment ? (
                           <span className="rounded-full border-transparent border bg-(--status-unsaved) px-4 py-2 text-xs font-bold text-(--status-error-foreground)">
