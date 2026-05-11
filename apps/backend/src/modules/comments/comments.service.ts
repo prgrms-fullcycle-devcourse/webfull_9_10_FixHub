@@ -5,6 +5,7 @@ import {
   createAppNotification,
 } from '../../common/utils/appNotification.js';
 import { formatKoreanDate } from '../../common/utils/formatDate.js';
+import { sendSlackNotificationToTeamMember } from '../../common/utils/slackNotification.js';
 import type {
   AdoptCommentParamsDto,
   AdoptCommentResponseDto,
@@ -36,6 +37,7 @@ export async function createComment(
       id: true,
       title: true,
       userId: true,
+      teamId: true,
     },
   });
 
@@ -106,6 +108,15 @@ export async function createComment(
       type: APP_NOTIFICATION_TYPE.COMMENT,
       content: `${createdComment.user.name}님이 회원님의 이슈에 댓글을 달았습니다: ${issue.title}`,
     });
+
+    if (issue.userId !== userId) {
+      await sendSlackNotificationToTeamMember({
+        teamId: issue.teamId,
+        userId: issue.userId,
+        enabledField: 'slackNotifyCommentOnMyIssue',
+        text: `${createdComment.user.name}님이 회원님의 이슈에 제안을 등록했어요: ${issue.title}`,
+      });
+    }
   } else if (parentComment) {
     await createAppNotification({
       userId: parentComment.userId,
@@ -114,6 +125,15 @@ export async function createComment(
       type: APP_NOTIFICATION_TYPE.REPLY,
       content: `${createdComment.user.name}님이 회원님의 댓글에 답글을 달았습니다: ${issue.title}`,
     });
+
+    if (parentComment.userId !== userId) {
+      await sendSlackNotificationToTeamMember({
+        teamId: issue.teamId,
+        userId: parentComment.userId,
+        enabledField: 'slackNotifyReplyOnMyComment',
+        text: `${createdComment.user.name}님이 회원님의 제안에 답글을 달았어요: ${issue.title}`,
+      });
+    }
   }
 
   return {
@@ -323,6 +343,7 @@ export async function adoptComment(
             id: true,
             userId: true,
             teamId: true,
+            title: true,
             status: true,
           },
         },
@@ -407,6 +428,11 @@ export async function adoptComment(
 
     return {
       notificationUserId: comment.userId,
+      slackNotification: {
+        teamId: comment.issue.teamId,
+        userId: comment.userId,
+        issueTitle: comment.issue.title,
+      },
       response: {
         issueId: comment.issue.id,
         commentId: comment.id,
@@ -423,6 +449,13 @@ export async function adoptComment(
     resourceId: adoptedComment.response.issueId,
     type: APP_NOTIFICATION_TYPE.ADOPTED,
     content: '회원님의 댓글이 해결책으로 채택되었습니다.',
+  });
+
+  await sendSlackNotificationToTeamMember({
+    teamId: adoptedComment.slackNotification.teamId,
+    userId: adoptedComment.slackNotification.userId,
+    enabledField: 'slackNotifyCommentAdopted',
+    text: `회원님의 제안이 해결책으로 채택되었어요: ${adoptedComment.slackNotification.issueTitle}`,
   });
 
   return adoptedComment.response;

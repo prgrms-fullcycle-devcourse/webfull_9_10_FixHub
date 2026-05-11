@@ -7,6 +7,7 @@ import {
   APP_NOTIFICATION_TYPE,
   createTeamAppNotifications,
 } from '../../common/utils/appNotification.js';
+import { sendSlackNotificationToTeam } from '../../common/utils/slackNotification.js';
 import {
   type SearchIssuesQueryObjectDto,
   type GetPublicIssuesQuery,
@@ -530,6 +531,13 @@ export async function createIssue(
     resourceId: createdIssue.id,
     type: APP_NOTIFICATION_TYPE.ISSUE_CREATED,
     content: `${teamMember.user.name}님이 새 이슈를 등록했습니다: ${createdIssue.title}`,
+  });
+
+  await sendSlackNotificationToTeam({
+    teamId: params.teamId,
+    excludeUserId: userId,
+    enabledField: 'slackNotifyIssueCreated',
+    text: `내 팀의 새 이슈가 등록되었어요: ${createdIssue.title}`,
   });
 
   return {
