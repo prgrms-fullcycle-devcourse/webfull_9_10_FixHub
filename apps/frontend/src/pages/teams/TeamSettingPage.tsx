@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { BadgeCheck, FilePlus2, MessageCircle, Reply } from 'lucide-react';
 
 import Toggle from '@/components/ui/Toogle';
 import {
@@ -9,11 +10,57 @@ import {
   usePatchTeamsTeamId,
 } from '@/api/generated';
 
+const SLACK_NOTIFICATION_EVENTS = [
+  {
+    id: 'issueCreated',
+    label: '새 이슈 등록됨',
+    description: '팀에 새 이슈가 등록되면 알려드려요.',
+    icon: FilePlus2,
+  },
+  {
+    id: 'commentOnMyIssue',
+    label: '내 이슈에 해결제안이 달림',
+    description: '내가 작성한 이슈에 새 제안이 달리면 알려드려요.',
+    icon: MessageCircle,
+  },
+  {
+    id: 'replyOnMyComment',
+    label: '내 제안에 답글이 달림',
+    description: '내 제안에 답글이 달리면 알려드려요.',
+    icon: Reply,
+  },
+  {
+    id: 'commentAdopted',
+    label: '내 제안이 채택됨',
+    description: '내 해결 제안이 채택되면 알려드려요.',
+    icon: BadgeCheck,
+  },
+] as const;
+
+type SlackNotificationEventId =
+  (typeof SLACK_NOTIFICATION_EVENTS)[number]['id'];
+
+const DEFAULT_SLACK_NOTIFICATION_EVENTS: Record<
+  SlackNotificationEventId,
+  boolean
+> = {
+  issueCreated: true,
+  commentOnMyIssue: true,
+  replyOnMyComment: true,
+  commentAdopted: true,
+};
+
 export default function TeamSettingPage() {
   const { teamId } = useParams<{ teamId: string }>();
 
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
+  const [slackTestMessage, setSlackTestMessage] = useState('');
+  const [isSlackConnected, setIsSlackConnected] = useState(false);
+  const [isSlackEventSaved, setIsSlackEventSaved] = useState(false);
+  const [slackNotificationEvents, setSlackNotificationEvents] = useState(
+    DEFAULT_SLACK_NOTIFICATION_EVENTS,
+  );
 
   const initializedRef = useRef(false); // 초기화 여부 기억
   const queryClient = useQueryClient();
@@ -85,6 +132,38 @@ export default function TeamSettingPage() {
     });
   };
 
+  const handleToggleSlackEvent = (eventId: SlackNotificationEventId) => {
+    setIsSlackEventSaved(false);
+    setSlackNotificationEvents((prevEvents) => ({
+      ...prevEvents,
+      [eventId]: !prevEvents[eventId],
+    }));
+  };
+
+  const handleConnectSlack = () => {
+    // TODO: 슬랙 OAuth 또는 웹훅 등록 API가 준비되면 이 위치에서 연동합니다.
+    setIsSlackConnected(true);
+  };
+
+  const handleSaveSlackNotificationEvents = () => {
+    // TODO: 슬랙 알림 이벤트 저장 API가 준비되면 이 위치에서 연동합니다.
+    setIsSlackEventSaved(true);
+  };
+
+  const handleSubmitSlackTestMessage = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const nextMessage = slackTestMessage.trim();
+
+    if (!nextMessage) {
+      return;
+    }
+
+    // TODO: 슬랙 테스트 메시지 전송 API가 준비되면 이 위치에서 연동합니다.
+    console.log('Slack test message:', nextMessage);
+    setSlackTestMessage('');
+  };
+
   const teamNameElement = isLeader ? (
     <input
       value={teamName}
@@ -136,7 +215,7 @@ export default function TeamSettingPage() {
       <button
         onClick={handleSubmitUpdateTeam}
         disabled={isUpdateTeamPending}
-        className="py-[18px] px-[32px] h-15 rounded-sm typo-regular-20 
+        className="py-[18px] px-[32px] h-15 rounded-sm typo-regular-20
           cursor-pointer
           transition-all duration-200 ease-out
           hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
@@ -230,6 +309,161 @@ export default function TeamSettingPage() {
                     onToggle={() => {}}
                   />
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 슬랙 연동 */}
+          <section className="bg-card rounded-lg p-10 flex flex-col gap-9">
+            <div className="space-y-[39px]">
+              <div className="flex justify-between items-center">
+                <h2 className="typo-medium-40">슬랙 알림 설정</h2>
+              </div>
+
+              <div className="space-y-10">
+                <div className="flex flex-col gap-4">
+                  <div className="typo-bold-20">연결상태</div>
+                  <div className="flex items-center justify-between gap-4 px-10 py-5 rounded-lg bg-[var(--surface-input)]">
+                    {isSlackConnected ? (
+                      <div className="flex items-center gap-3">
+                        <span className="h-3 w-3 rounded-full bg-[var(--status-solved)]" />
+                        <span className="typo-semibold-20 text-[var(--status-solved)]">
+                          연결됨
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="typo-regular-16 text-[var(--text-secondary)]">
+                          아직 연결된 슬랙 채널이 없습니다.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleConnectSlack}
+                          className="shrink-0 px-8 py-3 rounded-sm typo-regular-20
+                            cursor-pointer transition-all duration-200 ease-out
+                            hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                          style={{
+                            background: 'var(--primary)',
+                            color: 'var(--text-inverse)',
+                          }}
+                        >
+                          연결하기
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="typo-bold-20">알림을 받을 이벤트 선택</div>
+                    <div className="flex items-center gap-4">
+                      {isSlackEventSaved && (
+                        <span className="typo-regular-14 text-[var(--status-solved)]">
+                          저장되었습니다.
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleSaveSlackNotificationEvents}
+                        className="px-6 py-3 rounded-sm typo-regular-16
+                          cursor-pointer transition-all duration-200 ease-out
+                          hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                        style={{
+                          background: 'var(--primary)',
+                          color: 'var(--text-inverse)',
+                        }}
+                      >
+                        저장하기
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 min-[1334px]:grid-cols-4">
+                    {SLACK_NOTIFICATION_EVENTS.map((slackEvent) => {
+                      const EventIcon = slackEvent.icon;
+                      const isChecked = slackNotificationEvents[slackEvent.id];
+
+                      return (
+                        <label
+                          key={slackEvent.id}
+                          className={`flex min-h-40 cursor-pointer flex-col justify-between gap-5 rounded-lg border px-5 py-5 transition-all duration-200 ${
+                            isChecked
+                              ? 'border-white/30 bg-[var(--surface-input)]'
+                              : 'border-transparent bg-[var(--surface-input)] opacity-80 hover:border-white/30 hover:opacity-100'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <span
+                              className={`flex h-12 w-12 items-center justify-center rounded-sm ${
+                                isChecked
+                                  ? 'bg-[var(--surface-selected)] text-[var(--text-primary)]'
+                                  : 'bg-[var(--surface-selected)] text-[var(--text-secondary)]'
+                              }`}
+                            >
+                              <EventIcon className="h-6 w-6" />
+                            </span>
+
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() =>
+                                handleToggleSlackEvent(slackEvent.id)
+                              }
+                              className="mt-1 h-5 w-5 accent-[var(--primary)]"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <span className="block typo-semibold-20">
+                              {slackEvent.label}
+                            </span>
+                            <p className="typo-regular-14 leading-5 text-[var(--text-secondary)]">
+                              {slackEvent.description}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <form
+                  onSubmit={handleSubmitSlackTestMessage}
+                  className="flex flex-col gap-4"
+                >
+                  <div className="typo-bold-20">테스트 메세지 보내기</div>
+                  <div className="flex gap-4">
+                    <input
+                      value={slackTestMessage}
+                      onChange={(event) =>
+                        setSlackTestMessage(event.target.value)
+                      }
+                      placeholder="연결된 채널로 보낼 테스트 메세지를 입력하세요."
+                      className="w-full px-4 py-3 rounded-sm outline-none typo-regular-16
+                        transition-all duration-300
+                        focus:border-white
+                        focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                      style={{
+                        background: 'var(--surface-input)',
+                        color: 'var(--text-primary)',
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!slackTestMessage.trim()}
+                      className="shrink-0 px-8 rounded-sm typo-regular-20
+                        cursor-pointer transition-all duration-200 ease-out
+                        hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]
+                        disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: 'var(--primary)',
+                        color: 'var(--text-inverse)',
+                      }}
+                    >
+                      보내기
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </section>
