@@ -104,6 +104,26 @@ export const SlackOAuthCallbackQuerySchema = z.object({
   error: z.string().optional(),
 });
 
+export const SlackTestMessageParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export const SlackTestMessageBodySchema = z.object({
+  message: z.string().trim().min(1).max(1000),
+});
+
+export const SlackTestMessageResponseSchema = z.object({
+  success: z.boolean(),
+});
+
+export type SlackTestMessageBodyDto = z.infer<
+  typeof SlackTestMessageBodySchema
+>;
+
+export type SlackTestMessageResponseDto = z.infer<
+  typeof SlackTestMessageResponseSchema
+>;
+
 // 팀 수정
 export const UpdateTeamBodySchema = z.object({
   name: z.string().min(1).max(50).optional(),

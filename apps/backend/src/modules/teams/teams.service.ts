@@ -1,7 +1,12 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 
-import type { CreateTeamBodyDto, UpdateTeamBodyDto } from './teams.dto.js';
+import type {
+  CreateTeamBodyDto,
+  SlackTestMessageBodyDto,
+  SlackTestMessageResponseDto,
+  UpdateTeamBodyDto,
+} from './teams.dto.js';
 import prisma from '../../common/config/prisma.js';
 import { AppError, Errors } from '../../common/errors/AppError.js';
 
@@ -605,5 +610,41 @@ export async function completeSlackOAuthConnection(
   return {
     teamId: slackState.teamId,
     channelName: tokenResponse.data.incoming_webhook?.channel ?? null,
+  };
+}
+
+export async function sendSlackTestMessage(
+  userId: string,
+  teamId: string,
+  body: SlackTestMessageBodyDto,
+): Promise<SlackTestMessageResponseDto> {
+  const requesterMembership = await ensureActiveTeamMember(userId, teamId);
+
+  if (!requesterMembership.slackWebhookUrl) {
+    throw new AppError('SLACK_NOT_CONNECTED', 'Slack 연동이 필요합니다.', 400);
+  }
+
+  try {
+    await axios.post(
+      requesterMembership.slackWebhookUrl,
+      {
+        text: body.message,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+  } catch {
+    throw new AppError(
+      'SLACK_MESSAGE_FAILED',
+      'Slack 테스트 메시지 전송에 실패했습니다.',
+      502,
+    );
+  }
+
+  return {
+    success: true,
   };
 }

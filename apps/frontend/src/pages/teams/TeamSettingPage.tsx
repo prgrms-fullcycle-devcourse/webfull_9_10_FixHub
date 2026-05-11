@@ -8,6 +8,7 @@ import {
   getGetTeamsTeamIdSettingsQueryKey,
   useGetTeamsTeamIdSettings,
   usePatchTeamsTeamId,
+  useSendSlackTestMessage,
 } from '@/api/generated';
 
 const SLACK_NOTIFICATION_EVENTS = [
@@ -40,6 +41,8 @@ const SLACK_NOTIFICATION_EVENTS = [
 type SlackNotificationEventId =
   (typeof SLACK_NOTIFICATION_EVENTS)[number]['id'];
 
+type SlackTestMessageStatus = 'idle' | 'success' | 'error';
+
 const DEFAULT_SLACK_NOTIFICATION_EVENTS: Record<
   SlackNotificationEventId,
   boolean
@@ -56,6 +59,8 @@ export default function TeamSettingPage() {
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
   const [slackTestMessage, setSlackTestMessage] = useState('');
+  const [slackTestMessageStatus, setSlackTestMessageStatus] =
+    useState<SlackTestMessageStatus>('idle');
   const [isSlackEventSaved, setIsSlackEventSaved] = useState(false);
   const [slackNotificationEvents, setSlackNotificationEvents] = useState(
     DEFAULT_SLACK_NOTIFICATION_EVENTS,
@@ -107,6 +112,19 @@ export default function TeamSettingPage() {
 
   const isLeader = teamSettings?.userId === teamSettings?.ownerId;
   const isSlackConnected = Boolean(teamSettings?.isSlackConnected);
+
+  const { mutate: sendSlackTestMessage, isPending: isSendingSlackTestMessage } =
+    useSendSlackTestMessage({
+      mutation: {
+        onSuccess: () => {
+          setSlackTestMessage('');
+          setSlackTestMessageStatus('success');
+        },
+        onError: () => {
+          setSlackTestMessageStatus('error');
+        },
+      },
+    });
 
   const handleSubmitUpdateTeam = () => {
     if (!isLeader) return alert('수정 권한이 없습니다.');
@@ -163,9 +181,22 @@ export default function TeamSettingPage() {
       return;
     }
 
-    // TODO: 슬랙 테스트 메시지 전송 API가 준비되면 이 위치에서 연동합니다.
-    console.log('Slack test message:', nextMessage);
-    setSlackTestMessage('');
+    if (!teamId) {
+      return console.error('teamId를 가져올 수 없습니다.');
+    }
+
+    if (!isSlackConnected) {
+      setSlackTestMessageStatus('error');
+      return;
+    }
+
+    setSlackTestMessageStatus('idle');
+    sendSlackTestMessage({
+      teamId,
+      data: {
+        message: nextMessage,
+      },
+    });
   };
 
   const teamNameElement = isLeader ? (
@@ -442,11 +473,17 @@ export default function TeamSettingPage() {
                       onChange={(event) =>
                         setSlackTestMessage(event.target.value)
                       }
-                      placeholder="연결된 채널로 보낼 테스트 메세지를 입력하세요."
+                      disabled={!isSlackConnected || isSendingSlackTestMessage}
+                      placeholder={
+                        isSlackConnected
+                          ? '연결된 채널로 보낼 테스트 메세지를 입력하세요.'
+                          : 'Slack 연결 후 테스트 메세지를 보낼 수 있습니다.'
+                      }
                       className="w-full px-4 py-3 rounded-sm outline-none typo-regular-16
                         transition-all duration-300
                         focus:border-white
-                        focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                        focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]
+                        disabled:cursor-not-allowed disabled:opacity-50"
                       style={{
                         background: 'var(--surface-input)',
                         color: 'var(--text-primary)',
@@ -454,7 +491,11 @@ export default function TeamSettingPage() {
                     />
                     <button
                       type="submit"
-                      disabled={!slackTestMessage.trim()}
+                      disabled={
+                        !slackTestMessage.trim() ||
+                        !isSlackConnected ||
+                        isSendingSlackTestMessage
+                      }
                       className="shrink-0 px-8 rounded-sm typo-regular-20
                         cursor-pointer transition-all duration-200 ease-out
                         hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]
@@ -464,9 +505,20 @@ export default function TeamSettingPage() {
                         color: 'var(--text-inverse)',
                       }}
                     >
-                      보내기
+                      {isSendingSlackTestMessage ? '전송 중...' : '보내기'}
                     </button>
                   </div>
+                  {slackTestMessageStatus === 'success' && (
+                    <p className="typo-regular-14 text-[var(--status-solved)]">
+                      테스트 메시지를 전송했습니다.
+                    </p>
+                  )}
+                  {slackTestMessageStatus === 'error' && (
+                    <p className="typo-regular-14 text-[var(--status-unsaved)]">
+                      테스트 메시지 전송에 실패했습니다. Slack 연결 상태를
+                      확인해주세요.
+                    </p>
+                  )}
                 </form>
               </div>
             </div>

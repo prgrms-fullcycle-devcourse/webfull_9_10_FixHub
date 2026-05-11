@@ -10,6 +10,9 @@ import {
   GetTeamSettingsResponseSchema,
   SlackConnectParamsSchema,
   SlackOAuthCallbackQuerySchema,
+  SlackTestMessageBodySchema,
+  SlackTestMessageParamsSchema,
+  SlackTestMessageResponseSchema,
   UpdateTeamBodySchema,
   UpdateTeamResponseSchema,
 } from './teams.dto.js';
@@ -221,6 +224,77 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       502: {
         description: 'Slack OAuth 연동 실패',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 슬랙 테스트 메시지 전송
+  registry.registerPath({
+    method: 'post',
+    path: '/teams/{teamId}/slack/test-message',
+    operationId: 'sendSlackTestMessage',
+    tags: ['Teams'],
+    summary: 'Slack 테스트 메시지 전송',
+    description:
+      '현재 로그인한 사용자의 팀 멤버 설정에 저장된 Slack Incoming Webhook으로 테스트 메시지를 전송합니다.',
+    request: {
+      params: SlackTestMessageParamsSchema,
+      body: {
+        content: {
+          'application/json': {
+            schema: SlackTestMessageBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Slack 테스트 메시지 전송 성공',
+        content: {
+          'application/json': {
+            schema: SlackTestMessageResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '입력 값 오류 또는 Slack 미연동',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀을 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      502: {
+        description: 'Slack 메시지 전송 실패',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,

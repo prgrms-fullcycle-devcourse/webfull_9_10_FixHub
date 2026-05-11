@@ -653,6 +653,63 @@ export type GetTeamsSlackOauthCallback502 = {
   error: GetTeamsSlackOauthCallback502Error;
 };
 
+export type SendSlackTestMessageBody = {
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  message: string;
+};
+
+export type SendSlackTestMessage200 = {
+  success: boolean;
+};
+
+export type SendSlackTestMessage400Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage400 = {
+  error: SendSlackTestMessage400Error;
+};
+
+export type SendSlackTestMessage401Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage401 = {
+  error: SendSlackTestMessage401Error;
+};
+
+export type SendSlackTestMessage403Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage403 = {
+  error: SendSlackTestMessage403Error;
+};
+
+export type SendSlackTestMessage404Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage404 = {
+  error: SendSlackTestMessage404Error;
+};
+
+export type SendSlackTestMessage502Error = {
+  code: string;
+  message: string;
+};
+
+export type SendSlackTestMessage502 = {
+  error: SendSlackTestMessage502Error;
+};
+
 export type GetTeamsTeamIdSettings200MembersItemRole =
   (typeof GetTeamsTeamIdSettings200MembersItemRole)[keyof typeof GetTeamsTeamIdSettings200MembersItemRole];
 
@@ -3112,6 +3169,121 @@ export function useGetTeamsSlackOauthCallback<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * 현재 로그인한 사용자의 팀 멤버 설정에 저장된 Slack Incoming Webhook으로 테스트 메시지를 전송합니다.
+ * @summary Slack 테스트 메시지 전송
+ */
+export const sendSlackTestMessage = (
+  teamId: string,
+  sendSlackTestMessageBody?: BodyType<SendSlackTestMessageBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<SendSlackTestMessage200>(
+    {
+      url: `/teams/${teamId}/slack/test-message`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: sendSlackTestMessageBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getSendSlackTestMessageMutationOptions = <
+  TError = ErrorType<
+    | SendSlackTestMessage400
+    | SendSlackTestMessage401
+    | SendSlackTestMessage403
+    | SendSlackTestMessage404
+    | SendSlackTestMessage502
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendSlackTestMessage>>,
+    TError,
+    { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendSlackTestMessage>>,
+  TError,
+  { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+  TContext
+> => {
+  const mutationKey = ['sendSlackTestMessage'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendSlackTestMessage>>,
+    { teamId: string; data?: BodyType<SendSlackTestMessageBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return sendSlackTestMessage(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SendSlackTestMessageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendSlackTestMessage>>
+>;
+export type SendSlackTestMessageMutationBody =
+  | BodyType<SendSlackTestMessageBody>
+  | undefined;
+export type SendSlackTestMessageMutationError = ErrorType<
+  | SendSlackTestMessage400
+  | SendSlackTestMessage401
+  | SendSlackTestMessage403
+  | SendSlackTestMessage404
+  | SendSlackTestMessage502
+>;
+
+/**
+ * @summary Slack 테스트 메시지 전송
+ */
+export const useSendSlackTestMessage = <
+  TError = ErrorType<
+    | SendSlackTestMessage400
+    | SendSlackTestMessage401
+    | SendSlackTestMessage403
+    | SendSlackTestMessage404
+    | SendSlackTestMessage502
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof sendSlackTestMessage>>,
+      TError,
+      { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof sendSlackTestMessage>>,
+  TError,
+  { teamId: string; data?: BodyType<SendSlackTestMessageBody> },
+  TContext
+> => {
+  return useMutation(
+    getSendSlackTestMessageMutationOptions(options),
+    queryClient,
+  );
+};
 
 /**
  * 팀 설정 페이지에서 사용하는 팀 정보와 팀원 목록을 조회합니다. 팀원 목록은 이름순, 가입일순으로 정렬되며 리더가 항상 맨 위에 표시됩니다.
