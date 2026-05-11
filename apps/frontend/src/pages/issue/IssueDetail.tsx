@@ -189,23 +189,23 @@ function IssueDetail() {
           <IssueMarkdown content={issue.content} />
         </div>
 
-        <div className="grid grid-cols-2 gap-5">
-          <div>
+        <div className="grid gap-5 min-[1334px]:grid-cols-2">
+          <div className="min-w-0">
             <h2 className="mb-3 typo-semibold-18 text-(--text-primary)">
               에러 로그
             </h2>
 
-            <div className="h-57.5 rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary) whitespace-pre-wrap">
+            <div className="min-h-57.5 max-h-96 overflow-y-auto rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary) whitespace-pre-wrap break-words">
               {issue.errorLog || '에러 로그가 없습니다.'}
             </div>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h2 className="mb-3 typo-semibold-18 text-(--text-primary)">
               요청 정보
             </h2>
 
-            <div className="h-57.5 rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary) whitespace-pre-wrap">
+            <div className="min-h-57.5 max-h-96 overflow-y-auto rounded-md bg-(--surface-panel) p-5 typo-regular-14 text-(--text-secondary) whitespace-pre-wrap break-words">
               {requestInfoText}
             </div>
           </div>
