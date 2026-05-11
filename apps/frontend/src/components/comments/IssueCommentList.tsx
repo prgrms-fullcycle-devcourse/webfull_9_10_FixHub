@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Rocket } from 'lucide-react';
 
@@ -6,6 +6,7 @@ import {
   getGetCommentsQueryKey,
   useAdoptComment,
   useDeleteComment,
+  usePostIssuesIdComments,
   useUpdateComment,
 } from '@/api/generated';
 import { Button } from '@/components/ui/button';
@@ -52,7 +53,37 @@ function IssueCommentList({
   const [adoptingCommentId, setAdoptingCommentId] = useState<string | null>(
     null,
   );
+  const [replyingCommentId, setReplyingCommentId] = useState<string | null>(
+    null,
+  );
+  const [replyText, setReplyText] = useState('');
+  const [isEmptyReplyModalOpen, setIsEmptyReplyModalOpen] = useState(false);
   const [isAdoptErrorModalOpen, setIsAdoptErrorModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (openMenuId === null) {
+      return;
+    }
+
+    const closeMenuOnOutsideClick = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (
+        target instanceof Element &&
+        target.closest('[data-comment-menu-root]')
+      ) {
+        return;
+      }
+
+      setOpenMenuId(null);
+    };
+
+    document.addEventListener('pointerdown', closeMenuOnOutsideClick);
+
+    return () => {
+      document.removeEventListener('pointerdown', closeMenuOnOutsideClick);
+    };
+  }, [openMenuId]);
 
   const remainingComments = comments.filter(
     (comment) => !deletedCommentIds.includes(comment.id),
@@ -120,6 +151,22 @@ function IssueCommentList({
         },
       },
     });
+  const { mutate: postReply, isPending: isPostingReply } =
+    usePostIssuesIdComments({
+      mutation: {
+        onSuccess: () => {
+          setReplyingCommentId(null);
+          setReplyText('');
+          setShowAllComments(true);
+          queryClient.invalidateQueries({
+            queryKey: getGetCommentsQueryKey(issueId),
+          });
+        },
+        onError: () => {
+          alert('답글 작성에 실패했습니다.');
+        },
+      },
+    });
 
   const startEditComment = (comment: IssueCommentItem) => {
     setEditingCommentId(comment.id);
@@ -137,6 +184,8 @@ function IssueCommentList({
     setDeleteConfirmCommentId(commentId);
     setEditingCommentId(null);
     setEditingText('');
+    setReplyingCommentId(null);
+    setReplyText('');
     setOpenMenuId(null);
   };
 
@@ -154,6 +203,22 @@ function IssueCommentList({
       id: issueId,
       commentId,
     });
+  };
+
+  const startReplyComment = (commentId: string) => {
+    setReplyingCommentId((prevCommentId) =>
+      prevCommentId === commentId ? null : commentId,
+    );
+    setReplyText('');
+    setEditingCommentId(null);
+    setEditingText('');
+    setDeleteConfirmCommentId(null);
+    setOpenMenuId(null);
+  };
+
+  const cancelReplyComment = () => {
+    setReplyingCommentId(null);
+    setReplyText('');
   };
 
   const confirmDeleteComment = () => {
@@ -179,6 +244,27 @@ function IssueCommentList({
       commentId,
       data: {
         content: nextText,
+      },
+    });
+  };
+
+  const saveReplyComment = (parentCommentId: string) => {
+    const nextReplyText = replyText.trim();
+
+    if (!nextReplyText) {
+      setIsEmptyReplyModalOpen(true);
+      return;
+    }
+
+    if (!issueId) {
+      return;
+    }
+
+    postReply({
+      id: issueId,
+      data: {
+        content: nextReplyText,
+        parentId: parentCommentId,
       },
     });
   };
@@ -209,6 +295,7 @@ function IssueCommentList({
           <div key={comment.id}>
             {(() => {
               const isEditing = editingCommentId === comment.id;
+              const isReplying = replyingCommentId === comment.id;
               const displayedText =
                 editedCommentTexts[comment.id] ?? comment.text;
 
@@ -260,7 +347,10 @@ function IssueCommentList({
                         )}
                       </div>
 
-                      <div className="relative flex items-center gap-3">
+                      <div
+                        className="relative flex items-center gap-3"
+                        data-comment-menu-root
+                      >
                         {isSelectedComment ? (
                           <span className="rounded-full border-transparent border bg-(--status-unsaved) px-4 py-2 text-xs font-bold text-(--status-error-foreground)">
                             채택 +10
@@ -364,15 +454,54 @@ function IssueCommentList({
                     <div className="mt-3 flex justify-between text-xs text-(--text-secondary)">
                       <span>{formatCommentDate(comment.createdAt)}</span>
 
-                      <button
-                        type="button"
-                        onClick={() => alert('답글 클릭')}
-                        className="cursor-pointer hover:text-(--text-primary)"
-                      >
-                        답글
-                      </button>
+                      {!comment.isReply && !isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => startReplyComment(comment.id)}
+                          className="cursor-pointer hover:text-(--text-primary)"
+                        >
+                          {isReplying ? '답글 취소' : '답글'}
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {isReplying && (
+                    <div className="relative ml-12 mt-3">
+                      <div className="absolute -left-10 top-0 h-16 w-8 rounded-bl-xl border-b border-l border-border" />
+                      <div className="rounded-md border border-border bg-(--surface-comment) p-4">
+                        <textarea
+                          value={replyText}
+                          onChange={(event) => setReplyText(event.target.value)}
+                          className="min-h-24 w-full resize-none rounded-md border border-border bg-(--surface-input) px-4 py-3 typo-regular-14 leading-6 text-(--text-primary) outline-none placeholder:text-(--text-secondary) focus:shadow-[0_0_14px_rgba(255,248,53,0.22)]"
+                          placeholder={`${comment.author.name}님에게 답글을 남겨보세요.`}
+                          aria-label="답글 내용"
+                        />
+
+                        <div className="mt-3 flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={cancelReplyComment}
+                            className="cursor-pointer text-(--text-primary) hover:bg-(--surface-selected)"
+                          >
+                            취소
+                          </Button>
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={isPostingReply}
+                            onClick={() => saveReplyComment(comment.id)}
+                            className="cursor-pointer bg-(--primary) text-(--primary-foreground) hover:opacity-90 disabled:cursor-not-allowed"
+                          >
+                            {isPostingReply ? '작성 중' : '답글 작성'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -416,6 +545,15 @@ function IssueCommentList({
         description="댓글을 채택하지 못했습니다. 잠시 후 다시 시도해주세요."
         confirmText="확인하기"
         onClose={() => setIsAdoptErrorModalOpen(false)}
+        showCancelButton={false}
+      />
+
+      <CommonModal
+        isOpen={isEmptyReplyModalOpen}
+        title="답글 내용을 입력해주세요"
+        description="답글 내용을 작성한 뒤 답글 작성 버튼을 눌러주세요."
+        confirmText="확인하기"
+        onClose={() => setIsEmptyReplyModalOpen(false)}
         showCancelButton={false}
       />
     </aside>
