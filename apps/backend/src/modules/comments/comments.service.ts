@@ -1,6 +1,7 @@
 import { Errors } from '../../common/errors/AppError.js';
 import prisma from '../../common/config/prisma.js';
 import { formatKoreanDate } from '../../common/utils/formatDate.js';
+import { sendSlackNotificationToTeamMember } from '../../common/utils/slackNotification.js';
 import type {
   AdoptCommentParamsDto,
   AdoptCommentResponseDto,
@@ -30,6 +31,9 @@ export async function createComment(
     },
     select: {
       id: true,
+      title: true,
+      userId: true,
+      teamId: true,
     },
   });
 
@@ -38,14 +42,17 @@ export async function createComment(
     throw Errors.NOT_FOUND;
   }
 
+  let parentComment: { id: string; userId: string } | null = null;
+
   if (body.parentId !== null) {
-    const parentComment = await prisma.comment.findFirst({
+    parentComment = await prisma.comment.findFirst({
       where: {
         id: body.parentId,
         issueId: params.id,
       },
       select: {
         id: true,
+        userId: true,
       },
     });
 
@@ -88,6 +95,22 @@ export async function createComment(
       },
     },
   });
+
+  if (body.parentId === null && issue.userId !== userId) {
+    await sendSlackNotificationToTeamMember({
+      teamId: issue.teamId,
+      userId: issue.userId,
+      enabledField: 'slackNotifyCommentOnMyIssue',
+      text: `${createdComment.user.name}님이 회원님의 이슈에 제안을 등록했어요: ${issue.title}`,
+    });
+  } else if (parentComment && parentComment.userId !== userId) {
+    await sendSlackNotificationToTeamMember({
+      teamId: issue.teamId,
+      userId: parentComment.userId,
+      enabledField: 'slackNotifyReplyOnMyComment',
+      text: `${createdComment.user.name}님이 회원님의 제안에 답글을 달았어요: ${issue.title}`,
+    });
+  }
 
   return {
     id: createdComment.id,
@@ -281,7 +304,7 @@ export async function adoptComment(
   params: AdoptCommentParamsDto,
   userId: string,
 ): Promise<AdoptCommentResponseDto> {
-  return prisma.$transaction(async (tx) => {
+  const adoptedComment = await prisma.$transaction(async (tx) => {
     const comment = await tx.comment.findFirst({
       where: {
         id: params.commentId,
@@ -294,6 +317,7 @@ export async function adoptComment(
         issue: {
           select: {
             id: true,
+            title: true,
             userId: true,
             teamId: true,
             status: true,
@@ -379,11 +403,27 @@ export async function adoptComment(
     });
 
     return {
-      issueId: comment.issue.id,
-      commentId: comment.id,
-      rewardedScore: ADOPT_COMMENT_REWARDED_SCORE,
-      reason: ADOPT_COMMENT_REASON,
-      status: SOLVED_STATUS,
+      response: {
+        issueId: comment.issue.id,
+        commentId: comment.id,
+        rewardedScore: ADOPT_COMMENT_REWARDED_SCORE,
+        reason: ADOPT_COMMENT_REASON,
+        status: SOLVED_STATUS,
+      },
+      slackNotification: {
+        teamId: comment.issue.teamId,
+        userId: comment.userId,
+        issueTitle: comment.issue.title,
+      },
     };
   });
+
+  await sendSlackNotificationToTeamMember({
+    teamId: adoptedComment.slackNotification.teamId,
+    userId: adoptedComment.slackNotification.userId,
+    enabledField: 'slackNotifyCommentAdopted',
+    text: `회원님의 제안이 해결책으로 채택되었어요: ${adoptedComment.slackNotification.issueTitle}`,
+  });
+
+  return adoptedComment.response;
 }
