@@ -1,5 +1,9 @@
 import { Errors } from '../../common/errors/AppError.js';
 import prisma from '../../common/config/prisma.js';
+import {
+  APP_NOTIFICATION_TYPE,
+  createAppNotification,
+} from '../../common/utils/appNotification.js';
 import { formatKoreanDate } from '../../common/utils/formatDate.js';
 import type {
   AdoptCommentParamsDto,
@@ -30,6 +34,8 @@ export async function createComment(
     },
     select: {
       id: true,
+      title: true,
+      userId: true,
     },
   });
 
@@ -38,14 +44,17 @@ export async function createComment(
     throw Errors.NOT_FOUND;
   }
 
+  let parentComment: { id: string; userId: string } | null = null;
+
   if (body.parentId !== null) {
-    const parentComment = await prisma.comment.findFirst({
+    parentComment = await prisma.comment.findFirst({
       where: {
         id: body.parentId,
         issueId: params.id,
       },
       select: {
         id: true,
+        userId: true,
       },
     });
 
@@ -88,6 +97,24 @@ export async function createComment(
       },
     },
   });
+
+  if (body.parentId === null) {
+    await createAppNotification({
+      userId: issue.userId,
+      actorUserId: userId,
+      resourceId: issue.id,
+      type: APP_NOTIFICATION_TYPE.COMMENT,
+      content: `${createdComment.user.name}님이 회원님의 이슈에 댓글을 달았습니다: ${issue.title}`,
+    });
+  } else if (parentComment) {
+    await createAppNotification({
+      userId: parentComment.userId,
+      actorUserId: userId,
+      resourceId: issue.id,
+      type: APP_NOTIFICATION_TYPE.REPLY,
+      content: `${createdComment.user.name}님이 회원님의 댓글에 답글을 달았습니다: ${issue.title}`,
+    });
+  }
 
   return {
     id: createdComment.id,
@@ -281,7 +308,7 @@ export async function adoptComment(
   params: AdoptCommentParamsDto,
   userId: string,
 ): Promise<AdoptCommentResponseDto> {
-  return prisma.$transaction(async (tx) => {
+  const adoptedComment = await prisma.$transaction(async (tx) => {
     const comment = await tx.comment.findFirst({
       where: {
         id: params.commentId,
@@ -379,11 +406,24 @@ export async function adoptComment(
     });
 
     return {
-      issueId: comment.issue.id,
-      commentId: comment.id,
-      rewardedScore: ADOPT_COMMENT_REWARDED_SCORE,
-      reason: ADOPT_COMMENT_REASON,
-      status: SOLVED_STATUS,
+      notificationUserId: comment.userId,
+      response: {
+        issueId: comment.issue.id,
+        commentId: comment.id,
+        rewardedScore: ADOPT_COMMENT_REWARDED_SCORE,
+        reason: ADOPT_COMMENT_REASON,
+        status: SOLVED_STATUS,
+      },
     };
   });
+
+  await createAppNotification({
+    userId: adoptedComment.notificationUserId,
+    actorUserId: userId,
+    resourceId: adoptedComment.response.issueId,
+    type: APP_NOTIFICATION_TYPE.ADOPTED,
+    content: '회원님의 댓글이 해결책으로 채택되었습니다.',
+  });
+
+  return adoptedComment.response;
 }

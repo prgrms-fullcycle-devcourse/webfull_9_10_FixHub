@@ -4,6 +4,10 @@ import OpenAI from 'openai';
 import prisma from '../../common/config/prisma.js';
 import { AppError, Errors } from '../../common/errors/AppError.js';
 import {
+  APP_NOTIFICATION_TYPE,
+  createTeamAppNotifications,
+} from '../../common/utils/appNotification.js';
+import {
   type SearchIssuesQueryObjectDto,
   type GetPublicIssuesQuery,
   type GetIssueFeedsQuery,
@@ -439,6 +443,11 @@ export async function createIssue(
     select: {
       id: true,
       status: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 
@@ -476,8 +485,17 @@ export async function createIssue(
     },
     select: {
       id: true,
+      title: true,
       createdAt: true,
     },
+  });
+
+  await createTeamAppNotifications({
+    teamId: params.teamId,
+    actorUserId: userId,
+    resourceId: createdIssue.id,
+    type: APP_NOTIFICATION_TYPE.ISSUE_CREATED,
+    content: `${teamMember.user.name}님이 새 이슈를 등록했습니다: ${createdIssue.title}`,
   });
 
   return {
