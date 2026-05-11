@@ -1,6 +1,93 @@
-import { CreateTeamBodyDto, UpdateTeamBodyDto } from './teams.dto.js';
+import axios from 'axios';
+import jwt from 'jsonwebtoken';
+
+import type { CreateTeamBodyDto, UpdateTeamBodyDto } from './teams.dto.js';
 import prisma from '../../common/config/prisma.js';
-import { Errors } from '../../common/errors/AppError.js';
+import { AppError, Errors } from '../../common/errors/AppError.js';
+
+const SLACK_AUTHORIZE_URL = 'https://slack.com/oauth/v2/authorize';
+const SLACK_OAUTH_ACCESS_URL = 'https://slack.com/api/oauth.v2.access';
+const SLACK_SCOPE = 'incoming-webhook';
+
+type SlackOAuthState = {
+  teamId: string;
+  userId: string;
+};
+
+type SlackOAuthAccessResponse = {
+  ok: boolean;
+  error?: string;
+  incoming_webhook?: {
+    channel?: string;
+    channel_id?: string;
+    configuration_url?: string;
+    url?: string;
+  };
+};
+
+function getRequiredEnv(name: string) {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new AppError(
+      'CONFIGURATION_ERROR',
+      `${name} 환경변수가 설정되어 있지 않습니다.`,
+      500,
+    );
+  }
+
+  return value;
+}
+
+function getSlackRedirectUri() {
+  return (
+    process.env.SLACK_REDIRECT_URI ??
+    `${process.env.OPENAPI_URL ?? 'http://localhost:3000'}/teams/slack/oauth/callback`
+  );
+}
+
+export function getSlackClientRedirectUrl(teamId: string | null) {
+  const pathname = teamId ? `/teams/${teamId}/settings` : '/';
+
+  return new URL(
+    pathname,
+    process.env.CLIENT_URL ?? 'http://localhost:5173',
+  ).toString();
+}
+
+async function ensureActiveTeamMember(userId: string, teamId: string) {
+  const membership = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!membership) {
+    const teamExists = await prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!teamExists) {
+      throw Errors.TEAM_NOT_FOUND;
+    }
+
+    throw Errors.FORBIDDEN;
+  }
+
+  if (membership.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  return membership;
+}
 
 // 팀 생성
 export async function createTeam(userId: string, body: CreateTeamBodyDto) {
@@ -254,6 +341,7 @@ export async function getTeamSettings(userId: string, teamId: string) {
     name: team.name,
     description: team.description,
     ownerId: owner?.userId ?? '',
+    isSlackConnected: Boolean(membership.slackWebhookUrl),
     createdAt: team.createdAt.toISOString(),
     members: team.teamMembers.map((member) => ({
       userId: member.userId,
@@ -430,5 +518,92 @@ export async function updateTeam(
     teamId: updatedTeam.id,
     name: updatedTeam.name,
     description: updatedTeam.description,
+  };
+}
+
+export async function createSlackConnectUrl(userId: string, teamId: string) {
+  await ensureActiveTeamMember(userId, teamId);
+
+  const clientId = getRequiredEnv('SLACK_CLIENT_ID');
+  const jwtSecret = getRequiredEnv('JWT_SECRET');
+  const state = jwt.sign({ teamId, userId }, jwtSecret, {
+    expiresIn: '10m',
+  });
+  const slackAuthorizeUrl = new URL(SLACK_AUTHORIZE_URL);
+
+  slackAuthorizeUrl.searchParams.set('client_id', clientId);
+  slackAuthorizeUrl.searchParams.set('scope', SLACK_SCOPE);
+  slackAuthorizeUrl.searchParams.set('redirect_uri', getSlackRedirectUri());
+  slackAuthorizeUrl.searchParams.set('state', state);
+
+  return slackAuthorizeUrl.toString();
+}
+
+export async function completeSlackOAuthConnection(
+  userId: string,
+  code: string,
+  state: string,
+) {
+  const jwtSecret = getRequiredEnv('JWT_SECRET');
+  const decodedState = jwt.verify(state, jwtSecret);
+
+  if (
+    typeof decodedState === 'string' ||
+    typeof decodedState.teamId !== 'string' ||
+    typeof decodedState.userId !== 'string'
+  ) {
+    throw Errors.VALIDATION_ERROR;
+  }
+
+  const slackState = decodedState as SlackOAuthState;
+
+  if (slackState.userId !== userId) {
+    throw Errors.FORBIDDEN;
+  }
+
+  await ensureActiveTeamMember(userId, slackState.teamId);
+
+  const tokenRequestBody = new URLSearchParams({
+    client_id: getRequiredEnv('SLACK_CLIENT_ID'),
+    client_secret: getRequiredEnv('SLACK_CLIENT_SECRET'),
+    code,
+    redirect_uri: getSlackRedirectUri(),
+  });
+
+  const tokenResponse = await axios.post<SlackOAuthAccessResponse>(
+    SLACK_OAUTH_ACCESS_URL,
+    tokenRequestBody,
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    },
+  );
+
+  const webhookUrl = tokenResponse.data.incoming_webhook?.url;
+
+  if (!tokenResponse.data.ok || !webhookUrl) {
+    throw new AppError(
+      'SLACK_OAUTH_FAILED',
+      tokenResponse.data.error ?? 'Slack OAuth 연동에 실패했습니다.',
+      502,
+    );
+  }
+
+  await prisma.teamMember.update({
+    where: {
+      teamId_userId: {
+        teamId: slackState.teamId,
+        userId,
+      },
+    },
+    data: {
+      slackWebhookUrl: webhookUrl,
+    },
+  });
+
+  return {
+    teamId: slackState.teamId,
+    channelName: tokenResponse.data.incoming_webhook?.channel ?? null,
   };
 }

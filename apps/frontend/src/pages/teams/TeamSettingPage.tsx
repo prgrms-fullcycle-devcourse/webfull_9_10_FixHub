@@ -56,7 +56,6 @@ export default function TeamSettingPage() {
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
   const [slackTestMessage, setSlackTestMessage] = useState('');
-  const [isSlackConnected, setIsSlackConnected] = useState(false);
   const [isSlackEventSaved, setIsSlackEventSaved] = useState(false);
   const [slackNotificationEvents, setSlackNotificationEvents] = useState(
     DEFAULT_SLACK_NOTIFICATION_EVENTS,
@@ -107,6 +106,7 @@ export default function TeamSettingPage() {
   });
 
   const isLeader = teamSettings?.userId === teamSettings?.ownerId;
+  const isSlackConnected = Boolean(teamSettings?.isSlackConnected);
 
   const handleSubmitUpdateTeam = () => {
     if (!isLeader) return alert('수정 권한이 없습니다.');
@@ -141,8 +141,12 @@ export default function TeamSettingPage() {
   };
 
   const handleConnectSlack = () => {
-    // TODO: 슬랙 OAuth 또는 웹훅 등록 API가 준비되면 이 위치에서 연동합니다.
-    setIsSlackConnected(true);
+    if (!teamId) return console.error('teamId를 가져올 수 없습니다.');
+
+    const apiBaseUrl =
+      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
+    window.location.href = `${apiBaseUrl}/teams/${teamId}/slack/connect`;
   };
 
   const handleSaveSlackNotificationEvents = () => {

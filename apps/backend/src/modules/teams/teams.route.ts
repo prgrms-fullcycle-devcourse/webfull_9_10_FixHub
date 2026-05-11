@@ -3,6 +3,8 @@ import { Router } from 'express';
 import {
   postTeam,
   getMyTeams,
+  getSlackConnect,
+  getSlackOAuthCallback,
   getTeamDetail,
   getTeamSettings,
   patchTeam,
@@ -14,6 +16,8 @@ const router = Router();
 
 router.post('/', authenticate, postTeam); // 팀 생성
 router.get('/', authenticate, getMyTeams); // 내가 속한 팀 조회
+router.get('/slack/oauth/callback', authenticate, getSlackOAuthCallback); // 슬랙 OAuth 콜백
+router.get('/:teamId/slack/connect', authenticate, getSlackConnect); // 슬랙 연동 시작
 router.get('/:teamId', authenticate, getTeamDetail); // 팀 상세 조회
 router.patch('/:teamId', authenticate, patchTeam); // 팀 수정
 router.get('/:teamId/settings', authenticate, getTeamSettings); // 팀 설정 조회

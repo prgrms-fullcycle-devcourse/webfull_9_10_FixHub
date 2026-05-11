@@ -76,6 +76,7 @@ export const GetTeamSettingsResponseSchema = z.object({
   name: z.string(),
   description: z.string(),
   ownerId: z.uuidv7(),
+  isSlackConnected: z.boolean(),
   createdAt: z.iso.datetime(),
   members: z.array(
     z.object({
@@ -92,6 +93,16 @@ export const GetTeamSettingsResponseSchema = z.object({
 export type GetTeamSettingsResponseDto = z.infer<
   typeof GetTeamSettingsResponseSchema
 >;
+
+export const SlackConnectParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export const SlackOAuthCallbackQuerySchema = z.object({
+  code: z.string().optional(),
+  state: z.string().optional(),
+  error: z.string().optional(),
+});
 
 // 팀 수정
 export const UpdateTeamBodySchema = z.object({

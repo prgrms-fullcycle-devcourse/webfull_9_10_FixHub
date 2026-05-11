@@ -593,6 +593,66 @@ export type PatchTeamsTeamId404 = {
   error: PatchTeamsTeamId404Error;
 };
 
+export type GetTeamsTeamIdSlackConnect401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSlackConnect401 = {
+  error: GetTeamsTeamIdSlackConnect401Error;
+};
+
+export type GetTeamsTeamIdSlackConnect403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSlackConnect403 = {
+  error: GetTeamsTeamIdSlackConnect403Error;
+};
+
+export type GetTeamsTeamIdSlackConnect404Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsTeamIdSlackConnect404 = {
+  error: GetTeamsTeamIdSlackConnect404Error;
+};
+
+export type GetTeamsSlackOauthCallbackParams = {
+  code?: string;
+  state?: string;
+  error?: string;
+};
+
+export type GetTeamsSlackOauthCallback401Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsSlackOauthCallback401 = {
+  error: GetTeamsSlackOauthCallback401Error;
+};
+
+export type GetTeamsSlackOauthCallback403Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsSlackOauthCallback403 = {
+  error: GetTeamsSlackOauthCallback403Error;
+};
+
+export type GetTeamsSlackOauthCallback502Error = {
+  code: string;
+  message: string;
+};
+
+export type GetTeamsSlackOauthCallback502 = {
+  error: GetTeamsSlackOauthCallback502Error;
+};
+
 export type GetTeamsTeamIdSettings200MembersItemRole =
   (typeof GetTeamsTeamIdSettings200MembersItemRole)[keyof typeof GetTeamsTeamIdSettings200MembersItemRole];
 
@@ -615,6 +675,7 @@ export type GetTeamsTeamIdSettings200 = {
   name: string;
   description: string;
   ownerId: string;
+  isSlackConnected: boolean;
   createdAt: string;
   members: GetTeamsTeamIdSettings200MembersItem[];
 };
@@ -2652,6 +2713,405 @@ export const usePatchTeamsTeamId = <
 > => {
   return useMutation(getPatchTeamsTeamIdMutationOptions(options), queryClient);
 };
+
+/**
+ * 로그인한 사용자를 Slack OAuth 승인 화면으로 이동시켜 Incoming Webhook 연동을 시작합니다.
+ * @summary Slack 연동 시작
+ */
+export const getTeamsTeamIdSlackConnect = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<unknown>(
+    { url: `/teams/${teamId}/slack/connect`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetTeamsTeamIdSlackConnectQueryKey = (teamId: string) => {
+  return [`/teams/${teamId}/slack/connect`] as const;
+};
+
+export const getGetTeamsTeamIdSlackConnectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTeamsTeamIdSlackConnectQueryKey(teamId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+  > = ({ signal }) =>
+    getTeamsTeamIdSlackConnect(teamId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!teamId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsTeamIdSlackConnectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+>;
+export type GetTeamsTeamIdSlackConnectQueryError = ErrorType<
+  | void
+  | GetTeamsTeamIdSlackConnect401
+  | GetTeamsTeamIdSlackConnect403
+  | GetTeamsTeamIdSlackConnect404
+>;
+
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Slack 연동 시작
+ */
+
+export function useGetTeamsTeamIdSlackConnect<
+  TData = Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsTeamIdSlackConnect401
+    | GetTeamsTeamIdSlackConnect403
+    | GetTeamsTeamIdSlackConnect404
+  >,
+>(
+  teamId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsTeamIdSlackConnect>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsTeamIdSlackConnectQueryOptions(
+    teamId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Slack OAuth code를 Incoming Webhook URL로 교환하고 현재 사용자의 팀 멤버 설정에 저장합니다.
+ * @summary Slack OAuth callback
+ */
+export const getTeamsSlackOauthCallback = (
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<unknown>(
+    { url: `/teams/slack/oauth/callback`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetTeamsSlackOauthCallbackQueryKey = (
+  params?: GetTeamsSlackOauthCallbackParams,
+) => {
+  return [`/teams/slack/oauth/callback`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetTeamsSlackOauthCallbackQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetTeamsSlackOauthCallbackQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+  > = ({ signal }) =>
+    getTeamsSlackOauthCallback(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTeamsSlackOauthCallbackQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+>;
+export type GetTeamsSlackOauthCallbackQueryError = ErrorType<
+  | void
+  | GetTeamsSlackOauthCallback401
+  | GetTeamsSlackOauthCallback403
+  | GetTeamsSlackOauthCallback502
+>;
+
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params: undefined | GetTeamsSlackOauthCallbackParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+          TError,
+          Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Slack OAuth callback
+ */
+
+export function useGetTeamsSlackOauthCallback<
+  TData = Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+  TError = ErrorType<
+    | void
+    | GetTeamsSlackOauthCallback401
+    | GetTeamsSlackOauthCallback403
+    | GetTeamsSlackOauthCallback502
+  >,
+>(
+  params?: GetTeamsSlackOauthCallbackParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTeamsSlackOauthCallback>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTeamsSlackOauthCallbackQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * 팀 설정 페이지에서 사용하는 팀 정보와 팀원 목록을 조회합니다. 팀원 목록은 이름순, 가입일순으로 정렬되며 리더가 항상 맨 위에 표시됩니다.
