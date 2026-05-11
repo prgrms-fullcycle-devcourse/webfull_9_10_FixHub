@@ -9,10 +9,13 @@ import {
   GetTeamMembersResponseSchema,
   GetTeamSettingsResponseSchema,
   SlackConnectParamsSchema,
+  SlackNotificationSettingsParamsSchema,
+  SlackNotificationSettingsResponseSchema,
   SlackOAuthCallbackQuerySchema,
   SlackTestMessageBodySchema,
   SlackTestMessageParamsSchema,
   SlackTestMessageResponseSchema,
+  UpdateSlackNotificationSettingsBodySchema,
   UpdateTeamBodySchema,
   UpdateTeamResponseSchema,
 } from './teams.dto.js';
@@ -224,6 +227,117 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       502: {
         description: 'Slack OAuth 연동 실패',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 슬랙 알림 설정 조회
+  registry.registerPath({
+    method: 'get',
+    path: '/teams/{teamId}/slack/notification-settings',
+    operationId: 'getSlackNotificationSettings',
+    tags: ['Teams'],
+    summary: 'Slack 알림 설정 조회',
+    description:
+      '현재 로그인한 사용자의 특정 팀 Slack 알림 이벤트 수신 설정을 조회합니다.',
+    request: {
+      params: SlackNotificationSettingsParamsSchema,
+    },
+    responses: {
+      200: {
+        description: 'Slack 알림 설정 조회 성공',
+        content: {
+          'application/json': {
+            schema: SlackNotificationSettingsResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀을 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 슬랙 알림 설정 저장
+  registry.registerPath({
+    method: 'patch',
+    path: '/teams/{teamId}/slack/notification-settings',
+    operationId: 'updateSlackNotificationSettings',
+    tags: ['Teams'],
+    summary: 'Slack 알림 설정 저장',
+    description:
+      '현재 로그인한 사용자의 특정 팀 Slack 알림 이벤트 수신 설정을 저장합니다.',
+    request: {
+      params: SlackNotificationSettingsParamsSchema,
+      body: {
+        content: {
+          'application/json': {
+            schema: UpdateSlackNotificationSettingsBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Slack 알림 설정 저장 성공',
+        content: {
+          'application/json': {
+            schema: SlackNotificationSettingsResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '입력 값 오류',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀을 찾을 수 없음',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,

@@ -4,14 +4,19 @@ import {
   postTeam,
   getMyTeams,
   getSlackConnect,
+  getSlackNotificationSettings,
   getSlackOAuthCallback,
   getTeamDetail,
   getTeamMembers,
   getTeamSettings,
+  patchSlackNotificationSettings,
   patchTeam,
   postSlackTestMessage,
 } from './teams.controller.js';
-import { SlackTestMessageParamsSchema } from './teams.dto.js';
+import {
+  SlackNotificationSettingsParamsSchema,
+  SlackTestMessageParamsSchema,
+} from './teams.dto.js';
 import { authenticate } from '../../common/middlewares/authenticate.js';
 import { validateParams } from '../../common/middlewares/validator.js';
 
@@ -21,6 +26,18 @@ router.post('/', authenticate, postTeam); // 팀 생성
 router.get('/', authenticate, getMyTeams); // 내가 속한 팀 조회
 router.get('/slack/oauth/callback', authenticate, getSlackOAuthCallback); // 슬랙 OAuth 콜백
 router.get('/:teamId/slack/connect', authenticate, getSlackConnect); // 슬랙 연동 시작
+router.get(
+  '/:teamId/slack/notification-settings',
+  authenticate,
+  validateParams(SlackNotificationSettingsParamsSchema),
+  getSlackNotificationSettings,
+); // 슬랙 알림 설정 조회
+router.patch(
+  '/:teamId/slack/notification-settings',
+  authenticate,
+  validateParams(SlackNotificationSettingsParamsSchema),
+  patchSlackNotificationSettings,
+); // 슬랙 알림 설정 저장
 router.post(
   '/:teamId/slack/test-message',
   authenticate,

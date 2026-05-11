@@ -5,10 +5,13 @@ import { BadgeCheck, FilePlus2, MessageCircle, Reply } from 'lucide-react';
 
 import Toggle from '@/components/ui/Toogle';
 import {
+  getGetSlackNotificationSettingsQueryKey,
   getGetTeamsTeamIdSettingsQueryKey,
+  useGetSlackNotificationSettings,
   useGetTeamsTeamIdSettings,
   usePatchTeamsTeamId,
   useSendSlackTestMessage,
+  useUpdateSlackNotificationSettings,
 } from '@/api/generated';
 
 const SLACK_NOTIFICATION_EVENTS = [
@@ -62,9 +65,10 @@ export default function TeamSettingPage() {
   const [slackTestMessageStatus, setSlackTestMessageStatus] =
     useState<SlackTestMessageStatus>('idle');
   const [isSlackEventSaved, setIsSlackEventSaved] = useState(false);
-  const [slackNotificationEvents, setSlackNotificationEvents] = useState(
-    DEFAULT_SLACK_NOTIFICATION_EVENTS,
-  );
+  const [slackNotificationEvents, setSlackNotificationEvents] = useState<Record<
+    SlackNotificationEventId,
+    boolean
+  > | null>(null);
 
   const initializedRef = useRef(false); // 초기화 여부 기억
   const queryClient = useQueryClient();
@@ -74,6 +78,19 @@ export default function TeamSettingPage() {
     isLoading: isTeamSettingsLoading,
     error: teamSettingsError,
   } = useGetTeamsTeamIdSettings(teamId ?? '', {
+    query: {
+      enabled: Boolean(teamId),
+    },
+    request: {
+      withCredentials: true,
+    },
+  });
+
+  const {
+    data: slackNotificationSettings,
+    isLoading: isSlackNotificationSettingsLoading,
+    error: slackNotificationSettingsError,
+  } = useGetSlackNotificationSettings(teamId ?? '', {
     query: {
       enabled: Boolean(teamId),
     },
@@ -112,6 +129,10 @@ export default function TeamSettingPage() {
 
   const isLeader = teamSettings?.userId === teamSettings?.ownerId;
   const isSlackConnected = Boolean(teamSettings?.isSlackConnected);
+  const currentSlackNotificationEvents =
+    slackNotificationEvents ??
+    slackNotificationSettings ??
+    DEFAULT_SLACK_NOTIFICATION_EVENTS;
 
   const { mutate: sendSlackTestMessage, isPending: isSendingSlackTestMessage } =
     useSendSlackTestMessage({
@@ -125,6 +146,30 @@ export default function TeamSettingPage() {
         },
       },
     });
+
+  const {
+    mutate: updateSlackNotificationSettings,
+    isPending: isUpdatingSlackNotificationSettings,
+    error: updateSlackNotificationSettingsError,
+  } = useUpdateSlackNotificationSettings({
+    mutation: {
+      onSuccess: (updatedSettings) => {
+        setSlackNotificationEvents({
+          issueCreated: updatedSettings.issueCreated,
+          commentOnMyIssue: updatedSettings.commentOnMyIssue,
+          replyOnMyComment: updatedSettings.replyOnMyComment,
+          commentAdopted: updatedSettings.commentAdopted,
+        });
+        setIsSlackEventSaved(true);
+        queryClient.invalidateQueries({
+          queryKey: getGetSlackNotificationSettingsQueryKey(teamId ?? ''),
+        });
+      },
+      onError: () => {
+        setIsSlackEventSaved(false);
+      },
+    },
+  });
 
   const handleSubmitUpdateTeam = () => {
     if (!isLeader) return alert('수정 권한이 없습니다.');
@@ -152,10 +197,17 @@ export default function TeamSettingPage() {
 
   const handleToggleSlackEvent = (eventId: SlackNotificationEventId) => {
     setIsSlackEventSaved(false);
-    setSlackNotificationEvents((prevEvents) => ({
-      ...prevEvents,
-      [eventId]: !prevEvents[eventId],
-    }));
+    setSlackNotificationEvents((prevEvents) => {
+      const nextEvents =
+        prevEvents ??
+        slackNotificationSettings ??
+        DEFAULT_SLACK_NOTIFICATION_EVENTS;
+
+      return {
+        ...nextEvents,
+        [eventId]: !nextEvents[eventId],
+      };
+    });
   };
 
   const handleConnectSlack = () => {
@@ -168,8 +220,15 @@ export default function TeamSettingPage() {
   };
 
   const handleSaveSlackNotificationEvents = () => {
-    // TODO: 슬랙 알림 이벤트 저장 API가 준비되면 이 위치에서 연동합니다.
-    setIsSlackEventSaved(true);
+    if (!teamId) {
+      return console.error('teamId를 가져올 수 없습니다.');
+    }
+
+    setIsSlackEventSaved(false);
+    updateSlackNotificationSettings({
+      teamId,
+      data: currentSlackNotificationEvents,
+    });
   };
 
   const handleSubmitSlackTestMessage = (event: FormEvent<HTMLFormElement>) => {
@@ -401,22 +460,36 @@ export default function TeamSettingPage() {
                       <button
                         type="button"
                         onClick={handleSaveSlackNotificationEvents}
+                        disabled={
+                          isSlackNotificationSettingsLoading ||
+                          isUpdatingSlackNotificationSettings
+                        }
                         className="px-6 py-3 rounded-sm typo-regular-16
                           cursor-pointer transition-all duration-200 ease-out
-                          hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                          hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]
+                          disabled:cursor-not-allowed disabled:opacity-50"
                         style={{
                           background: 'var(--primary)',
                           color: 'var(--text-inverse)',
                         }}
                       >
-                        저장하기
+                        {isUpdatingSlackNotificationSettings
+                          ? '저장 중...'
+                          : '저장하기'}
                       </button>
                     </div>
                   </div>
+                  {(slackNotificationSettingsError ||
+                    updateSlackNotificationSettingsError) && (
+                    <p className="typo-regular-14 text-[var(--status-unsaved)]">
+                      Slack 알림 설정을 저장하지 못했습니다. 다시 시도해주세요.
+                    </p>
+                  )}
                   <div className="grid grid-cols-1 gap-3 min-[1334px]:grid-cols-4">
                     {SLACK_NOTIFICATION_EVENTS.map((slackEvent) => {
                       const EventIcon = slackEvent.icon;
-                      const isChecked = slackNotificationEvents[slackEvent.id];
+                      const isChecked =
+                        currentSlackNotificationEvents[slackEvent.id];
 
                       return (
                         <label

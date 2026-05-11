@@ -116,12 +116,37 @@ export const SlackTestMessageResponseSchema = z.object({
   success: z.boolean(),
 });
 
+export const SlackNotificationSettingsParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export const SlackNotificationSettingsSchema = z.object({
+  issueCreated: z.boolean(),
+  commentOnMyIssue: z.boolean(),
+  replyOnMyComment: z.boolean(),
+  commentAdopted: z.boolean(),
+});
+
+export const UpdateSlackNotificationSettingsBodySchema =
+  SlackNotificationSettingsSchema;
+
+export const SlackNotificationSettingsResponseSchema =
+  SlackNotificationSettingsSchema;
+
 export type SlackTestMessageBodyDto = z.infer<
   typeof SlackTestMessageBodySchema
 >;
 
 export type SlackTestMessageResponseDto = z.infer<
   typeof SlackTestMessageResponseSchema
+>;
+
+export type SlackNotificationSettingsDto = z.infer<
+  typeof SlackNotificationSettingsSchema
+>;
+
+export type UpdateSlackNotificationSettingsBodyDto = z.infer<
+  typeof UpdateSlackNotificationSettingsBodySchema
 >;
 
 // 팀 수정
