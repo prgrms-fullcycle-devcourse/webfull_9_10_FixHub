@@ -36,7 +36,7 @@ export const authController = {
 
   async logout(req: Request, res: Response, next: NextFunction) {
     try {
-      res.clearCookie('token');
+      res.clearCookie('token', COOKIE_OPTIONS);
       res.status(200).json({ message: '로그아웃 성공' });
     } catch (err) {
       next(err);
