@@ -767,7 +767,7 @@ export async function inviteTeamMembers(
           teamId,
           userId: user.id,
           role: 'MEMBER',
-          status: 'PENDING',
+          status: 'ACTIVE', // TODO: 향후 PENDING으로 변경 및 초대 수락/거절 API 추가
           joinedAt: null,
         },
       });

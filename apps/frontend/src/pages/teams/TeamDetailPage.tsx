@@ -443,14 +443,13 @@ function TeamInviteModal({
 
           {isInvitingSuccess && (
             <p className="pt-4 text-[var(--primary)] text-sm text-center typo-regular-14">
-              팀원에게 초대장을 보냈습니다. <br /> 상대방이 초대를 수락하면 팀원
-              추가가 완료됩니다.
+              팀원 초대를 완료했습니다.
             </p>
           )}
         </div>
       }
       confirmText="초대하기"
-      cancelText="취소하기"
+      cancelText="닫기"
       onClose={handleClose}
       onConfirm={handleConfirm}
       confirmButtonClassName={
