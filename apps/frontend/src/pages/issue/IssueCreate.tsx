@@ -203,7 +203,32 @@ function IssueCreate() {
   return (
     <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
       <div className="flex flex-col gap-[60px]">
-        <h1 className="typo-medium-40">이슈 등록</h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="typo-medium-40">이슈 등록</h1>
+
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
+                transition-all duration-200 ease-out
+                hover:shadow-(--shadow)"
+            >
+              취소하기
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCreate}
+              disabled={isPending}
+              className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
+                transition-all duration-200 ease-out
+                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isPending ? '생성 중...' : '생성하기'}
+            </button>
+          </div>
+        </div>
 
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
