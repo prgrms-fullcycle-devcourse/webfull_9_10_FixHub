@@ -6,14 +6,36 @@ import SettingIcon from '@/assets/icons/setting.svg';
 import LetterIcon from '@/assets/icons/letter.svg';
 import ArrowIcon from '@/assets/icons/arrow.svg';
 import { useGetTeamsTeamId, useGetTeamsTeamIdMembers } from '@/api/generated';
-
-const mockIssues = Array.from({ length: 6 });
+import IssueList from '@/components/issues/IssueList';
+import LanguageSelectModal from '@/components/issues/LanguageSelectModal';
+import IssueFeedFilterBar from '@/components/issues/IssueFeedFilterBar';
+import type { IssueSort, IssueStatusFilter } from '@/types/issue';
 
 export default function TeamDetailPage() {
   const navigate = useNavigate();
 
   const { teamId } = useParams<{ teamId: string }>();
   const [showAllMembers, setShowAllMembers] = useState(false);
+
+  const [selectedStatus, setSelectedStatus] =
+    useState<IssueStatusFilter>('ALL');
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [sort, setSort] = useState<IssueSort>('latest');
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+
+  const handleToggleLanguage = (language: string) => {
+    setSelectedLanguages((prev) =>
+      prev.includes(language)
+        ? prev.filter((item) => item !== language)
+        : [...prev, language],
+    );
+  };
+
+  const handleReset = () => {
+    setSelectedStatus('ALL');
+    setSelectedLanguages([]);
+    setSort('latest');
+  };
 
   const {
     data: teamDetail,
@@ -181,52 +203,42 @@ export default function TeamDetailPage() {
             </div>
           </motion.section>
         </div>
-        <div>
-          {/* 안내 문구 */}
-          <p className="typo-regular-16 text-text-secondary">
-            우리팀의 이슈를 확인하고, 함께 해결해보세요.
-          </p>
+        <>
+          <section className="w-full flex-1 px-15 pt-15 pb-15 text-(--text-primary)">
+            <div className="flex flex-col gap-15">
+              <div>
+                <p className="mt-3 typo-regular-20">
+                  우리 팀의 이슈를 확인하고, 함께 해결해보세요.
+                </p>
+              </div>
 
-          {/* 필터 바 */}
-          <section className="flex justify-between items-center">
-            <div className="flex gap-[12px] flex-wrap">
-              <FilterButton label="상태" />
-              <FilterButton label="상태" />
-              <FilterButton label="언어 선택" />
+              <IssueFeedFilterBar
+                selectedStatus={selectedStatus}
+                selectedLanguages={selectedLanguages}
+                sort={sort}
+                onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
+                onChangeStatus={setSelectedStatus}
+                onChangeSort={setSort}
+                onRemoveLanguage={handleToggleLanguage}
+                onReset={handleReset}
+              />
 
-              <Tag label="JavaScript" />
-              <Tag label="Axios" />
-              <Tag label="초기화" />
+              <IssueList
+                status={selectedStatus === 'ALL' ? undefined : selectedStatus}
+                tags={selectedLanguages}
+                sort={sort}
+                team={teamId}
+              />
             </div>
-
-            <FilterButton label="정렬" />
           </section>
 
-          {/* 이슈 리스트 */}
-          <section className="space-y-[16px]">
-            {mockIssues.map((_, idx) => (
-              <IssueCard key={idx} solved={idx !== 0} />
-            ))}
-          </section>
-
-          {/* 페이지네이션 */}
-          <section className="flex justify-center gap-[8px] pt-[16px]">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-              <button
-                key={n}
-                className={`w-[32px] h-[32px] rounded-sm ${
-                  n === 1 ? 'bg-primary text-black' : 'border border-border'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-
-            <button className="w-[32px] h-[32px] bg-primary text-black rounded-sm">
-              {'>'}
-            </button>
-          </section>
-        </div>
+          <LanguageSelectModal
+            isOpen={isLanguageModalOpen}
+            selectedLanguages={selectedLanguages}
+            onClose={() => setIsLanguageModalOpen(false)}
+            onToggleLanguage={handleToggleLanguage}
+          />
+        </>
       </div>
     </main>
   );
@@ -267,63 +279,6 @@ function RankingItem({ rank, name, role, score, isMe }: RankingItemProps) {
       </div>
 
       <span className="typo-bold-20">{score.toLocaleString()}점</span>
-    </div>
-  );
-}
-
-function FilterButton({ label }: { label: string }) {
-  return (
-    <button className="border border-border px-[14px] py-[8px] rounded-sm typo-regular-14 flex items-center gap-[6px]">
-      {label} <span>⌄</span>
-    </button>
-  );
-}
-
-function Tag({ label }: { label: string }) {
-  return (
-    <span className="bg-surface-tag px-[10px] py-[6px] rounded-sm text-sm">
-      {label} ✕
-    </span>
-  );
-}
-
-function IssueCard({ solved }: { solved: boolean }) {
-  return (
-    <div className="bg-card p-[20px] rounded-md space-y-[10px]">
-      {/* 상단 */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-[8px]">
-          <span
-            className={`px-[8px] py-[4px] rounded-sm text-xs ${
-              solved ? 'bg-green-600 text-white' : 'bg-red-500 text-white'
-            }`}
-          >
-            {solved ? '해결' : '미해결'}
-          </span>
-
-          <span className="typo-medium-16">
-            로그인 시 간헐적으로 500에러 발생합니다 ㅠㅠ
-          </span>
-        </div>
-
-        <span className="text-text-muted text-sm">답변 5 · 채택 1</span>
-      </div>
-
-      {/* 내용 */}
-      <p className="text-text-muted text-sm">
-        왜이러는지 모르겠는데 아니 이게 왜이래요 이유를 알려주세요 제발
-        설명입니다 설명이에요 이거 이 글 설명입니다....
-      </p>
-
-      {/* 태그 */}
-      <div className="flex gap-[8px]">
-        <Tag label="HTML" />
-        <Tag label="CSS" />
-        <Tag label="Javascript" />
-      </div>
-
-      {/* 시간 */}
-      <div className="text-right text-text-muted text-xs">이틀 전</div>
     </div>
   );
 }
