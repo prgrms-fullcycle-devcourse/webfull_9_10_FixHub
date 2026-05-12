@@ -105,11 +105,15 @@ export interface Forbidden {
 export type GetComments200DataItemAuthor = {
   id: string;
   name: string;
+  /** @nullable */
+  profileImg: string | null;
 };
 
 export type GetComments200DataItemRepliesItemAuthor = {
   id: string;
   name: string;
+  /** @nullable */
+  profileImg: string | null;
 };
 
 export type GetComments200DataItemRepliesItemRepliesItem = {

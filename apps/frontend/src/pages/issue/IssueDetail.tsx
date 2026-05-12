@@ -29,6 +29,7 @@ function mapCommentToIssueCommentItem(
     author: {
       id: comment.author.id,
       name: comment.author.name,
+      profileImg: comment.author.profileImg ?? '',
     },
     selected: comment.isAdopted,
     isReply,
