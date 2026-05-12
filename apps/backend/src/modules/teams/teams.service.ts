@@ -783,3 +783,69 @@ export async function inviteTeamMembers(
     inviteUserIds,
   };
 }
+
+// 팀원 내보내기
+export async function deleteTeamMember(
+  requesterId: string,
+  teamId: string,
+  targetUserId: string,
+) {
+  const requester = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId: requesterId,
+      },
+    },
+  });
+
+  if (!requester || requester.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (requester.role !== 'LEADER') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (requesterId === targetUserId) {
+    throw new AppError(
+      'CANNOT_REMOVE_SELF',
+      '자기 자신은 내보낼 수 없습니다.',
+      400,
+    );
+  }
+
+  const targetMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId: targetUserId,
+      },
+    },
+  });
+
+  if (!targetMember) {
+    throw Errors.USER_NOT_FOUND;
+  }
+
+  if (targetMember.role === 'LEADER') {
+    throw new AppError(
+      'CANNOT_REMOVE_LEADER',
+      '팀장은 내보낼 수 없습니다.',
+      400,
+    );
+  }
+
+  const deletedMember = await prisma.teamMember.delete({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId: targetUserId,
+      },
+    },
+  });
+
+  return {
+    deletedMemberId: deletedMember.userId,
+  };
+}

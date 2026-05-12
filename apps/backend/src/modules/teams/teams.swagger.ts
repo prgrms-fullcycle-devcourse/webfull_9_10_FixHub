@@ -20,6 +20,8 @@ import {
   UpdateTeamResponseSchema,
   InviteTeamMembersBodySchema,
   InviteTeamMembersResponseSchema,
+  DeleteTeamMemberParamsSchema,
+  DeleteTeamMemberResponseSchema,
 } from './teams.dto.js';
 
 export const ErrorResponseSchema = z.object({
@@ -637,6 +639,62 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       404: {
         description: '팀 또는 초대 대상 사용자를 찾을 수 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀원 내보내기
+  registry.registerPath({
+    method: 'delete',
+    path: '/teams/{teamId}/members/{userId}',
+    operationId: 'deleteTeamMember',
+    tags: ['Teams'],
+    summary: '팀원 내보내기',
+    description:
+      '팀장이 특정 팀원을 팀에서 내보냅니다. 팀장은 내보낼 수 없으며, 자기 자신도 내보낼 수 없습니다.',
+    request: {
+      params: DeleteTeamMemberParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '팀원 내보내기 성공',
+        content: {
+          'application/json': {
+            schema: DeleteTeamMemberResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '입력 값 오류 또는 내보낼 수 없는 대상',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀원 없음',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,

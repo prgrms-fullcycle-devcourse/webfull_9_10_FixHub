@@ -179,3 +179,13 @@ export const InviteTeamMembersResponseSchema = z.object({
 export type InviteTeamMembersBodyDto = z.infer<
   typeof InviteTeamMembersBodySchema
 >;
+
+// 팀원 내보내기
+export const DeleteTeamMemberParamsSchema = z.object({
+  teamId: z.uuidv7(),
+  userId: z.uuidv7(),
+});
+
+export const DeleteTeamMemberResponseSchema = z.object({
+  deletedMemberId: z.uuidv7(),
+});
