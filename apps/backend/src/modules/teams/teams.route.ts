@@ -13,6 +13,7 @@ import {
   patchTeam,
   postSlackTestMessage,
   inviteTeamMembers,
+  deleteTeamMember,
 } from './teams.controller.js';
 import {
   SlackNotificationSettingsParamsSchema,
@@ -50,5 +51,6 @@ router.patch('/:teamId', authenticate, patchTeam); // 팀 수정
 router.get('/:teamId/settings', authenticate, getTeamSettings); // 팀 설정 조회
 router.get('/:teamId/members', authenticate, getTeamMembers); // 팀원 목록 조회
 router.post('/:teamId/members', authenticate, inviteTeamMembers); // 팀원 초대
+router.delete('/:teamId/members/:userId', authenticate, deleteTeamMember); // 팀원 내보내기
 
 export default router;
