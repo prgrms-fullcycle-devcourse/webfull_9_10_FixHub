@@ -32,6 +32,7 @@ export type GetMyTeamsResponseDto = z.infer<typeof GetMyTeamsResponseSchema>;
 
 // 팀 상세 조회
 export const GetTeamDetailResponseSchema = z.object({
+  userId: z.uuidv7(),
   teamId: z.uuidv7(),
   name: z.string(),
   description: z.string(),
@@ -165,3 +166,26 @@ export const UpdateTeamResponseSchema = z.object({
 export type UpdateTeamBodyDto = z.infer<typeof UpdateTeamBodySchema>;
 
 export type UpdateTeamResponseDto = z.infer<typeof UpdateTeamResponseSchema>;
+
+// 팀원 초대
+export const InviteTeamMembersBodySchema = z.object({
+  emails: z.array(z.email()).min(1),
+});
+
+export const InviteTeamMembersResponseSchema = z.object({
+  userIds: z.array(z.uuidv7()),
+});
+
+export type InviteTeamMembersBodyDto = z.infer<
+  typeof InviteTeamMembersBodySchema
+>;
+
+// 팀원 내보내기
+export const DeleteTeamMemberParamsSchema = z.object({
+  teamId: z.uuidv7(),
+  userId: z.uuidv7(),
+});
+
+export const DeleteTeamMemberResponseSchema = z.object({
+  deletedMemberId: z.uuidv7(),
+});

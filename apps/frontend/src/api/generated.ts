@@ -504,6 +504,7 @@ export type GetTeamsTeamId200MembersItem = {
 };
 
 export type GetTeamsTeamId200 = {
+  userId: string;
   teamId: string;
   name: string;
   description: string;
@@ -894,6 +895,91 @@ export type GetTeamsTeamIdMembers404Error = {
 
 export type GetTeamsTeamIdMembers404 = {
   error: GetTeamsTeamIdMembers404Error;
+};
+
+export type InviteTeamMembersBody = {
+  /** @minItems 1 */
+  emails: string[];
+};
+
+export type InviteTeamMembers201 = {
+  userIds: string[];
+};
+
+export type InviteTeamMembers400Error = {
+  code: string;
+  message: string;
+};
+
+export type InviteTeamMembers400 = {
+  error: InviteTeamMembers400Error;
+};
+
+export type InviteTeamMembers401Error = {
+  code: string;
+  message: string;
+};
+
+export type InviteTeamMembers401 = {
+  error: InviteTeamMembers401Error;
+};
+
+export type InviteTeamMembers403Error = {
+  code: string;
+  message: string;
+};
+
+export type InviteTeamMembers403 = {
+  error: InviteTeamMembers403Error;
+};
+
+export type InviteTeamMembers404Error = {
+  code: string;
+  message: string;
+};
+
+export type InviteTeamMembers404 = {
+  error: InviteTeamMembers404Error;
+};
+
+export type DeleteTeamMember200 = {
+  deletedMemberId: string;
+};
+
+export type DeleteTeamMember400Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember400 = {
+  error: DeleteTeamMember400Error;
+};
+
+export type DeleteTeamMember401Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember401 = {
+  error: DeleteTeamMember401Error;
+};
+
+export type DeleteTeamMember403Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember403 = {
+  error: DeleteTeamMember403Error;
+};
+
+export type DeleteTeamMember404Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember404 = {
+  error: DeleteTeamMember404Error;
 };
 
 export type GetIssuesSearchParams = {
@@ -4060,6 +4146,216 @@ export function useGetTeamsTeamIdMembers<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * 이메일 목록을 기반으로 팀원을 초대합니다. 이미 팀 멤버로 존재하는 사용자는 기존 상태를 유지하고, 존재하지 않는 경우 PENDING 상태로 추가합니다.
+ * @summary 팀원 초대
+ */
+export const inviteTeamMembers = (
+  teamId: string,
+  inviteTeamMembersBody?: BodyType<InviteTeamMembersBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<InviteTeamMembers201>(
+    {
+      url: `/teams/${teamId}/members`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: inviteTeamMembersBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getInviteTeamMembersMutationOptions = <
+  TError = ErrorType<
+    | InviteTeamMembers400
+    | InviteTeamMembers401
+    | InviteTeamMembers403
+    | InviteTeamMembers404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof inviteTeamMembers>>,
+    TError,
+    { teamId: string; data?: BodyType<InviteTeamMembersBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof inviteTeamMembers>>,
+  TError,
+  { teamId: string; data?: BodyType<InviteTeamMembersBody> },
+  TContext
+> => {
+  const mutationKey = ['inviteTeamMembers'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof inviteTeamMembers>>,
+    { teamId: string; data?: BodyType<InviteTeamMembersBody> }
+  > = (props) => {
+    const { teamId, data } = props ?? {};
+
+    return inviteTeamMembers(teamId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type InviteTeamMembersMutationResult = NonNullable<
+  Awaited<ReturnType<typeof inviteTeamMembers>>
+>;
+export type InviteTeamMembersMutationBody =
+  | BodyType<InviteTeamMembersBody>
+  | undefined;
+export type InviteTeamMembersMutationError = ErrorType<
+  | InviteTeamMembers400
+  | InviteTeamMembers401
+  | InviteTeamMembers403
+  | InviteTeamMembers404
+>;
+
+/**
+ * @summary 팀원 초대
+ */
+export const useInviteTeamMembers = <
+  TError = ErrorType<
+    | InviteTeamMembers400
+    | InviteTeamMembers401
+    | InviteTeamMembers403
+    | InviteTeamMembers404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof inviteTeamMembers>>,
+      TError,
+      { teamId: string; data?: BodyType<InviteTeamMembersBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof inviteTeamMembers>>,
+  TError,
+  { teamId: string; data?: BodyType<InviteTeamMembersBody> },
+  TContext
+> => {
+  return useMutation(getInviteTeamMembersMutationOptions(options), queryClient);
+};
+
+/**
+ * 팀장이 특정 팀원을 팀에서 내보냅니다. 팀장은 내보낼 수 없으며, 자기 자신도 내보낼 수 없습니다.
+ * @summary 팀원 내보내기
+ */
+export const deleteTeamMember = (
+  teamId: string,
+  userId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DeleteTeamMember200>(
+    { url: `/teams/${teamId}/members/${userId}`, method: 'DELETE', signal },
+    options,
+  );
+};
+
+export const getDeleteTeamMemberMutationOptions = <
+  TError = ErrorType<
+    | DeleteTeamMember400
+    | DeleteTeamMember401
+    | DeleteTeamMember403
+    | DeleteTeamMember404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTeamMember>>,
+    TError,
+    { teamId: string; userId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTeamMember>>,
+  TError,
+  { teamId: string; userId: string },
+  TContext
+> => {
+  const mutationKey = ['deleteTeamMember'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTeamMember>>,
+    { teamId: string; userId: string }
+  > = (props) => {
+    const { teamId, userId } = props ?? {};
+
+    return deleteTeamMember(teamId, userId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTeamMemberMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTeamMember>>
+>;
+
+export type DeleteTeamMemberMutationError = ErrorType<
+  | DeleteTeamMember400
+  | DeleteTeamMember401
+  | DeleteTeamMember403
+  | DeleteTeamMember404
+>;
+
+/**
+ * @summary 팀원 내보내기
+ */
+export const useDeleteTeamMember = <
+  TError = ErrorType<
+    | DeleteTeamMember400
+    | DeleteTeamMember401
+    | DeleteTeamMember403
+    | DeleteTeamMember404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteTeamMember>>,
+      TError,
+      { teamId: string; userId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTeamMember>>,
+  TError,
+  { teamId: string; userId: string },
+  TContext
+> => {
+  return useMutation(getDeleteTeamMemberMutationOptions(options), queryClient);
+};
 
 /**
  * 검색 태그를 이용해 이슈를 검색합니다.

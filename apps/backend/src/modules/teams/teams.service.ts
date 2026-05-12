@@ -8,6 +8,7 @@ import type {
   SlackTestMessageResponseDto,
   UpdateSlackNotificationSettingsBodyDto,
   UpdateTeamBodyDto,
+  InviteTeamMembersBodyDto,
 } from './teams.dto.js';
 import prisma from '../../common/config/prisma.js';
 import { AppError, Errors } from '../../common/errors/AppError.js';
@@ -253,6 +254,7 @@ export async function getTeamDetail(userId: string, teamId: string) {
   });
 
   return {
+    userId,
     teamId: team.id,
     name: team.name,
     description: team.description,
@@ -701,4 +703,149 @@ export async function updateSlackNotificationSettings(
   });
 
   return mapSlackNotificationSettings(updatedMembership);
+}
+
+// 팀원 초대
+export async function inviteTeamMembers(
+  userId: string,
+  teamId: string,
+  body: InviteTeamMembersBodyDto,
+) {
+  const requester = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!requester || requester.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (requester.role !== 'LEADER') {
+    throw Errors.FORBIDDEN;
+  }
+
+  const users = await prisma.user.findMany({
+    where: {
+      email: {
+        in: body.emails,
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+    },
+  });
+
+  if (users.length !== body.emails.length) {
+    throw Errors.USER_NOT_FOUND;
+  }
+
+  const inviteUserIds = await prisma.$transaction(async (tx) => {
+    const ids: string[] = [];
+
+    for (const user of users) {
+      const existingMember = await tx.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId,
+            userId: user.id,
+          },
+        },
+      });
+
+      // 이미 존재하는 멤버일 경우 업데이트 및 반환을 생략
+      if (existingMember) {
+        // ids.push(existingMember.id);
+        continue;
+      }
+
+      const createdMember = await tx.teamMember.create({
+        data: {
+          teamId,
+          userId: user.id,
+          role: 'MEMBER',
+          status: 'ACTIVE', // TODO: 향후 PENDING으로 변경 및 초대 수락/거절 API 추가
+          joinedAt: null,
+        },
+      });
+
+      ids.push(createdMember.userId);
+    }
+
+    return ids;
+  });
+
+  return {
+    inviteUserIds,
+  };
+}
+
+// 팀원 내보내기
+export async function deleteTeamMember(
+  requesterId: string,
+  teamId: string,
+  targetUserId: string,
+) {
+  const requester = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId: requesterId,
+      },
+    },
+  });
+
+  if (!requester || requester.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (requester.role !== 'LEADER') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (requesterId === targetUserId) {
+    throw new AppError(
+      'CANNOT_REMOVE_SELF',
+      '자기 자신은 내보낼 수 없습니다.',
+      400,
+    );
+  }
+
+  const targetMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId: targetUserId,
+      },
+    },
+  });
+
+  if (!targetMember) {
+    throw Errors.USER_NOT_FOUND;
+  }
+
+  if (targetMember.role === 'LEADER') {
+    throw new AppError(
+      'CANNOT_REMOVE_LEADER',
+      '팀장은 내보낼 수 없습니다.',
+      400,
+    );
+  }
+
+  const deletedMember = await prisma.teamMember.delete({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId: targetUserId,
+      },
+    },
+  });
+
+  return {
+    deletedMemberId: deletedMember.userId,
+  };
 }

@@ -5,6 +5,8 @@ import {
   SlackTestMessageBodySchema,
   UpdateSlackNotificationSettingsBodySchema,
   UpdateTeamBodySchema,
+  InviteTeamMembersBodySchema,
+  DeleteTeamMemberParamsSchema,
 } from './teams.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
 import {
@@ -20,6 +22,8 @@ import {
   sendSlackTestMessage as sendSlackTestMessageService,
   updateSlackNotificationSettings as updateSlackNotificationSettingsService,
   updateTeam as updateTeamService,
+  inviteTeamMembers as inviteTeamMembersService,
+  deleteTeamMember as deleteTeamMemberService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
@@ -250,6 +254,57 @@ export async function patchSlackNotificationSettings(
       teamId,
       parsedBody.data,
     );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// 팀원 초대
+export async function inviteTeamMembers(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedBody = InviteTeamMembersBodySchema.safeParse(req.body);
+
+  if (!parsedBody.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const teamId = String(req.params.teamId);
+
+    const response = await inviteTeamMembersService(
+      userId,
+      teamId,
+      parsedBody.data,
+    );
+
+    return res.status(201).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function deleteTeamMember(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedParams = DeleteTeamMemberParamsSchema.safeParse(req.params);
+
+  if (!parsedParams.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const requesterId = (req as AuthRequest).userId;
+    const { teamId, userId } = parsedParams.data;
+
+    const response = await deleteTeamMemberService(requesterId, teamId, userId);
 
     return res.status(200).json(response);
   } catch (error) {
