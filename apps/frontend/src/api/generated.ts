@@ -942,6 +942,46 @@ export type InviteTeamMembers404 = {
   error: InviteTeamMembers404Error;
 };
 
+export type DeleteTeamMember200 = {
+  deletedMemberId: string;
+};
+
+export type DeleteTeamMember400Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember400 = {
+  error: DeleteTeamMember400Error;
+};
+
+export type DeleteTeamMember401Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember401 = {
+  error: DeleteTeamMember401Error;
+};
+
+export type DeleteTeamMember403Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember403 = {
+  error: DeleteTeamMember403Error;
+};
+
+export type DeleteTeamMember404Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeamMember404 = {
+  error: DeleteTeamMember404Error;
+};
+
 export type GetIssuesSearchParams = {
   search?: string;
 };
@@ -4214,6 +4254,107 @@ export const useInviteTeamMembers = <
   TContext
 > => {
   return useMutation(getInviteTeamMembersMutationOptions(options), queryClient);
+};
+
+/**
+ * 팀장이 특정 팀원을 팀에서 내보냅니다. 팀장은 내보낼 수 없으며, 자기 자신도 내보낼 수 없습니다.
+ * @summary 팀원 내보내기
+ */
+export const deleteTeamMember = (
+  teamId: string,
+  userId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DeleteTeamMember200>(
+    { url: `/teams/${teamId}/members/${userId}`, method: 'DELETE', signal },
+    options,
+  );
+};
+
+export const getDeleteTeamMemberMutationOptions = <
+  TError = ErrorType<
+    | DeleteTeamMember400
+    | DeleteTeamMember401
+    | DeleteTeamMember403
+    | DeleteTeamMember404
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTeamMember>>,
+    TError,
+    { teamId: string; userId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTeamMember>>,
+  TError,
+  { teamId: string; userId: string },
+  TContext
+> => {
+  const mutationKey = ['deleteTeamMember'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTeamMember>>,
+    { teamId: string; userId: string }
+  > = (props) => {
+    const { teamId, userId } = props ?? {};
+
+    return deleteTeamMember(teamId, userId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTeamMemberMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTeamMember>>
+>;
+
+export type DeleteTeamMemberMutationError = ErrorType<
+  | DeleteTeamMember400
+  | DeleteTeamMember401
+  | DeleteTeamMember403
+  | DeleteTeamMember404
+>;
+
+/**
+ * @summary 팀원 내보내기
+ */
+export const useDeleteTeamMember = <
+  TError = ErrorType<
+    | DeleteTeamMember400
+    | DeleteTeamMember401
+    | DeleteTeamMember403
+    | DeleteTeamMember404
+  >,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteTeamMember>>,
+      TError,
+      { teamId: string; userId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTeamMember>>,
+  TError,
+  { teamId: string; userId: string },
+  TContext
+> => {
+  return useMutation(getDeleteTeamMemberMutationOptions(options), queryClient);
 };
 
 /**

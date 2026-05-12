@@ -7,6 +7,7 @@ import Toggle from '@/components/ui/Toogle';
 import {
   getGetSlackNotificationSettingsQueryKey,
   getGetTeamsTeamIdSettingsQueryKey,
+  useDeleteTeamMember,
   useGetSlackNotificationSettings,
   useGetTeamsTeamIdSettings,
   usePatchTeamsTeamId,
@@ -103,6 +104,22 @@ export default function TeamSettingPage() {
       withCredentials: true,
     },
   });
+
+  const { mutate: deleteTeamMember, error: deletingMemberError } =
+    useDeleteTeamMember({
+      mutation: {
+        onSuccess: () => {
+          if (!teamId) return;
+          alert('팀원 내보내기를 완료했습니다.');
+
+          queryClient.invalidateQueries({
+            queryKey: getGetTeamsTeamIdSettingsQueryKey(teamId),
+          });
+
+          setSelectedKickMember(null);
+        },
+      },
+    });
 
   // 첫 렌더링 시에만 초기화
   useEffect(() => {
@@ -616,10 +633,17 @@ export default function TeamSettingPage() {
         isOpen={!!selectedKickMember}
         title="팀원 내보내기"
         description={
-          <p className="text-center leading-relaxed typo-regular-16">
-            <span className="font-bold">{selectedKickMember?.name}</span>
-            님을 팀에서 내보내시겠습니까?
-          </p>
+          <div>
+            <p className="text-center leading-relaxed typo-regular-16">
+              <span className="font-bold">{selectedKickMember?.name}</span>
+              님을 팀에서 내보내시겠습니까?
+            </p>
+            {deletingMemberError instanceof Error && (
+              <p className="pt-4 text-[var(--status-error)] text-sm text-center typo-regular-14">
+                팀원 내보내기에 실패했습니다. 다시 시도해주세요.
+              </p>
+            )}
+          </div>
         }
         confirmText="내보내기"
         cancelText="취소하기"
@@ -627,10 +651,10 @@ export default function TeamSettingPage() {
         onConfirm={() => {
           if (!selectedKickMember) return;
 
-          // TODO: 팀원 내보내기 API 연결
-          console.log(selectedKickMember.userId);
-
-          setSelectedKickMember(null);
+          deleteTeamMember({
+            teamId: teamId as string,
+            userId: selectedKickMember.userId,
+          });
         }}
       />
     </main>
