@@ -254,6 +254,7 @@ export async function getTeamDetail(userId: string, teamId: string) {
   });
 
   return {
+    userId,
     teamId: team.id,
     name: team.name,
     description: team.description,

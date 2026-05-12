@@ -101,6 +101,7 @@ export default function TeamDetailPage() {
     },
   });
 
+  const isLeader = teamDetail?.userId === teamDetail?.ownerId;
   const topMembers = teamDetail?.members ?? [];
   const fullMembers = teamMembersResponse?.data ?? [];
 
@@ -182,17 +183,19 @@ export default function TeamDetailPage() {
               >
                 <h2 className="typo-medium-40">팀 랭킹</h2>
 
-                <button
-                  className="flex items-center gap-[10px] px-[32px] py-[18px] rounded-sm bg-primary 
+                {isLeader && (
+                  <button
+                    className="flex items-center gap-[10px] px-[32px] py-[18px] rounded-sm bg-primary 
                             cursor-pointer
                             hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                  onClick={() => setIsInviteModalOpen(true)}
-                >
-                  <LetterIcon className="w-8 h-8" />
-                  <span className="text-primary-foreground typo-bold-20">
-                    멤버 초대
-                  </span>
-                </button>
+                    onClick={() => setIsInviteModalOpen(true)}
+                  >
+                    <LetterIcon className="w-8 h-8" />
+                    <span className="text-primary-foreground typo-bold-20">
+                      멤버 초대
+                    </span>
+                  </button>
+                )}
               </motion.div>
 
               <motion.div

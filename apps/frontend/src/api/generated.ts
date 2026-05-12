@@ -504,6 +504,7 @@ export type GetTeamsTeamId200MembersItem = {
 };
 
 export type GetTeamsTeamId200 = {
+  userId: string;
   teamId: string;
   name: string;
   description: string;
