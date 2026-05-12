@@ -13,6 +13,7 @@ import {
   useSendSlackTestMessage,
   useUpdateSlackNotificationSettings,
 } from '@/api/generated';
+import CommonModal from '@/components/ui/CommonModal';
 
 const SLACK_NOTIFICATION_EVENTS = [
   {
@@ -69,6 +70,10 @@ export default function TeamSettingPage() {
     SlackNotificationEventId,
     boolean
   > | null>(null);
+  const [selectedKickMember, setSelectedKickMember] = useState<{
+    userId: string;
+    name: string;
+  } | null>(null);
 
   const initializedRef = useRef(false); // 초기화 여부 기억
   const queryClient = useQueryClient();
@@ -378,7 +383,16 @@ export default function TeamSettingPage() {
 
               <div className="space-y-[8px]">
                 {teamSettings?.members.map((member) => (
-                  <MemberListItem {...member} />
+                  <MemberListItem
+                    isLeader={isLeader}
+                    onKick={() => {
+                      setSelectedKickMember({
+                        userId: member.userId,
+                        name: member.name,
+                      });
+                    }}
+                    {...member}
+                  />
                 ))}
               </div>
             </div>
@@ -598,18 +612,48 @@ export default function TeamSettingPage() {
           </section>
         </div>
       </div>
+      <CommonModal
+        isOpen={!!selectedKickMember}
+        title="팀원 내보내기"
+        description={
+          <p className="text-center leading-relaxed typo-regular-16">
+            <span className="font-bold">{selectedKickMember?.name}</span>
+            님을 팀에서 내보내시겠습니까?
+          </p>
+        }
+        confirmText="내보내기"
+        cancelText="취소하기"
+        onClose={() => setSelectedKickMember(null)}
+        onConfirm={() => {
+          if (!selectedKickMember) return;
+
+          // TODO: 팀원 내보내기 API 연결
+          console.log(selectedKickMember.userId);
+
+          setSelectedKickMember(null);
+        }}
+      />
     </main>
   );
 }
 
 type MemberListItemProps = {
+  isLeader: boolean;
   name: string;
   role: string;
   score: number;
   joinedAt: string;
+  onKick: () => void;
 };
 
-function MemberListItem({ name, role, score, joinedAt }: MemberListItemProps) {
+function MemberListItem({
+  isLeader,
+  name,
+  role,
+  score,
+  joinedAt,
+  onKick,
+}: MemberListItemProps) {
   return (
     <div className="flex items-center justify-between px-10 py-5 rounded-lg">
       <div className="flex items-center gap-[16px]">
@@ -631,14 +675,19 @@ function MemberListItem({ name, role, score, joinedAt }: MemberListItemProps) {
         </div>
       </div>
       <div className="space-x-4">
-        {role == 'LEADER' ? (
-          <span className="typo-regular-16 bg-[#544777] px-2 py-1 rounded-sm">
+        {role === 'LEADER' && (
+          <span className="rounded-sm bg-[#544777] px-2 py-1 typo-regular-16">
             팀장
           </span>
-        ) : (
-          <span className="typo-regular-16 bg-[var(--status-unsaved)] px-2 py-1 rounded-sm">
+        )}
+
+        {role !== 'LEADER' && isLeader && (
+          <button
+            onClick={onKick}
+            className="rounded-sm bg-[var(--status-unsaved)] px-2 py-1 typo-regular-16 cursor-pointer"
+          >
             내보내기
-          </span>
+          </button>
         )}
       </div>
     </div>
