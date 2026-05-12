@@ -225,6 +225,7 @@ export async function getComments(
         select: {
           id: true,
           name: true,
+          profileImg: true,
         },
       },
       replies: {
@@ -239,6 +240,7 @@ export async function getComments(
             select: {
               id: true,
               name: true,
+              profileImg: true,
             },
           },
         },
@@ -268,6 +270,7 @@ export async function getComments(
       author: {
         id: comment.user.id,
         name: comment.user.name,
+        profileImg: comment.user.profileImg,
       },
       parentId: comment.parentId,
       isAdopted: comment.isAdopted,
@@ -278,6 +281,7 @@ export async function getComments(
         author: {
           id: reply.user.id,
           name: reply.user.name,
+          profileImg: reply.user.profileImg,
         },
         parentId: reply.parentId,
         isAdopted: reply.isAdopted,

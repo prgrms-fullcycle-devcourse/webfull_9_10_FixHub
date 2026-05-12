@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { FileImage, Plus } from 'lucide-react';
 
 import {
   getGetCommentsQueryKey,
@@ -57,28 +56,6 @@ function IssueCommentComposer({ issueId }: IssueCommentComposerProps) {
         </h2>
 
         <div className="ml-auto flex items-center gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            onClick={() => alert('첨부 추가 클릭')}
-            className="h-12 w-12 rounded-sm bg-(--surface-input) text-(--text-primary) hover:bg-(--surface-selected)"
-            aria-label="첨부 추가"
-          >
-            <Plus size={24} />
-          </Button>
-
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            onClick={() => alert('이미지 추가 클릭')}
-            className="h-12 w-12 rounded-sm bg-(--surface-input) text-(--text-primary) hover:bg-(--surface-selected)"
-            aria-label="이미지 추가"
-          >
-            <FileImage size={22} />
-          </Button>
-
           <Button
             type="button"
             variant="default"

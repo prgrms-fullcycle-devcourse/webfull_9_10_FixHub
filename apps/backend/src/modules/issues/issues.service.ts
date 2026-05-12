@@ -1,4 +1,6 @@
 import { IssueStatus, Prisma } from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
 import OpenAI from 'openai';
 
 import prisma from '../../common/config/prisma.js';
@@ -25,6 +27,7 @@ import {
   type DeleteIssueResponseDto,
   SuggestIssueResponseSchema,
   SuggestIssueResponseDto,
+  type UploadIssueImageResponseDto,
 } from './issues.dto.js';
 
 const KEYS = [
@@ -477,6 +480,7 @@ export async function createIssue(
     select: {
       id: true,
       status: true,
+      score: true,
       user: {
         select: {
           name: true,
@@ -495,34 +499,58 @@ export async function createIssue(
     throw Errors.FORBIDDEN;
   }
 
-  const createdIssue = await prisma.errorIssue.create({
-    data: {
-      userId,
-      teamId: params.teamId,
-      title: body.title,
-      content: body.content,
-      status: body.status,
-      isPublic: body.isPublic,
-      tags: {
-        create: body.tag.map((tagName) => ({
-          tagName,
-        })),
+  const createdIssue = await prisma.$transaction(async (tx) => {
+    const issue = await tx.errorIssue.create({
+      data: {
+        userId,
+        teamId: params.teamId,
+        title: body.title,
+        content: body.content,
+        status: body.status,
+        isPublic: body.isPublic,
+        tags: {
+          create: body.tag.map((tagName) => ({
+            tagName,
+          })),
+        },
+        errorLogs: {
+          create: body.logs.map((log) => ({
+            logType: log.logType,
+            source: log.source,
+            message: log.message,
+            stackTrace: log.message,
+            capturedAt: new Date(),
+          })),
+        },
       },
-      errorLogs: {
-        create: body.logs.map((log) => ({
-          logType: log.logType,
-          source: log.source,
-          message: log.message,
-          stackTrace: log.message,
-          capturedAt: new Date(),
-        })),
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
       },
-    },
-    select: {
-      id: true,
-      title: true,
-      createdAt: true,
-    },
+    });
+
+    await tx.scoreLog.create({
+      data: {
+        teamMemberId: teamMember.id,
+        amount: 3,
+        reason: 'ISSUE_CREATED',
+        issueId: issue.id,
+      },
+    });
+
+    await tx.teamMember.update({
+      where: {
+        id: teamMember.id,
+      },
+      data: {
+        score: {
+          increment: 3,
+        },
+      },
+    });
+
+    return issue;
   });
 
   await sendSlackNotificationToTeam({
@@ -726,4 +754,28 @@ export async function generateIssue(
   } catch (_e) {
     throw new AppError('502 Bad Gateway', 'Openai Error', 502);
   }
+}
+
+export async function uploadIssueImage(
+  file: Express.Multer.File | undefined,
+): Promise<UploadIssueImageResponseDto> {
+  if (!file) {
+    throw Errors.VALIDATION_ERROR;
+  }
+
+  const uploadDir = path.resolve('uploads/issues');
+
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const safeName = file.originalname.replace(/\s+/g, '-');
+  const filename = `${Date.now()}-${safeName}`;
+  const filepath = path.join(uploadDir, filename);
+
+  await fs.promises.writeFile(filepath, file.buffer);
+
+  return {
+    url: `http://localhost:3000/uploads/issues/${filename}`,
+  };
 }

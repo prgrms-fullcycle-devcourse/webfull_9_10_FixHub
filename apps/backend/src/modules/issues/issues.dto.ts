@@ -208,3 +208,13 @@ export type SuggestIssueBodyDto = z.infer<typeof SuggestIssueBodySchema>;
 export type SuggestIssueResponseDto = z.infer<
   typeof SuggestIssueResponseSchema
 >;
+
+export const UploadIssueImageResponseSchema = z.object({
+  url: z.string().openapi({
+    example: 'http://localhost:3000/uploads/issues/1715490000000-demo.png',
+  }),
+});
+
+export type UploadIssueImageResponseDto = z.infer<
+  typeof UploadIssueImageResponseSchema
+>;
