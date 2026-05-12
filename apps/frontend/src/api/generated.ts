@@ -57,24 +57,6 @@ export interface PublicBadRequest {
   error: PublicBadRequestError;
 }
 
-export type DetailBadRequestError = {
-  code: string;
-  message: string;
-};
-
-export interface DetailBadRequest {
-  error: DetailBadRequestError;
-}
-
-export type NotFoundError = {
-  code: string;
-  message: string;
-};
-
-export interface NotFound {
-  error: NotFoundError;
-}
-
 export type CreateBadRequestError = {
   code: string;
   message: string;
@@ -91,6 +73,24 @@ export type UnauthorizedError = {
 
 export interface Unauthorized {
   error: UnauthorizedError;
+}
+
+export type DetailBadRequestError = {
+  code: string;
+  message: string;
+};
+
+export interface DetailBadRequest {
+  error: DetailBadRequestError;
+}
+
+export type NotFoundError = {
+  code: string;
+  message: string;
+};
+
+export interface NotFound {
+  error: NotFoundError;
 }
 
 export type ForbiddenError = {
@@ -1037,6 +1037,14 @@ export type GetIssuesFeedsParams = {
 export type GetIssuesFeedsTeamIdParams = {
   page?: number;
   limit?: number;
+};
+
+export type PostIssuesUploadImageBody = {
+  image?: Blob;
+};
+
+export type PostIssuesUploadImage201 = {
+  url: string;
 };
 
 export type GetTeamsTeamIdIssuesIssueId200Status =
@@ -5001,6 +5009,109 @@ export function useGetIssuesFeedsTeamId<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * 이슈 본문에 사용할 이미지를 업로드하고 URL을 반환합니다.
+ * @summary 이슈 이미지 업로드
+ */
+export const postIssuesUploadImage = (
+  postIssuesUploadImageBody?: BodyType<PostIssuesUploadImageBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  const formData = new FormData();
+  if (postIssuesUploadImageBody?.image !== undefined) {
+    formData.append(`image`, postIssuesUploadImageBody.image);
+  }
+
+  return customInstance<PostIssuesUploadImage201>(
+    {
+      url: `/issues/upload-image`,
+      method: 'POST',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data: formData,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostIssuesUploadImageMutationOptions = <
+  TError = ErrorType<CreateBadRequest | Unauthorized>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIssuesUploadImage>>,
+    TError,
+    { data?: BodyType<PostIssuesUploadImageBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postIssuesUploadImage>>,
+  TError,
+  { data?: BodyType<PostIssuesUploadImageBody> },
+  TContext
+> => {
+  const mutationKey = ['postIssuesUploadImage'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postIssuesUploadImage>>,
+    { data?: BodyType<PostIssuesUploadImageBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postIssuesUploadImage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostIssuesUploadImageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postIssuesUploadImage>>
+>;
+export type PostIssuesUploadImageMutationBody =
+  | BodyType<PostIssuesUploadImageBody>
+  | undefined;
+export type PostIssuesUploadImageMutationError = ErrorType<
+  CreateBadRequest | Unauthorized
+>;
+
+/**
+ * @summary 이슈 이미지 업로드
+ */
+export const usePostIssuesUploadImage = <
+  TError = ErrorType<CreateBadRequest | Unauthorized>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postIssuesUploadImage>>,
+      TError,
+      { data?: BodyType<PostIssuesUploadImageBody> },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postIssuesUploadImage>>,
+  TError,
+  { data?: BodyType<PostIssuesUploadImageBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostIssuesUploadImageMutationOptions(options),
+    queryClient,
+  );
+};
 
 /**
  * 팀에 속한 특정 이슈의 상세 정보를 조회합니다.

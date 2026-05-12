@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { CircleHelp, FileImage, Plus, Sparkles } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -47,6 +47,8 @@ function IssueEdit() {
   const [tagInput, setTagInput] = useState('');
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const isTagComposingRef = useRef(false);
 
   const { mutateAsync: issuesSuggest, isPending: isIssuesSuggestPending } =
     usePostIssuesSuggest();
@@ -107,6 +109,17 @@ function IssueEdit() {
   const visibility: 'public' | 'private' =
     draft?.visibility ?? initialValues?.visibility ?? 'private';
 
+  const normalizeTag = (value: string) =>
+    value.normalize('NFC').trim().replace(/\s+/g, ' ');
+
+  const hasNormalizedTag = (value: string) => {
+    const normalizedValue = normalizeTag(value).toLowerCase();
+
+    return selectedTags.some(
+      (tag) => normalizeTag(tag).toLowerCase() === normalizedValue,
+    );
+  };
+
   const resolvedMemberId = useMemo(() => {
     if (teamMembers.length === 0) return '';
 
@@ -136,11 +149,55 @@ function IssueEdit() {
     });
   };
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+
+    if (files.length === 0) return;
+
+    try {
+      const imageMarkdownList = await Promise.all(
+        files.map(async (file) => {
+          const formData = new FormData();
+          formData.append('image', file);
+
+          const response = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/issues/upload-image`,
+            {
+              method: 'POST',
+              body: formData,
+              credentials: 'include',
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error('이미지 업로드에 실패했습니다.');
+          }
+
+          const data = (await response.json()) as { url: string };
+
+          return `![${file.name}](${data.url})`;
+        }),
+      );
+
+      updateDraft({
+        description: [description.trim(), ...imageMarkdownList]
+          .filter(Boolean)
+          .join('\n\n'),
+      });
+    } catch (error) {
+      alert(
+        error instanceof Error ? error.message : '이미지 첨부에 실패했습니다.',
+      );
+    } finally {
+      e.target.value = '';
+    }
+  };
+
   const addTagFromInput = () => {
-    const value = tagInput.trim();
+    const value = normalizeTag(tagInput);
 
     if (!value) return;
-    if (selectedTags.includes(value)) {
+    if (hasNormalizedTag(value)) {
       setTagInput('');
       return;
     }
@@ -150,6 +207,8 @@ function IssueEdit() {
   };
 
   const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing || isTagComposingRef.current) return;
+
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       addTagFromInput();
@@ -158,7 +217,9 @@ function IssueEdit() {
 
   const removeTag = (tag: string) => {
     updateDraft({
-      selectedTags: selectedTags.filter((item) => item !== tag),
+      selectedTags: selectedTags.filter(
+        (item) => normalizeTag(item) !== normalizeTag(tag),
+      ),
     });
   };
 
@@ -328,6 +389,12 @@ function IssueEdit() {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleTagInputKeyDown}
+                    onCompositionStart={() => {
+                      isTagComposingRef.current = true;
+                    }}
+                    onCompositionEnd={() => {
+                      isTagComposingRef.current = false;
+                    }}
                     placeholder="태그 입력 후 Enter 또는 쉼표(,)를 누르세요."
                     className="w-full bg-transparent typo-regular-16 text-(--text-primary) outline-none placeholder:text-(--text-muted)"
                   />
@@ -357,24 +424,34 @@ function IssueEdit() {
                 </p>
 
                 <div className="flex items-center gap-4">
-                  <div className="flex overflow-hidden rounded-2xl bg-(--surface-overlay)">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+
+                  <div className="flex rounded-2xl bg-(--surface-overlay)">
                     <button
                       type="button"
-                      disabled
-                      className="flex h-14 w-14 items-center justify-center text-(--text-primary) opacity-50"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-l-2xl text-(--text-primary)
+                        transition-all duration-200 ease-out
+                        hover:bg-(--surface-selected)
+                        hover:shadow-(--shadow)"
                       aria-label="이미지 추가"
                     >
                       <Plus size={32} strokeWidth={2.4} />
                     </button>
 
-                    <button
-                      type="button"
-                      disabled
-                      className="flex h-14 w-14 items-center justify-center text-(--text-primary) opacity-50"
-                      aria-label="이미지 아이콘"
+                    <div
+                      className="flex h-14 w-14 items-center justify-center rounded-r-2xl text-(--text-primary)"
+                      aria-hidden="true"
                     >
                       <FileImage size={28} strokeWidth={2.2} />
-                    </button>
+                    </div>
                   </div>
 
                   <button
@@ -553,7 +630,7 @@ function IssueEdit() {
                 onClick={() => updateDraft({ visibility: 'public' })}
                 className={`cursor-pointer rounded-md border p-5 text-left ${
                   visibility === 'public'
-                    ? 'border-(--status-solved) bg-(--surface-selected)'
+                    ? 'border-primary bg-(--surface-selected)'
                     : 'border-border bg-(--surface-panel)'
                 }`}
               >
@@ -561,22 +638,22 @@ function IssueEdit() {
                   <span
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${
                       visibility === 'public'
-                        ? 'border-(--status-solved)'
+                        ? 'border-primary'
                         : 'border-border'
                     }`}
                   >
                     {visibility === 'public' && (
-                      <span className="block h-2 w-2 rounded-full bg-(--status-solved)" />
+                      <span className="block h-2 w-2 rounded-full bg-primary" />
                     )}
                   </span>
 
                   <span className="typo-medium-16 text-(--text-primary)">
-                    공개
+                    전체 공개
                   </span>
                 </div>
 
                 <p className="typo-regular-14 text-(--text-secondary)">
-                  팀원 외 외부인의 조회, 댓글 생성이 가능합니다.
+                  다른 팀도 해당 이슈를 볼 수 있습니다.
                 </p>
               </button>
 
@@ -603,89 +680,65 @@ function IssueEdit() {
                   </span>
 
                   <span className="typo-medium-16 text-(--text-primary)">
-                    비공개
+                    팀 내 공개
                   </span>
                 </div>
 
                 <p className="typo-regular-14 text-(--text-secondary)">
-                  해당 팀원 만이 조회, 댓글 생성이 가능합니다.
+                  현재 팀원만 해당 이슈를 볼 수 있습니다.
                 </p>
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-[120px_1fr_1px_120px_1fr] items-center gap-4">
-            <label className="typo-semibold-18 text-(--text-primary)">
-              팀 선택
-            </label>
-
-            <select
-              value={teamId ?? ''}
-              disabled
-              className="h-14 w-full rounded-sm border border-border px-4 typo-regular-16 outline-none disabled:cursor-not-allowed disabled:opacity-70"
-              style={{
-                background: 'var(--surface-input)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              <option value="">팀</option>
-              {teams.map((item) => (
-                <option key={item.teamId} value={item.teamId}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-
-            <div className="h-14 w-px bg-border" />
-
-            <label className="typo-semibold-18 text-(--text-primary)">
-              팀 멤버 선택
-            </label>
-
-            <select
-              value={resolvedMemberId}
-              onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
-                transition-all duration-300
-                focus:border-primary
-                focus:shadow-(--shadow)"
-              style={{
-                background: 'var(--surface-input)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              <option value="">팀 멤버</option>
-              {teamMembers.map((item) => (
-                <option key={item.userId} value={item.userId}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="h-px w-full bg-border" />
 
-          <div className="flex justify-between pt-[60px]">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
-                transition-all duration-200 ease-out
-                hover:shadow-(--shadow)"
-            >
-              취소하기
-            </button>
+          <div className="grid grid-cols-[120px_1fr] items-start gap-4">
+            <label className="pt-3 typo-semibold-18 text-(--text-primary)">
+              팀 *
+            </label>
 
-            <button
-              type="button"
-              onClick={handleUpdate}
-              disabled={isPending}
-              className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
-                transition-all duration-200 ease-out
-                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isPending ? '수정 중...' : '수정하기'}
-            </button>
+            <div>
+              <select
+                value={teamId ?? teams[0]?.teamId ?? ''}
+                disabled
+                className="h-14 w-full rounded-sm border border-border px-5 typo-regular-16 outline-none disabled:opacity-60"
+                style={{
+                  background: 'var(--surface-input)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {teams.map((team) => (
+                  <option key={team.teamId} value={team.teamId}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[120px_1fr] items-start gap-4">
+            <label className="pt-3 typo-semibold-18 text-(--text-primary)">
+              팀 멤버
+            </label>
+
+            <div>
+              <select
+                value={resolvedMemberId}
+                onChange={(e) => setSelectedMemberId(e.target.value)}
+                className="h-14 w-full rounded-sm border border-border px-5 typo-regular-16 outline-none"
+                style={{
+                  background: 'var(--surface-input)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {teamMembers.map((member) => (
+                  <option key={member.userId} value={member.userId}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>
