@@ -1,10 +1,8 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { CircleHelp, FileImage, Plus, Sparkles } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import {
-  useGetTeams,
-  useGetTeamsTeamId,
   useGetTeamsTeamIdIssuesIssueId,
   usePatchTeamsTeamIdIssuesIssueId,
   usePostIssuesSuggest,
@@ -35,55 +33,15 @@ function IssueEdit() {
     },
   );
 
-  const { data: teamsResponse } = useGetTeams();
-  const { data: teamDetail } = useGetTeamsTeamId(teamId ?? '', {
-    query: {
-      enabled: Boolean(teamId),
-    },
-  });
-
   const { mutateAsync, isPending } = usePatchTeamsTeamIdIssuesIssueId();
 
   const [tagInput, setTagInput] = useState('');
   const [draft, setDraft] = useState<DraftState | null>(null);
-  const [selectedMemberId, setSelectedMemberId] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const isTagComposingRef = useRef(false);
 
   const { mutateAsync: issuesSuggest, isPending: isIssuesSuggestPending } =
     usePostIssuesSuggest();
-
-  const handleIssuesSuggest = async () => {
-    if (errorLog.trim() === '') return;
-
-    try {
-      const response = await issuesSuggest({
-        data: {
-          errorLog: errorLog,
-        },
-      });
-
-      if (draft != null) {
-        setDraft({
-          title: response.title,
-          selectedTags: response.tags,
-          description: response.summary,
-          errorLog: draft.errorLog,
-          requestInfo: draft.requestInfo,
-          issueStatus: draft.issueStatus,
-          visibility: draft.visibility,
-        });
-      }
-    } catch (_error) {
-      alert('AI 요청 중 오류가 발생했습니다.');
-    }
-  };
-
-  const teams = useMemo(() => teamsResponse?.data ?? [], [teamsResponse?.data]);
-  const teamMembers = useMemo(
-    () => teamDetail?.members ?? [],
-    [teamDetail?.members],
-  );
 
   const initialValues: DraftState | null = data
     ? {
@@ -120,17 +78,25 @@ function IssueEdit() {
     );
   };
 
-  const resolvedMemberId = useMemo(() => {
-    if (teamMembers.length === 0) return '';
+  const handleIssuesSuggest = async () => {
+    if (errorLog.trim() === '') return;
 
-    const hasSelectedMember = teamMembers.some(
-      (member) => member.userId === selectedMemberId,
-    );
+    try {
+      const response = await issuesSuggest({
+        data: {
+          errorLog,
+        },
+      });
 
-    return hasSelectedMember
-      ? selectedMemberId
-      : (teamMembers[0]?.userId ?? '');
-  }, [selectedMemberId, teamMembers]);
+      updateDraft({
+        title: response.title,
+        selectedTags: response.tags,
+        description: response.summary,
+      });
+    } catch (_error) {
+      alert('AI 요청 중 오류가 발생했습니다.');
+    }
+  };
 
   const getBaseDraft = (): DraftState => ({
     title,
@@ -173,9 +139,9 @@ function IssueEdit() {
             throw new Error('이미지 업로드에 실패했습니다.');
           }
 
-          const data = (await response.json()) as { url: string };
+          const imageData = (await response.json()) as { url: string };
 
-          return `![${file.name}](${data.url})`;
+          return `![${file.name}](${imageData.url})`;
         }),
       );
 
@@ -302,32 +268,7 @@ function IssueEdit() {
   return (
     <section className="w-full flex-1 px-[60px] pt-[60px] pb-[60px] text-(--text-primary)">
       <div className="flex flex-col gap-[60px]">
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="typo-medium-40">이슈 수정</h1>
-
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
-                transition-all duration-200 ease-out
-                hover:shadow-(--shadow)"
-            >
-              취소하기
-            </button>
-
-            <button
-              type="button"
-              onClick={handleUpdate}
-              disabled={isPending}
-              className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
-                transition-all duration-200 ease-out
-                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isPending ? '수정 중...' : '수정하기'}
-            </button>
-          </div>
-        </div>
+        <h1 className="typo-medium-40">이슈 수정</h1>
 
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-[120px_1fr] items-start gap-4">
@@ -500,7 +441,18 @@ function IssueEdit() {
                   <h2 className="typo-semibold-18 text-(--text-primary)">
                     에러 로그
                   </h2>
-                  <CircleHelp size={16} className="text-(--text-secondary)" />
+
+                  <div className="group relative">
+                    <CircleHelp size={16} className="text-(--text-secondary)" />
+
+                    <div
+                      className="pointer-events-none absolute top-6 left-1/2 z-10 hidden w-64 -translate-x-1/2 rounded-md bg-(--surface-overlay) p-3 typo-regular-14 text-(--text-primary)
+                        shadow-(--shadow) group-hover:block"
+                    >
+                      에러 메시지, 스택 트레이스, 콘솔 로그 등 실제 오류 내용을
+                      입력해주세요.
+                    </div>
+                  </div>
                 </div>
 
                 <textarea
@@ -523,7 +475,18 @@ function IssueEdit() {
                   <h2 className="typo-semibold-18 text-(--text-primary)">
                     요청 정보
                   </h2>
-                  <CircleHelp size={16} className="text-(--text-secondary)" />
+
+                  <div className="group relative">
+                    <CircleHelp size={16} className="text-(--text-secondary)" />
+
+                    <div
+                      className="pointer-events-none absolute top-6 left-1/2 z-10 hidden w-72 -translate-x-1/2 rounded-md bg-(--surface-overlay) p-3 typo-regular-14 text-(--text-primary)
+                        shadow-(--shadow) group-hover:block"
+                    >
+                      요청한 환경, 재현 방법, 브라우저/기기 정보, API 요청 내용
+                      등 추가 정보를 입력해주세요.
+                    </div>
+                  </div>
                 </div>
 
                 <textarea
@@ -693,52 +656,27 @@ function IssueEdit() {
 
           <div className="h-px w-full bg-border" />
 
-          <div className="grid grid-cols-[120px_1fr] items-start gap-4">
-            <label className="pt-3 typo-semibold-18 text-(--text-primary)">
-              팀 *
-            </label>
+          <div className="flex items-center justify-between pt-4">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="h-12 cursor-pointer rounded-md bg-(--surface-overlay) px-6 typo-medium-16 text-(--text-primary)
+                transition-all duration-200 ease-out
+                hover:shadow-(--shadow)"
+            >
+              취소하기
+            </button>
 
-            <div>
-              <select
-                value={teamId ?? teams[0]?.teamId ?? ''}
-                disabled
-                className="h-14 w-full rounded-sm border border-border px-5 typo-regular-16 outline-none disabled:opacity-60"
-                style={{
-                  background: 'var(--surface-input)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {teams.map((team) => (
-                  <option key={team.teamId} value={team.teamId}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-[120px_1fr] items-start gap-4">
-            <label className="pt-3 typo-semibold-18 text-(--text-primary)">
-              팀 멤버
-            </label>
-
-            <div>
-              <select
-                value={resolvedMemberId}
-                onChange={(e) => setSelectedMemberId(e.target.value)}
-                className="h-14 w-full rounded-sm border border-border px-5 typo-regular-16 outline-none"
-                style={{
-                  background: 'var(--surface-input)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {teamMembers.map((member) => (
-                  <option key={member.userId} value={member.userId}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <button
+              type="button"
+              onClick={handleUpdate}
+              disabled={isPending}
+              className="h-12 cursor-pointer rounded-md bg-primary px-8 typo-medium-16 text-(--text-inverse)
+                transition-all duration-200 ease-out
+                hover:shadow-(--shadow) disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isPending ? '수정 중...' : '수정하기'}
+            </button>
           </div>
         </div>
       </div>
