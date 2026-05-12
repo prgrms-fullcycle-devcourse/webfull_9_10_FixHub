@@ -16,6 +16,7 @@ import {
   SuggestIssueBodySchema,
   SuggestIssueResponseSchema,
   GetIssueFeedsParamsSchema,
+  UploadIssueImageResponseSchema,
 } from './issues.dto.js';
 import { zod as z } from '../../common/lib/zod.js';
 
@@ -299,6 +300,51 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: publicBadRequestSchema,
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'post',
+    path: '/issues/upload-image',
+    tags: ['Issues'],
+    summary: '이슈 이미지 업로드',
+    description: '이슈 본문에 사용할 이미지를 업로드하고 URL을 반환합니다.',
+    request: {
+      body: {
+        content: {
+          'multipart/form-data': {
+            schema: z.object({
+              image: z.any().openapi({ type: 'string', format: 'binary' }),
+            }),
+          },
+        },
+      },
+    },
+    responses: {
+      201: {
+        description: '이미지 업로드 성공',
+        content: {
+          'application/json': {
+            schema: UploadIssueImageResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: createBadRequestSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: unauthorizedSchema,
           },
         },
       },

@@ -24,6 +24,7 @@ import {
   updateIssue as updateIssueService,
   deleteIssue as deleteIssueService,
   generateIssue,
+  uploadIssueImage as uploadIssueImageService,
 } from './issues.service.js';
 
 export async function getIssues(
@@ -216,6 +217,20 @@ export async function suggestIssue(
     const response = await generateIssue(parsed.data.errorLog);
 
     return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function uploadIssueImage(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const response = await uploadIssueImageService(req.file);
+
+    return res.status(201).json(response);
   } catch (error) {
     return next(error);
   }

@@ -17,6 +17,7 @@ export type IssueCommentItem = {
   author: {
     id: string;
     name: string;
+    profileImg: string;
   };
   selected: boolean;
   isReply: boolean;
@@ -334,7 +335,15 @@ function IssueCommentList({
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-white" />
+                        <div className="h-10 w-10 rounded-full bg-comment-background overflow-hidden">
+                          {comment.author.profileImg && (
+                            <img
+                              src={comment.author.profileImg}
+                              alt="프로필 이미지"
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
                         <span className="typo-medium-16 text-(--text-primary)">
                           {comment.author.name}
                         </span>

@@ -1,3 +1,4 @@
+import path from 'path';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import cookieParser from 'cookie-parser';
@@ -36,6 +37,7 @@ app.use(
 
 app.use(cookieParser());
 app.use(express.json());
+app.use('/uploads', express.static(path.resolve('uploads')));
 
 // swagger 문서 경로
 app.use('/api-docs', swaggerUiServe, swaggerUiSetup);

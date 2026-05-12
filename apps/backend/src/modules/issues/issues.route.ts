@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 
 import {
   getIssues,
@@ -10,14 +11,22 @@ import {
   patchIssue,
   removeIssue,
   suggestIssue,
+  uploadIssueImage,
 } from './issues.controller.js';
 import { authenticate } from '../../common/middlewares/authenticate.js';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/issues/search', getIssues);
 router.get('/issues/public', getPublicIssues);
 router.post('/issues/suggest', suggestIssue);
+router.post(
+  '/issues/upload-image',
+  authenticate,
+  upload.single('image'),
+  uploadIssueImage,
+);
 router.get('/issues/feeds', getIssueFeeds);
 router.get('/issues/feeds/:teamId', getTeamIssueFeeds);
 

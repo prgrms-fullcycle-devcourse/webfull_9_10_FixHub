@@ -38,6 +38,9 @@ const CommentResponseBaseSchema = z.object({
     name: z.string().openapi({
       example: '김철수',
     }),
+    profileImg: z.string().nullable().openapi({
+      example: 'https://avatars',
+    }),
   }),
   parentId: z.string().nullable().openapi({
     example: null,
