@@ -9,10 +9,6 @@ const COOKIE_OPTIONS: CookieOptions = {
   secure: isProduction,
   sameSite: isProduction ? 'none' : 'lax',
   maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
-  domain:
-    process.env.NODE_ENV === 'production'
-      ? new URL(process.env.CLIENT_URL!).hostname
-      : 'localhost',
 };
 
 export const authController = {
