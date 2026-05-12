@@ -1,27 +1,54 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import SettingIcon from '@/assets/icons/setting.svg';
 import LetterIcon from '@/assets/icons/letter.svg';
 import ArrowIcon from '@/assets/icons/arrow.svg';
-import { useGetTeamsTeamId, useGetTeamsTeamIdMembers } from '@/api/generated';
+import {
+  useGetTeamsTeamId,
+  useGetTeamsTeamIdMembers,
+  useInviteTeamMembers,
+} from '@/api/generated';
 import IssueList from '@/components/issues/IssueList';
 import LanguageSelectModal from '@/components/issues/LanguageSelectModal';
+import CommonModal from '@/components/ui/CommonModal';
 import IssueFeedFilterBar from '@/components/issues/IssueFeedFilterBar';
 import type { IssueSort, IssueStatusFilter } from '@/types/issue';
 
 export default function TeamDetailPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { teamId } = useParams<{ teamId: string }>();
   const [showAllMembers, setShowAllMembers] = useState(false);
-
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] =
     useState<IssueStatusFilter>('ALL');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [sort, setSort] = useState<IssueSort>('latest');
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+
+  const {
+    mutate: inviteMembers,
+    isSuccess: isInvitingSuccess,
+    error: invitingError,
+  } = useInviteTeamMembers({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['/teams/{teamId}/members'],
+        });
+
+        // setIsInviteModalOpen(false);
+      },
+
+      onError: (error) => {
+        console.error(error);
+      },
+    },
+  });
 
   const handleToggleLanguage = (language: string) => {
     setSelectedLanguages((prev) =>
@@ -35,6 +62,17 @@ export default function TeamDetailPage() {
     setSelectedStatus('ALL');
     setSelectedLanguages([]);
     setSort('latest');
+  };
+
+  const handleInvite = (emails: string[]) => {
+    if (!teamId) return;
+
+    inviteMembers({
+      teamId,
+      data: {
+        emails,
+      },
+    });
   };
 
   const {
@@ -63,6 +101,7 @@ export default function TeamDetailPage() {
     },
   });
 
+  const isLeader = teamDetail?.userId === teamDetail?.ownerId;
   const topMembers = teamDetail?.members ?? [];
   const fullMembers = teamMembersResponse?.data ?? [];
 
@@ -144,16 +183,19 @@ export default function TeamDetailPage() {
               >
                 <h2 className="typo-medium-40">팀 랭킹</h2>
 
-                <button
-                  className="flex items-center gap-[10px] px-[32px] py-[18px] rounded-sm bg-primary 
+                {isLeader && (
+                  <button
+                    className="flex items-center gap-[10px] px-[32px] py-[18px] rounded-sm bg-primary 
                             cursor-pointer
                             hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                >
-                  <LetterIcon className="w-8 h-8" />
-                  <span className="text-primary-foreground typo-bold-20">
-                    멤버 초대
-                  </span>
-                </button>
+                    onClick={() => setIsInviteModalOpen(true)}
+                  >
+                    <LetterIcon className="w-8 h-8" />
+                    <span className="text-primary-foreground typo-bold-20">
+                      멤버 초대
+                    </span>
+                  </button>
+                )}
               </motion.div>
 
               <motion.div
@@ -240,10 +282,18 @@ export default function TeamDetailPage() {
           />
         </>
       </div>
+      <TeamInviteModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onInvite={handleInvite}
+        invitingError={invitingError}
+        isInvitingSuccess={isInvitingSuccess}
+      />
     </main>
   );
 }
 
+// 랭킹 조회
 type RankingItemProps = {
   rank: number;
   name: string;
@@ -280,5 +330,134 @@ function RankingItem({ rank, name, role, score, isMe }: RankingItemProps) {
 
       <span className="typo-bold-20">{score.toLocaleString()}점</span>
     </div>
+  );
+}
+
+// 멤버 초대 모달창
+type TeamInviteModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onInvite: (emails: string[]) => void;
+  invitingError?: unknown;
+  isInvitingSuccess: boolean;
+};
+
+function TeamInviteModal({
+  isOpen,
+  onInvite,
+  onClose,
+  invitingError,
+  isInvitingSuccess,
+}: TeamInviteModalProps) {
+  const [emails, setEmails] = useState(['']);
+
+  const handleEmailChange = (index: number, value: string) => {
+    setEmails((prev) =>
+      prev.map((email, emailIndex) => (emailIndex === index ? value : email)),
+    );
+  };
+
+  const handleAddEmail = () => {
+    setEmails((prev) => [...prev, '']);
+  };
+
+  const handleRemoveEmail = (index: number) => {
+    setEmails((prev) => prev.filter((_, emailIndex) => emailIndex !== index));
+  };
+
+  const handleConfirm = () => {
+    const trimmedEmails = emails.map((email) => email.trim()).filter(Boolean);
+
+    if (trimmedEmails.length === 0) return;
+
+    onInvite(trimmedEmails);
+    setEmails(['']);
+    // onClose();
+  };
+
+  const handleClose = () => {
+    setEmails(['']);
+    onClose();
+  };
+
+  return (
+    <CommonModal
+      isOpen={isOpen}
+      title="팀원 초대하기"
+      icon={<LetterIcon className="h-[195px] w-[195px]" />}
+      description={
+        <div className="flex flex-col gap-3 text-left">
+          <p className="pb-6 text-center typo-regular-14 text-(--text-primary)">
+            초대할 팀원의 이메일을 입력해주세요.
+          </p>
+
+          {emails.map((email, index) => {
+            const isLastInput = index === emails.length - 1;
+
+            return (
+              <div key={index} className="flex gap-4">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(index, e.target.value)}
+                  placeholder="example@email.com"
+                  className="flex-1 rounded-sm px-3 outline-none typo-regular-16
+                    transition-all duration-300
+                    focus:border-white
+                    focus:shadow-[0_0_12px_rgba(255,255,255,0.4)]"
+                  style={{
+                    background: 'var(--surface-input)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+
+                {isLastInput ? (
+                  <button
+                    type="button"
+                    onClick={handleAddEmail}
+                    className="min-w-28 cursor-pointer rounded-sm border px-4 py-2 typo-regular-16 hover:bg-(--surface-selected)"
+                    style={{
+                      borderColor: 'var(--color-white)',
+                    }}
+                  >
+                    초대 추가
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveEmail(index)}
+                    className="min-w-28 cursor-pointer rounded-sm px-4 py-2 typo-regular-16 hover:bg-(--surface-selected)"
+                    style={{
+                      borderColor: 'var(--color-white)',
+                    }}
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {invitingError instanceof Error && (
+            <p className="pt-4 text-[var(--status-error)] text-sm text-center typo-regular-14">
+              팀원 초대에 실패했습니다. 다시 시도해주세요.
+            </p>
+          )}
+
+          {isInvitingSuccess && (
+            <p className="pt-4 text-[var(--primary)] text-sm text-center typo-regular-14">
+              팀원 초대를 완료했습니다.
+            </p>
+          )}
+        </div>
+      }
+      confirmText="초대하기"
+      cancelText="닫기"
+      onClose={handleClose}
+      onConfirm={handleConfirm}
+      confirmButtonClassName={
+        emails.some((email) => email.trim()) ? '' : 'opacity-50'
+      }
+    />
   );
 }
