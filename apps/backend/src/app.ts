@@ -9,6 +9,7 @@ import { authRouter } from './modules/auth/auth.route.js';
 import commentsRouter from './modules/comments/comments.route.js';
 import issuesRouter from './modules/issues/issues.route.js';
 import healthRouter from './modules/health/health.route.js';
+import notificationsRouter from './modules/notifications/notifications.route.js';
 import teamsRouter from './modules/teams/teams.route.js';
 import usersRouter from './modules/users/users.route.js';
 import { openApiDocument } from './docs/openapi.js';
@@ -48,8 +49,9 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/auth', authRouter);
-app.use('/issues', issuesRouter);
+app.use('/', issuesRouter);
 app.use('/issues/:id/comments', commentsRouter);
+app.use('/notifications', notificationsRouter);
 app.use('/', healthRouter);
 app.use('/teams', teamsRouter);
 app.use('/', usersRouter);

@@ -14,6 +14,8 @@ import IssueFeed from '@/pages/issue/IssueFeed';
 import CreateTeamPage from '@/pages/teams/CreateTeamPage';
 import AdditionalInfoPage from '@/pages/auth/AdditionalInfoPage';
 import TeamDetailPage from '@/pages/teams/TeamDetailPage';
+import MyPage from '@/pages/users/MyPage';
+import TeamSettingPage from '@/pages/teams/TeamSettingPage';
 
 export const router = createBrowserRouter([
   {
@@ -21,7 +23,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/login', element: <LoginPage /> },
       { path: '/signup', element: <SignupPage /> },
-      { path: '/signup/additional-info', element: <AdditionalInfoPage /> },
+      { path: '/signup/name', element: <AdditionalInfoPage /> },
     ],
   },
 
@@ -29,11 +31,13 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: '/', element: <IssueFeed /> },
-      { path: '/issues/new', element: <IssueCreate /> },
+      { path: '/teams/:teamId/issues/new', element: <IssueCreate /> },
       { path: '/teams/new', element: <CreateTeamPage /> },
       { path: '/teams/:teamId', element: <TeamDetailPage /> },
-      { path: '/issues/:issueId', element: <IssueDetail /> },
-      { path: '/issues/:issueId/edit', element: <IssueEdit /> },
+      { path: '/teams/:teamId/settings', element: <TeamSettingPage /> },
+      { path: '/teams/:teamId/issues/:issueId', element: <IssueDetail /> },
+      { path: '/teams/:teamId/issues/:issueId/edit', element: <IssueEdit /> },
+      { path: '/mypage', element: <MyPage /> },
     ],
   },
 ]);

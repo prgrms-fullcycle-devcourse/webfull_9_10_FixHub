@@ -13,12 +13,18 @@ import {
   UpdateIssueResponseSchema,
   DeleteIssueParamsSchema,
   DeleteIssueResponseSchema,
+  SuggestIssueBodySchema,
+  SuggestIssueResponseSchema,
+  GetIssueFeedsParamsSchema,
 } from './issues.dto.js';
 import { zod as z } from '../../common/lib/zod.js';
 
 const publicIssueItemSchema = z
   .object({
     id: z.string().openapi({ example: 'issue-uuid-020' }),
+    teamId: z
+      .string()
+      .openapi({ example: '019e01ab-d423-7766-bcd1-14742ce92467' }),
     title: z.string().openapi({ example: 'Spring Security 403 오류' }),
     teamName: z.string().openapi({ example: '백엔드 팀' }),
     author: z.string().openapi({ example: '홍길동' }),
@@ -101,6 +107,12 @@ const forbiddenSchema = z
     }),
   })
   .openapi('Forbidden');
+
+const badGateway502Schema = z.object({
+  code: z.string(),
+  message: z.string(),
+  statusCode: z.number(),
+});
 
 const issueDetailExample = {
   id: 'issue-uuid-010',
@@ -202,7 +214,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'get',
     path: '/issues/public',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '최신 이슈 피드 조회',
     request: {
       query: z.object({
@@ -230,11 +242,74 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
     },
   });
 
+  registry.registerPath({
+    method: 'get',
+    path: '/issues/feeds',
+    tags: ['Issues'],
+    summary: '통합 이슈 피드 조회',
+    request: {
+      query: z.object({
+        page: z.number().optional().openapi({ example: 1 }),
+        limit: z.number().optional().openapi({ example: 20 }),
+      }),
+    },
+    responses: {
+      200: {
+        description: '통합 이슈 피드 조회 성공',
+        content: {
+          'application/json': {
+            schema: getPublicIssuesResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: publicBadRequestSchema,
+          },
+        },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/issues/feeds/{teamId}',
+    tags: ['Issues'],
+    summary: '팀 이슈 피드 조회',
+    request: {
+      params: GetIssueFeedsParamsSchema,
+      query: z.object({
+        page: z.number().optional().openapi({ example: 1 }),
+        limit: z.number().optional().openapi({ example: 20 }),
+      }),
+    },
+    responses: {
+      200: {
+        description: '팀 이슈 피드 조회 성공',
+        content: {
+          'application/json': {
+            schema: getPublicIssuesResponseSchema,
+          },
+        },
+      },
+      400: {
+        description: '잘못된 요청',
+        content: {
+          'application/json': {
+            schema: publicBadRequestSchema,
+          },
+        },
+      },
+    },
+  });
+
   /* 이슈 상세 조회 */
   registry.registerPath({
     method: 'get',
     path: '/teams/{teamId}/issues/{issueId}',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 상세 조회',
     description: '팀에 속한 특정 이슈의 상세 정보를 조회합니다.',
     request: {
@@ -273,7 +348,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/teams/{teamId}/issues',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 등록',
     description: '팀에 새로운 이슈를 등록합니다.',
     request: {
@@ -328,7 +403,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'patch',
     path: '/teams/{teamId}/issues/{issueId}',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 수정',
     description: '팀에 속한 특정 이슈를 수정합니다.',
     request: {
@@ -391,7 +466,7 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'delete',
     path: '/teams/{teamId}/issues/{issueId}',
-    tags: ['Issue'],
+    tags: ['Issues'],
     summary: '이슈 삭제',
     description: '팀에 속한 특정 이슈를 삭제합니다.',
     request: {
@@ -436,6 +511,42 @@ export function registerIssuesSwagger(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: notFoundSchema,
+          },
+        },
+      },
+    },
+  });
+
+  /* ai 이슈 자동 생성 */
+  registry.registerPath({
+    method: 'post',
+    path: '/issues/suggest',
+    tags: ['Issue'],
+    summary: 'ai 이슈 자동 생성',
+    description: '로그를 받아 ai가 이슈 제목, 태그, 내용을 생성합니다.',
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: SuggestIssueBodySchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: '자동 생성 성공',
+        content: {
+          'application/json': {
+            schema: SuggestIssueResponseSchema,
+          },
+        },
+      },
+      502: {
+        description: 'openai 요청 실패',
+        content: {
+          'application/json': {
+            schema: badGateway502Schema,
           },
         },
       },

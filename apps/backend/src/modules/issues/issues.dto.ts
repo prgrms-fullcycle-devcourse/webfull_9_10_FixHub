@@ -17,11 +17,13 @@ export const SearchIssuesResponseSchema = z.object({
   data: z.array(
     z.object({
       id: z.uuidv7(),
+      teamId: z.uuidv7(),
       title: z.string(),
       teamName: z.string(),
       author: z.string(),
       tag: z.array(z.string()),
       status: z.enum(['UNSOLVED', 'SOLVED']),
+      summary: z.string(),
       commentCount: z.number(),
       createdAt: z.string(),
     }),
@@ -37,6 +39,8 @@ export type SearchIssuesQueryObjectDto = {
   teamId?: string;
   title: string[];
   author?: string;
+  authorId?: string;
+  solvedBy?: string;
   tag: string[];
   status?: IssueStatus;
   content: string[];
@@ -62,6 +66,13 @@ export const getPublicIssuesQuerySchema = z.object({
 
 export type GetPublicIssuesQuery = z.infer<typeof getPublicIssuesQuerySchema>;
 
+export const GetIssueFeedsParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export type GetIssueFeedsQuery = z.infer<typeof getPublicIssuesQuerySchema>;
+export type GetIssueFeedsParamsDto = z.infer<typeof GetIssueFeedsParamsSchema>;
+
 /* 이슈 상세 조회 */
 export const GetIssueDetailParamsSchema = z.object({
   teamId: z.uuidv7(),
@@ -72,14 +83,17 @@ export const GetIssueDetailResponseSchema = z.object({
   id: z.string().openapi({ example: 'issue-uuid-010' }),
   title: z.string().openapi({ example: 'Redis 연결 타임아웃 오류' }),
   content: z.string().openapi({
-    example:
-      '## 문제\nRedis 연결 시 타임아웃이 발생합니다.\n\n## 시도한 것\n...',
+    example: '## 문제\nRedis 연결 시 타임아웃이 발생합니다.\n\n## 시도한 것\n.',
   }),
   tag: z.array(z.string()).openapi({ example: ['BACKEND', 'INFRA'] }),
   author: z.string().openapi({ example: '홍길동' }),
+  authorId: z
+    .string()
+    .openapi({ example: '019e01ab-d423-7766-bcd1-14742ce92467' }),
+  isAuthor: z.boolean().openapi({ example: true }),
+  createdAt: z.string().openapi({ example: '2026-04-25T10:00:00.000Z' }),
   errorLog: z.string().openapi({
-    example:
-      'Error: connect ETIMEDOUT 127.0.0.1:6379\n    at TCPConnectWrap...',
+    example: 'Error: connect ETIMEDOUT 127.0.0.1:6379\n    at TCPConnectWrap.',
   }),
   isPublic: z.boolean().openapi({ example: true }),
   status: z.enum(['UNSOLVED', 'SOLVED']).openapi({ example: 'UNSOLVED' }),
@@ -114,6 +128,7 @@ export const CreateIssueBodySchema = z.object({
       '## 문제\nRedis 연결 시 타임아웃이 발생합니다.\n\n## 시도한 것\n...',
   }),
   tag: z.array(z.string().min(1)).openapi({ example: ['BACKEND', 'INFRA'] }),
+  status: z.enum(['SOLVED', 'UNSOLVED']).openapi({ example: 'UNSOLVED' }),
   isPublic: z.boolean().openapi({ example: true }),
   logs: z.array(
     z.object({
@@ -146,6 +161,7 @@ export const UpdateIssueBodySchema = z.object({
   title: z.string().min(1).openapi({ example: '수정된 제목' }),
   content: z.string().min(1).openapi({ example: '수정된 내용입니다.' }),
   tags: z.array(z.string().min(1)).openapi({ example: ['BACKEND'] }),
+  status: z.enum(['SOLVED', 'UNSOLVED']).openapi({ example: 'UNSOLVED' }),
   isPublic: z.boolean().openapi({ example: false }),
   logs: z.array(
     z.object({
@@ -176,3 +192,19 @@ export const DeleteIssueResponseSchema = z.object({
 
 export type DeleteIssueParamsDto = z.infer<typeof DeleteIssueParamsSchema>;
 export type DeleteIssueResponseDto = z.infer<typeof DeleteIssueResponseSchema>;
+
+/* ai 이슈 자동 생성 */
+export const SuggestIssueBodySchema = z.object({
+  errorLog: z.string().min(1),
+});
+
+export const SuggestIssueResponseSchema = z.object({
+  title: z.string(),
+  tags: z.array(z.string()),
+  summary: z.string(),
+});
+
+export type SuggestIssueBodyDto = z.infer<typeof SuggestIssueBodySchema>;
+export type SuggestIssueResponseDto = z.infer<
+  typeof SuggestIssueResponseSchema
+>;

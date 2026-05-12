@@ -25,6 +25,22 @@ export function validateSignup(
   return null;
 }
 
+// 추가 정보 입력 페이지 유효성 검사
+export function validateAdditionalInfo(
+  name: string,
+  email: string,
+): string | null {
+  if (!name.trim()) return '이름을 입력해주세요.';
+  if (name.trim().length < 2) return '이름은 2자 이상 입력해주세요.';
+  if (name.trim().length > 50) return '이름은 50자 이내로 입력해주세요.';
+
+  if (!email.trim()) return '이메일을 입력해주세요.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return '올바른 이메일 형식이 아닙니다.';
+
+  return null;
+}
+
 // 백엔드 에러 응답에서 메시지 꺼내는 헬퍼
 export function parseAuthError(error: unknown): string {
   const e = error as {

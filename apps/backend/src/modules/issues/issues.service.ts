@@ -1,25 +1,37 @@
 import { IssueStatus, Prisma } from '@prisma/client';
+import OpenAI from 'openai';
 
 import prisma from '../../common/config/prisma.js';
-import { Errors } from '../../common/errors/AppError.js';
-import type {
-  SearchIssuesQueryObjectDto,
-  GetPublicIssuesQuery,
-  GetIssueDetailParamsDto,
-  GetIssueDetailResponseDto,
-  CreateIssueParamsDto,
-  CreateIssueBodyDto,
-  CreateIssueResponseDto,
-  UpdateIssueParamsDto,
-  UpdateIssueBodyDto,
-  UpdateIssueResponseDto,
-  DeleteIssueParamsDto,
-  DeleteIssueResponseDto,
+import { AppError, Errors } from '../../common/errors/AppError.js';
+import {
+  APP_NOTIFICATION_TYPE,
+  createTeamAppNotifications,
+} from '../../common/utils/appNotification.js';
+import { sendSlackNotificationToTeam } from '../../common/utils/slackNotification.js';
+import {
+  type SearchIssuesQueryObjectDto,
+  type GetPublicIssuesQuery,
+  type GetIssueFeedsQuery,
+  type GetIssueFeedsParamsDto,
+  type GetIssueDetailParamsDto,
+  type GetIssueDetailResponseDto,
+  type CreateIssueParamsDto,
+  type CreateIssueBodyDto,
+  type CreateIssueResponseDto,
+  type UpdateIssueParamsDto,
+  type UpdateIssueBodyDto,
+  type UpdateIssueResponseDto,
+  type DeleteIssueParamsDto,
+  type DeleteIssueResponseDto,
+  SuggestIssueResponseSchema,
+  SuggestIssueResponseDto,
 } from './issues.dto.js';
 
 const KEYS = [
   'title',
   'author',
+  'authorId',
+  'solvedBy',
   'tag',
   'status',
   'content',
@@ -28,6 +40,24 @@ const KEYS = [
   'sort',
 ] as const;
 type Key = (typeof KEYS)[number];
+
+function toPlainSummary(content: string) {
+  return content
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/~~([^~]+)~~/g, '$1')
+    .replace(/^\s*[-+*]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/>\s?/g, '')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120);
+}
 
 function parseSearchQuery(input: string) {
   const result: SearchIssuesQueryObjectDto = {
@@ -60,6 +90,10 @@ function parseSearchQuery(input: string) {
         }
       } else if (key === 'author') {
         result.author = value;
+      } else if (key === 'authorId') {
+        result.authorId = value;
+      } else if (key === 'solvedBy') {
+        result.solvedBy = value;
       } else if (key === 'teamId') {
         result.teamId = value;
       } else if (key === 'sort') {
@@ -75,10 +109,40 @@ function parseSearchQuery(input: string) {
   return result;
 }
 
+function mapFeedIssue(issue: {
+  id: string;
+  teamId: string;
+  title: string;
+  content: string | null;
+  team: { name: string };
+  user: { name: string | null } | null;
+  tags: Array<{ tagName: string }>;
+  _count: { comments: number };
+  createdAt: Date;
+}) {
+  return {
+    id: issue.id,
+    teamId: issue.teamId,
+    title: issue.title,
+    teamName: issue.team.name,
+    author: issue.user?.name ?? '',
+    tags: issue.tags.map((tag) => tag.tagName),
+    summary: toPlainSummary(issue.content ?? ''),
+    commentCount: issue._count.comments,
+    createdAt: issue.createdAt.toISOString(),
+  };
+}
+
 function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
   const andConditions: Prisma.ErrorIssueWhereInput[] = [];
 
-  andConditions.push(dto.teamId ? { teamId: dto.teamId } : { isPublic: true });
+  if (!dto.teamId && !dto.author && !dto.authorId && !dto.solvedBy) {
+    andConditions.push({ isPublic: true });
+  }
+
+  if (dto.teamId) {
+    andConditions.push({ teamId: dto.teamId });
+  }
 
   if (dto.title.length > 0) {
     andConditions.push(
@@ -113,6 +177,21 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
     });
   }
 
+  if (dto.authorId) {
+    andConditions.push({ userId: dto.authorId });
+  }
+
+  if (dto.solvedBy) {
+    andConditions.push({
+      comments: {
+        some: {
+          userId: dto.solvedBy,
+          isAdopted: true,
+        },
+      },
+    });
+  }
+
   if (dto.status) {
     andConditions.push({
       status: dto.status,
@@ -124,7 +203,10 @@ function buildSearchWhere(dto: SearchIssuesQueryObjectDto) {
       ...dto.tag.map((tag) => ({
         tags: {
           some: {
-            tagName: tag,
+            tagName: {
+              equals: tag,
+              mode: Prisma.QueryMode.insensitive,
+            },
           },
         },
       })),
@@ -169,7 +251,9 @@ export async function searchIssues(input: string) {
   const data = issues.map((issue) => ({
     id: issue.id,
     title: issue.title,
+    teamId: issue.teamId,
     teamName: issue.team.name,
+    summary: toPlainSummary(issue.content ?? ''),
     author: issue.userId,
     tag: issue.tags.map((t) => t.tagName),
     status: issue.status,
@@ -186,6 +270,91 @@ export async function searchIssues(input: string) {
       totalPages: Math.ceil(totalItemCount / itemsPerPage),
     },
     data,
+  };
+}
+
+export async function getIssueFeeds({ page, limit }: GetIssueFeedsQuery) {
+  const skip = (page - 1) * limit;
+
+  const [totalItemCount, issues] = await Promise.all([
+    prisma.errorIssue.count({
+      where: {
+        isPublic: true,
+      },
+    }),
+    prisma.errorIssue.findMany({
+      where: {
+        isPublic: true,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        tags: true,
+        user: true,
+        team: true,
+        _count: {
+          select: { comments: true },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    meta: {
+      totalItemCount,
+      currentItemCount: issues.length,
+      itemsPerPage: limit,
+      currentPage: page,
+      totalPages: Math.ceil(totalItemCount / limit) || 1,
+    },
+    data: issues.map(mapFeedIssue),
+  };
+}
+
+export async function getTeamIssueFeeds(
+  { teamId }: GetIssueFeedsParamsDto,
+  { page, limit }: GetIssueFeedsQuery,
+) {
+  const skip = (page - 1) * limit;
+
+  const [totalItemCount, issues] = await Promise.all([
+    prisma.errorIssue.count({
+      where: {
+        teamId,
+      },
+    }),
+    prisma.errorIssue.findMany({
+      where: {
+        teamId,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        tags: true,
+        user: true,
+        team: true,
+        _count: {
+          select: { comments: true },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    meta: {
+      totalItemCount,
+      currentItemCount: issues.length,
+      itemsPerPage: limit,
+      currentPage: page,
+      totalPages: Math.ceil(totalItemCount / limit) || 1,
+    },
+    data: issues.map(mapFeedIssue),
   };
 }
 
@@ -210,6 +379,7 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
       include: {
         tags: true,
         user: true,
+        team: true,
         _count: {
           select: { comments: true },
         },
@@ -227,11 +397,12 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
     },
     data: issues.map((issue) => ({
       id: issue.id,
+      teamId: issue.teamId,
       title: issue.title,
-      teamName: '',
+      teamName: issue.team.name,
       author: issue.user?.name ?? '',
       tags: issue.tags.map((tag) => tag.tagName),
-      summary: issue.content ?? '',
+      summary: toPlainSummary(issue.content ?? ''),
       commentCount: issue._count.comments,
       createdAt: issue.createdAt.toISOString(),
     })),
@@ -239,10 +410,10 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
 }
 
 /* 이슈 상세 조회 */
-export async function getIssueDetail({
-  teamId,
-  issueId,
-}: GetIssueDetailParamsDto): Promise<GetIssueDetailResponseDto> {
+export async function getIssueDetail(
+  userId: string,
+  { teamId, issueId }: GetIssueDetailParamsDto,
+): Promise<GetIssueDetailResponseDto> {
   const issue = await prisma.errorIssue.findFirst({
     where: {
       id: issueId,
@@ -275,6 +446,9 @@ export async function getIssueDetail({
     content: issue.content ?? '',
     tag: issue.tags.map((item) => item.tagName),
     author: issue.user.name,
+    authorId: issue.userId,
+    isAuthor: issue.userId === userId,
+    createdAt: issue.createdAt.toISOString(),
     errorLog,
     isPublic: issue.isPublic,
     status: issue.status,
@@ -303,6 +477,11 @@ export async function createIssue(
     select: {
       id: true,
       status: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 
@@ -322,6 +501,7 @@ export async function createIssue(
       teamId: params.teamId,
       title: body.title,
       content: body.content,
+      status: body.status,
       isPublic: body.isPublic,
       tags: {
         create: body.tag.map((tagName) => ({
@@ -340,8 +520,24 @@ export async function createIssue(
     },
     select: {
       id: true,
+      title: true,
       createdAt: true,
     },
+  });
+
+  await sendSlackNotificationToTeam({
+    teamId: params.teamId,
+    excludeUserId: userId,
+    enabledField: 'slackNotifyIssueCreated',
+    text: `내 팀의 새 이슈가 등록되었어요: ${createdIssue.title}`,
+  });
+
+  await createTeamAppNotifications({
+    teamId: params.teamId,
+    actorUserId: userId,
+    resourceId: createdIssue.id,
+    type: APP_NOTIFICATION_TYPE.ISSUE_CREATED,
+    content: `${teamMember.user.name}님이 새 이슈를 등록했습니다: ${createdIssue.title}`,
   });
 
   return {
@@ -403,6 +599,7 @@ export async function updateIssue(
     data: {
       title: body.title,
       content: body.content,
+      status: body.status,
       isPublic: body.isPublic,
       tags: {
         deleteMany: {},
@@ -414,6 +611,7 @@ export async function updateIssue(
         deleteMany: {},
         create: body.logs.map((log) => ({
           logType: log.logType,
+          source: log.stackTrace,
           message: log.stackTrace,
           stackTrace: log.stackTrace,
           capturedAt: new Date(),
@@ -484,4 +682,48 @@ export async function deleteIssue(
   return {
     success: true,
   };
+}
+
+const systemPrompt = `
+You are a strict JSON generator.
+You are an issue analyzer.
+
+Rules:
+- Title: max 8 words
+- Tags: 2~3 lowercase English words
+- Summary: 1 sentence
+- Return JSON only
+
+Output format:
+{
+  "title": "",
+  "tags": [],
+  "summary": ""
+}`;
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function generateIssue(
+  log: string,
+): Promise<SuggestIssueResponseDto> {
+  const res = await openai.chat.completions.create({
+    model: 'gpt-5.4-nano',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: log },
+    ],
+    temperature: 0.2,
+    max_completion_tokens: 300,
+  });
+
+  const text = res.choices[0].message.content ?? '';
+
+  try {
+    const json = JSON.parse(text);
+    return SuggestIssueResponseSchema.parse(json);
+  } catch (_e) {
+    throw new AppError('502 Bad Gateway', 'Openai Error', 502);
+  }
 }

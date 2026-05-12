@@ -5,7 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SocialLoginButton } from '@/components/auth/SocialLoginButton';
 import { usePostAuthSignup } from '@/api/generated';
-import { validateSignup, parseAuthError } from './AuthValidation';
+import {
+  validateSignup,
+  parseAuthError,
+} from '../../utils/validations/AuthValidation';
 
 export default function SignupPage() {
   const [name, setName] = useState('');

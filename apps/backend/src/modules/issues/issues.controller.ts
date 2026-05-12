@@ -3,22 +3,27 @@ import { NextFunction, Request, Response } from 'express';
 import {
   SearchIssuesQuerySchema,
   getPublicIssuesQuerySchema,
+  GetIssueFeedsParamsSchema,
   GetIssueDetailParamsSchema,
   CreateIssueParamsSchema,
   CreateIssueBodySchema,
   UpdateIssueParamsSchema,
   UpdateIssueBodySchema,
   DeleteIssueParamsSchema,
+  SuggestIssueBodySchema,
 } from './issues.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 import {
   searchIssues,
   getPublicIssues as getPublicIssuesService,
+  getIssueFeeds as getIssueFeedsService,
+  getTeamIssueFeeds as getTeamIssueFeedsService,
   getIssueDetail as getIssueDetailService,
   createIssue as createIssueService,
   updateIssue as updateIssueService,
   deleteIssue as deleteIssueService,
+  generateIssue,
 } from './issues.service.js';
 
 export async function getIssues(
@@ -59,6 +64,44 @@ export async function getPublicIssues(req: Request, res: Response) {
   return res.status(200).json(result);
 }
 
+export async function getIssueFeeds(req: Request, res: Response) {
+  const queryResult = getPublicIssuesQuerySchema.safeParse(req.query);
+
+  if (!queryResult.success) {
+    return res.status(400).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: '요청 값이 올바르지 않습니다.',
+      },
+    });
+  }
+
+  const result = await getIssueFeedsService(queryResult.data);
+
+  return res.status(200).json(result);
+}
+
+export async function getTeamIssueFeeds(req: Request, res: Response) {
+  const parsedParams = GetIssueFeedsParamsSchema.safeParse(req.params);
+  const parsedQuery = getPublicIssuesQuerySchema.safeParse(req.query);
+
+  if (!parsedParams.success || !parsedQuery.success) {
+    return res.status(400).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: '요청 값이 올바르지 않습니다.',
+      },
+    });
+  }
+
+  const result = await getTeamIssueFeedsService(
+    parsedParams.data,
+    parsedQuery.data,
+  );
+
+  return res.status(200).json(result);
+}
+
 /* 이슈 상세 조회 */
 export async function getIssueDetail(
   req: Request,
@@ -72,7 +115,8 @@ export async function getIssueDetail(
   }
 
   try {
-    const response = await getIssueDetailService(parsedParams.data);
+    const userId = (req as AuthRequest).userId;
+    const response = await getIssueDetailService(userId, parsedParams.data);
 
     return res.status(200).json(response);
   } catch (error) {
@@ -149,6 +193,27 @@ export async function removeIssue(
   try {
     const userId = (req as AuthRequest).userId;
     const response = await deleteIssueService(userId, parsedParams.data);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function suggestIssue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsed = SuggestIssueBodySchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    console.error(parsed.error);
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const response = await generateIssue(parsed.data.errorLog);
 
     return res.status(200).json(response);
   } catch (error) {

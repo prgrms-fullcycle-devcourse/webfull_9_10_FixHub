@@ -5,17 +5,21 @@ import { useGetIssuesSearch } from '@/api/generated';
 import type { IssueSort, IssueStatus } from '@/types/issue';
 
 type IssueListProps = {
+  type?: 'public' | 'mine' | 'solved';
   status?: IssueStatus;
   tags?: string[];
   sort?: IssueSort;
   team?: string;
+  authorId?: string;
 };
 
 export default function IssueList({
+  type = 'public',
   status,
   tags = [],
   sort,
   team,
+  authorId,
 }: IssueListProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -24,19 +28,30 @@ export default function IssueList({
 
   const searchString = useMemo(() => {
     const tokens: string[] = [];
-    searchParams.forEach((value, key) => {
-      if (key === 'title') {
-        tokens.push(value);
-      } else {
-        tokens.push(`${key}:${value}`);
-      }
-    });
+    if (type === 'public') {
+      searchParams.forEach((value, key) => {
+        if (key === 'title') {
+          tokens.push(value);
+        } else {
+          tokens.push(`${key}:${value}`);
+        }
+      });
+    }
     if (status) tokens.push(`status:${status}`);
     tokens.push(...tags.map((tag) => `tag:${tag}`));
     if (sort) tokens.push(`sort:${sort}`);
     if (team) tokens.push(`teamId:${team}`);
+
+    if (authorId) {
+      if (type === 'solved') {
+        tokens.push(`solvedBy:${authorId}`);
+      } else {
+        tokens.push(`authorId:${authorId}`);
+      }
+    }
+
     return tokens.join(' ');
-  }, [searchParams, status, tags, sort, team]);
+  }, [searchParams, status, tags, sort, team, authorId, type]);
 
   if (prevSearchString !== searchString) {
     setPrevSearchString(searchString);
@@ -45,11 +60,15 @@ export default function IssueList({
 
   const querySearchString = `${searchString} page:${currentPage}`;
 
-  const { data, isPending, isError } = useGetIssuesSearch({
-    search: querySearchString,
-  });
+  // mine/solved 타입은 authorId가 확정된 후에만 쿼리 실행
+  const isQueryEnabled = type === 'public' || !!authorId;
 
-  if (isPending || !data) {
+  const { data, isPending, isError } = useGetIssuesSearch(
+    { search: querySearchString },
+    { query: { enabled: isQueryEnabled } },
+  );
+
+  if (isPending) {
     return (
       <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
         불러오는 중...
@@ -57,13 +76,11 @@ export default function IssueList({
     );
   }
 
-  if (isError) {
+  if (isError || !data) {
     return (
-      isError && (
-        <div className="py-10 text-center typo-regular-14 text-(--status-error)">
-          이슈 목록을 불러오지 못했습니다.
-        </div>
-      )
+      <div className="py-10 text-center typo-regular-14 text-(--status-error)">
+        이슈 목록을 불러오지 못했습니다.
+      </div>
     );
   }
 
@@ -73,52 +90,50 @@ export default function IssueList({
   if (issues.length === 0) {
     return (
       <div className="py-10 text-center typo-regular-14 text-(--text-secondary)">
-        검색 결과가 없습니다.
+        조회된 이슈가 없습니다.
       </div>
     );
   }
 
   return (
-    <div className="w-full flex-1 px-15 pt-15 pb-15 text-(--text-primary)">
+    <div className="space-y-4">
       <div className="flex flex-col gap-15">
-        <div>
-          <h1 className="typo-medium-40">검색 결과</h1>
-          <p className="mt-3 typo-regular-14 text-(--text-secondary)">
-            {searchString
-              ? `'${searchString}'에 대한 검색 결과입니다.`
-              : '전체 검색 결과입니다.'}
-          </p>
-        </div>
-
         {
-          <div className="space-y-6">
+          <div className="space-y-4">
             {issues.map((issue) => (
               <article
                 key={issue.id}
                 className="cursor-pointer rounded-lg bg-(--surface-panel) px-8 py-6 transition hover:bg-(--surface-selected)"
-                onClick={() => navigate(`/issues/${issue.id}`)}
+                onClick={() =>
+                  navigate(`/teams/${issue.teamId}/issues/${issue.id}`)
+                }
               >
                 <div className="flex items-start justify-between gap-6">
                   <div className="min-w-0 flex-1">
                     <div className="mb-4 flex items-center gap-3">
-                      <span className="rounded-full bg-(--status-unsaved) px-3 py-1 text-xs font-bold text-(--text-primary)">
+                      <span
+                        className={`rounded-full px-3 py-1 typo-regular-14 font-bold text-white ${
+                          issue.status === 'SOLVED'
+                            ? 'bg-[var(--palette-solved-status)]'
+                            : 'bg-[var(--palette-unsaved-status)]'
+                        }`}
+                      >
                         {issue.status === 'SOLVED' ? '해결' : '미해결'}
                       </span>
-
                       <h2 className="truncate typo-semibold-18 text-(--text-primary)">
                         {issue.title}
                       </h2>
                     </div>
 
                     <div className="mb-4 truncate typo-regular-14 text-(--text-secondary)">
-                      팀: {issue.teamName} | 담당자: {issue.author}
+                      {issue.summary ? issue.summary : '요약 정보가 없습니다.'}
                     </div>
 
                     <div className="flex flex-wrap gap-2">
                       {issue.tag.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-sm bg-(--surface-tag) px-3 py-1.5 text-xs text-(--text-primary)"
+                          className="rounded-sm bg-(--surface-tag) px-3 py-1.5 typo-regular-14 text-(--text-primary)"
                         >
                           {tag}
                         </span>
@@ -126,7 +141,7 @@ export default function IssueList({
                     </div>
                   </div>
 
-                  <div className="flex w-28 shrink-0 flex-col items-end gap-9 text-xs text-(--text-secondary)">
+                  <div className="flex shrink-0 flex-col items-end gap-6 typo-regular-14 text-(--text-secondary)">
                     <div>답변 {issue.commentCount}</div>
                     <div>
                       {new Date(issue.createdAt).toLocaleDateString('ko-KR')}
@@ -144,7 +159,7 @@ export default function IssueList({
               type="button"
               onClick={() => setCurrentPage((prev) => prev - 1)}
               disabled={currentPage === 1}
-              className="cursor-pointer rounded-sm border border-border px-3 py-2 text-sm text-(--text-secondary) hover:bg-(--surface-selected) disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer rounded-sm border border-border typo-regular-14 text-(--text-secondary) hover:bg-(--surface-selected) disabled:cursor-not-allowed disabled:opacity-50"
             >
               ‹
             </button>
@@ -155,7 +170,7 @@ export default function IssueList({
                   key={page}
                   type="button"
                   onClick={() => setCurrentPage(page)}
-                  className={`h-8 w-8 cursor-pointer rounded-sm border text-sm ${
+                  className={`h-8 w-8 cursor-pointer rounded-sm border typo-regular-14 ${
                     currentPage === page
                       ? 'border-primary bg-primary text-(--text-inverse)'
                       : 'border-border text-(--text-primary) hover:bg-(--surface-selected)'
@@ -170,7 +185,7 @@ export default function IssueList({
               type="button"
               onClick={() => setCurrentPage((prev) => prev + 1)}
               disabled={currentPage === totalPages}
-              className="cursor-pointer rounded-sm bg-primary px-3 py-2 text-sm text-(--text-inverse) hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-8 w-8 cursor-pointer rounded-sm bg-primary typo-regular-14 text-(--text-inverse) hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ›
             </button>

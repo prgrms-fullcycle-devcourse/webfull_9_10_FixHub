@@ -24,7 +24,9 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "openai": "^6.36.0",
     "swagger-ui-express": "^5.0.1",
+    "uuid": "^14.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -34,6 +36,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/uuid": "^11.0.0",
     "eslint": "^10.2.1",
     "prettier": "^3.8.3",
     "prisma": "^6.19.3",
