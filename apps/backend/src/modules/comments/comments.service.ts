@@ -39,6 +39,7 @@ export async function createComment(
       title: true,
       userId: true,
       teamId: true,
+      isPublic: true,
     },
   });
 
@@ -80,7 +81,7 @@ export async function createComment(
       },
     });
 
-    if (!teamMember) {
+    if (!issue.isPublic && !teamMember) {
       console.error(
         'createComment() - 댓글 작성자의 팀 정보를 찾을 수 없습니다.',
       );
@@ -121,25 +122,27 @@ export async function createComment(
       },
     });
 
-    await tx.teamMember.update({
-      where: {
-        id: teamMember.id,
-      },
-      data: {
-        score: {
-          increment: CREATE_COMMENT_REWARDED_SCORE,
+    if (teamMember) {
+      await tx.teamMember.update({
+        where: {
+          id: teamMember.id,
         },
-      },
-    });
+        data: {
+          score: {
+            increment: CREATE_COMMENT_REWARDED_SCORE,
+          },
+        },
+      });
 
-    await tx.scoreLog.create({
-      data: {
-        teamMemberId: teamMember.id,
-        amount: CREATE_COMMENT_REWARDED_SCORE,
-        reason: `댓글 작성`,
-        issueId: issue.id,
-      },
-    });
+      await tx.scoreLog.create({
+        data: {
+          teamMemberId: teamMember.id,
+          amount: CREATE_COMMENT_REWARDED_SCORE,
+          reason: `댓글 작성`,
+          issueId: issue.id,
+        },
+      });
+    }
 
     return comment;
   });
@@ -393,6 +396,7 @@ export async function adoptComment(
             userId: true,
             teamId: true,
             status: true,
+            isPublic: true,
           },
         },
       },
@@ -426,11 +430,11 @@ export async function adoptComment(
       },
     });
 
-    if (!teamMember) {
+    if (!comment.issue.isPublic && !teamMember) {
       console.error(
         'adoptComment() - 댓글 작성자의 팀 정보를 찾을 수 없습니다.',
       );
-      throw Errors.NOT_FOUND;
+      throw Errors.FORBIDDEN;
     }
 
     await tx.comment.update({
@@ -454,27 +458,29 @@ export async function adoptComment(
       });
     }
 
-    await tx.teamMember.update({
-      where: {
-        id: teamMember.id,
-      },
-      data: {
-        score: {
-          increment: ADOPT_COMMENT_REWARDED_SCORE,
+    if (teamMember) {
+      await tx.teamMember.update({
+        where: {
+          id: teamMember.id,
         },
-      },
-    });
+        data: {
+          score: {
+            increment: ADOPT_COMMENT_REWARDED_SCORE,
+          },
+        },
+      });
 
-    const ADOPT_COMMENT_REASON = `이슈 해결 기여`;
+      await tx.scoreLog.create({
+        data: {
+          teamMemberId: teamMember.id,
+          amount: ADOPT_COMMENT_REWARDED_SCORE,
+          reason: `이슈 해결 기여`,
+          issueId: comment.issue.id,
+        },
+      });
+    }
 
-    await tx.scoreLog.create({
-      data: {
-        teamMemberId: teamMember.id,
-        amount: ADOPT_COMMENT_REWARDED_SCORE,
-        reason: ADOPT_COMMENT_REASON,
-        issueId: comment.issue.id,
-      },
-    });
+    const adoptCommentReason = `이슈 해결 기여`;
 
     return {
       notificationUserId: comment.userId,
@@ -482,7 +488,7 @@ export async function adoptComment(
         issueId: comment.issue.id,
         commentId: comment.id,
         rewardedScore: ADOPT_COMMENT_REWARDED_SCORE,
-        reason: ADOPT_COMMENT_REASON,
+        reason: adoptCommentReason,
         status: SOLVED_STATUS,
       },
       slackNotification: {
