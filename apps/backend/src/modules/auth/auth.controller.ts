@@ -1,11 +1,13 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { CookieOptions, NextFunction, Request, Response } from 'express';
 
 import { authService } from './auth.service.js';
 
-const COOKIE_OPTIONS = {
+const isProduction = process.env.NODE_ENV === 'production';
+
+const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
   maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
   domain:
     process.env.NODE_ENV === 'production'
@@ -54,11 +56,9 @@ export const authController = {
 
       res.cookie('token', accessToken, COOKIE_OPTIONS);
       if (isNewUser) {
-        res.redirect(
-          `${process.env.CLIENT_URL || 'http://localhost:5173'}/signup/name`,
-        );
+        res.redirect(`${process.env.CLIENT_URL}/signup/name`);
       } else {
-        res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/`);
+        res.redirect(`${process.env.CLIENT_URL}/`);
       }
     } catch (err) {
       next(err);
