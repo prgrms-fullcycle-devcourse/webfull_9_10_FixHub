@@ -1,4 +1,4 @@
-import { CalendarDays, Globe2, SquarePen } from 'lucide-react';
+import { CalendarDays, Globe2, LockKeyholeIcon, SquarePen } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import {
@@ -153,7 +153,7 @@ function IssueDetail() {
             </div>
 
             <div className="flex items-center gap-3 typo-regular-14 text-(--text-primary)">
-              <Globe2 size={24} />
+              {isPublic ? <Globe2 size={24} /> : <LockKeyholeIcon size={24} />}
               <span>{visibilityText}</span>
             </div>
           </div>
