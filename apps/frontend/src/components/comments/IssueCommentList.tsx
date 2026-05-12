@@ -49,7 +49,7 @@ function IssueCommentList({
     string | null
   >(null);
   const [deletedCommentIds, setDeletedCommentIds] = useState<string[]>([]);
-  const [adoptedCommentId, setAdoptedCommentId] = useState<string | null>(null);
+  const [adoptedCommentIds, setAdoptedCommentIds] = useState<string[]>([]);
   const [adoptingCommentId, setAdoptingCommentId] = useState<string | null>(
     null,
   );
@@ -93,9 +93,6 @@ function IssueCommentList({
   const visibleComments = showAllComments
     ? remainingComments
     : remainingComments.slice(0, 3);
-  const hasAdoptedComment = remainingComments.some(
-    (comment) => comment.selected || comment.id === adoptedCommentId,
-  );
   const deleteConfirmComment = remainingComments.find(
     (comment) => comment.id === deleteConfirmCommentId,
   );
@@ -103,7 +100,14 @@ function IssueCommentList({
     useAdoptComment({
       mutation: {
         onSuccess: (adoptedComment, variables) => {
-          setAdoptedCommentId(adoptedComment.commentId ?? variables.commentId);
+          const adoptedCommentId =
+            adoptedComment.commentId ?? variables.commentId;
+
+          setAdoptedCommentIds((prevCommentIds) =>
+            prevCommentIds.includes(adoptedCommentId)
+              ? prevCommentIds
+              : [...prevCommentIds, adoptedCommentId],
+          );
           queryClient.invalidateQueries({
             queryKey: getGetCommentsQueryKey(issueId),
           });
@@ -303,9 +307,8 @@ function IssueCommentList({
 
               const isCommentAuthor = comment.author.id === currentUserId;
               const isSelectedComment =
-                comment.selected || adoptedCommentId === comment.id;
-              const canAdoptComment =
-                isIssueAuthor && !isCommentAuthor && !hasAdoptedComment;
+                comment.selected || adoptedCommentIds.includes(comment.id);
+              const canAdoptComment = isIssueAuthor && !isCommentAuthor;
               const canSaveEdit =
                 editingText.trim().length > 0 &&
                 editingText.trim() !== displayedText;

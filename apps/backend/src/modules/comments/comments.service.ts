@@ -22,6 +22,7 @@ import type {
 } from './comments.dto.js';
 
 const ADOPT_COMMENT_REWARDED_SCORE = 10;
+const CREATE_COMMENT_REWARDED_SCORE = 1;
 const SOLVED_STATUS = 'SOLVED' as const;
 
 export async function createComment(
@@ -66,38 +67,81 @@ export async function createComment(
     }
   }
 
-  const createdComment = await prisma.comment.create({
-    data: {
-      content: body.content,
-      issue: {
-        connect: {
-          id: params.id,
+  const createdComment = await prisma.$transaction(async (tx) => {
+    const teamMember = await tx.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId: issue.teamId,
+          userId,
         },
       },
-      user: {
-        connect: {
-          id: userId,
-        },
+      select: {
+        id: true,
       },
-      ...(body.parentId === null
-        ? {}
-        : {
-            parent: {
-              connect: {
-                id: body.parentId,
+    });
+
+    if (!teamMember) {
+      console.error(
+        'createComment() - 댓글 작성자의 팀 정보를 찾을 수 없습니다.',
+      );
+      throw Errors.FORBIDDEN;
+    }
+
+    const comment = await tx.comment.create({
+      data: {
+        content: body.content,
+        issue: {
+          connect: {
+            id: params.id,
+          },
+        },
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+        ...(body.parentId === null
+          ? {}
+          : {
+              parent: {
+                connect: {
+                  id: body.parentId,
+                },
               },
-            },
-          }),
-    },
-    select: {
-      id: true,
-      createdAt: true,
-      user: {
-        select: {
-          name: true,
+            }),
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        user: {
+          select: {
+            name: true,
+          },
         },
       },
-    },
+    });
+
+    await tx.teamMember.update({
+      where: {
+        id: teamMember.id,
+      },
+      data: {
+        score: {
+          increment: CREATE_COMMENT_REWARDED_SCORE,
+        },
+      },
+    });
+
+    await tx.scoreLog.create({
+      data: {
+        teamMemberId: teamMember.id,
+        amount: CREATE_COMMENT_REWARDED_SCORE,
+        reason: `댓글 작성 - ${params.id}`,
+        issueId: issue.id,
+      },
+    });
+
+    return comment;
   });
 
   if (body.parentId === null) {
@@ -395,14 +439,16 @@ export async function adoptComment(
       },
     });
 
-    await tx.errorIssue.update({
-      where: {
-        id: comment.issue.id,
-      },
-      data: {
-        status: SOLVED_STATUS,
-      },
-    });
+    if (comment.issue.status !== SOLVED_STATUS) {
+      await tx.errorIssue.update({
+        where: {
+          id: comment.issue.id,
+        },
+        data: {
+          status: SOLVED_STATUS,
+        },
+      });
+    }
 
     await tx.teamMember.update({
       where: {
