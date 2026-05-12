@@ -136,7 +136,7 @@ export async function createComment(
       data: {
         teamMemberId: teamMember.id,
         amount: CREATE_COMMENT_REWARDED_SCORE,
-        reason: `댓글 작성 - ${params.id}`,
+        reason: `댓글 작성`,
         issueId: issue.id,
       },
     });
@@ -461,7 +461,7 @@ export async function adoptComment(
       },
     });
 
-    const ADOPT_COMMENT_REASON = `이슈 해결 기여 - ${params.id}`;
+    const ADOPT_COMMENT_REASON = `이슈 해결 기여`;
 
     await tx.scoreLog.create({
       data: {
