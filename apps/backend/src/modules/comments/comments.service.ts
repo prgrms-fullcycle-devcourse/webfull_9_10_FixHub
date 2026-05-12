@@ -395,14 +395,16 @@ export async function adoptComment(
       },
     });
 
-    await tx.errorIssue.update({
-      where: {
-        id: comment.issue.id,
-      },
-      data: {
-        status: SOLVED_STATUS,
-      },
-    });
+    if (comment.issue.status !== SOLVED_STATUS) {
+      await tx.errorIssue.update({
+        where: {
+          id: comment.issue.id,
+        },
+        data: {
+          status: SOLVED_STATUS,
+        },
+      });
+    }
 
     await tx.teamMember.update({
       where: {
