@@ -76,6 +76,7 @@ export default function EditProfileModal({
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const isGithubUser = profile.provider === 'github';
 
   const { mutate, isPending } = useUpdateMyProfile({
     mutation: {
@@ -188,59 +189,61 @@ export default function EditProfileModal({
         />
       </section>
 
-      <section className={cn(sectionCls, 'space-y-5')}>
-        <h3 className={labelCls}>비밀번호 변경</h3>
-        <div className="grid gap-4">
-          <div>
-            <p className="typo-regular-14 text-(--text-muted) mb-1.5 ml-1">
-              현재 비밀번호
-            </p>
-            <PasswordInput
-              value={currentPw}
-              onChange={setCurrentPw}
-              placeholder="기존 비밀번호 입력"
-              isError={!!(isPasswordInputting && !isCurrentPwEntered)}
-            />
-            {isPasswordInputting && !isCurrentPwEntered && (
-              <p className={errorTextCls}>
-                {' '}
-                비밀번호를 변경하려면 현재 비밀번호가 필요합니다.
-              </p>
-            )}
-          </div>
-          <div className="h-px bg-white/5 my-1" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {!isGithubUser && (
+        <section className={cn(sectionCls, 'space-y-5')}>
+          <h3 className={labelCls}>비밀번호 변경</h3>
+          <div className="grid gap-4">
             <div>
               <p className="typo-regular-14 text-(--text-muted) mb-1.5 ml-1">
-                새 비밀번호
+                현재 비밀번호
               </p>
               <PasswordInput
-                value={nextPw}
-                onChange={setNextPw}
-                placeholder="8자 이상"
-                isError={nextPw.length > 0 && !isNextPwValid}
+                value={currentPw}
+                onChange={setCurrentPw}
+                placeholder="기존 비밀번호 입력"
+                isError={!!(isPasswordInputting && !isCurrentPwEntered)}
               />
-              {nextPw.length > 0 && !isNextPwValid && (
-                <p className={errorTextCls}> 8자 이상 입력해주세요.</p>
+              {isPasswordInputting && !isCurrentPwEntered && (
+                <p className={errorTextCls}>
+                  {' '}
+                  비밀번호를 변경하려면 현재 비밀번호가 필요합니다.
+                </p>
               )}
             </div>
-            <div>
-              <p className="typo-regular-14 text-(--text-muted) mb-1.5 ml-1">
-                새 비밀번호 확인
-              </p>
-              <PasswordInput
-                value={confirmPw}
-                onChange={setConfirmPw}
-                placeholder="동일하게 입력"
-                isError={confirmPw.length > 0 && !isConfirmPwMatch}
-              />
-              {confirmPw.length > 0 && !isConfirmPwMatch && (
-                <p className={errorTextCls}> 비밀번호가 일치하지 않습니다.</p>
-              )}
+            <div className="h-px bg-white/5 my-1" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="typo-regular-14 text-(--text-muted) mb-1.5 ml-1">
+                  새 비밀번호
+                </p>
+                <PasswordInput
+                  value={nextPw}
+                  onChange={setNextPw}
+                  placeholder="8자 이상"
+                  isError={nextPw.length > 0 && !isNextPwValid}
+                />
+                {nextPw.length > 0 && !isNextPwValid && (
+                  <p className={errorTextCls}> 8자 이상 입력해주세요.</p>
+                )}
+              </div>
+              <div>
+                <p className="typo-regular-14 text-(--text-muted) mb-1.5 ml-1">
+                  새 비밀번호 확인
+                </p>
+                <PasswordInput
+                  value={confirmPw}
+                  onChange={setConfirmPw}
+                  placeholder="동일하게 입력"
+                  isError={confirmPw.length > 0 && !isConfirmPwMatch}
+                />
+                {confirmPw.length > 0 && !isConfirmPwMatch && (
+                  <p className={errorTextCls}> 비밀번호가 일치하지 않습니다.</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {error && (
         <div className="p-4 rounded-xl bg-(--status-error)/10 border border-(--status-error)/20 text-(--status-error) text-center typo-regular-14">
