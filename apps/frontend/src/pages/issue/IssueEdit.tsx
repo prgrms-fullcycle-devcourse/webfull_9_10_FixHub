@@ -1,8 +1,10 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { CircleHelp, FileImage, Plus, Sparkles } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import {
+  useGetTeams,
+  useGetTeamsTeamId,
   useGetTeamsTeamIdIssuesIssueId,
   usePatchTeamsTeamIdIssuesIssueId,
   usePostIssuesSuggest,
@@ -34,6 +36,15 @@ function IssueEdit() {
   );
 
   const { mutateAsync, isPending } = usePatchTeamsTeamIdIssuesIssueId();
+
+  const { data: teamsResponse } = useGetTeams();
+  const { data: teamDetail } = useGetTeamsTeamId(teamId ?? '', {
+    query: {
+      enabled: Boolean(teamId),
+    },
+  });
+
+  const [selectedMemberId, setSelectedMemberId] = useState('');
 
   const [tagInput, setTagInput] = useState('');
   const [draft, setDraft] = useState<DraftState | null>(null);
@@ -107,6 +118,24 @@ function IssueEdit() {
     issueStatus,
     visibility,
   });
+
+  const teams = useMemo(() => teamsResponse?.data ?? [], [teamsResponse?.data]);
+  const teamMembers = useMemo(
+    () => teamDetail?.members ?? [],
+    [teamDetail?.members],
+  );
+
+  const resolvedMemberId = useMemo(() => {
+    if (teamMembers.length === 0) return '';
+
+    const hasSelectedMember = teamMembers.some(
+      (member) => member.userId === selectedMemberId,
+    );
+
+    return hasSelectedMember
+      ? selectedMemberId
+      : (teamMembers[0]?.userId ?? '');
+  }, [selectedMemberId, teamMembers]);
 
   const updateDraft = (patch: Partial<DraftState>) => {
     setDraft({
@@ -677,6 +706,59 @@ function IssueEdit() {
                 </p>
               </button>
             </div>
+          </div>
+
+          <div className="h-px w-full bg-border" />
+
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_1px_auto_minmax(0,1fr)] items-center gap-6">
+            <label className="typo-semibold-18 text-(--text-primary)">
+              팀 선택
+            </label>
+
+            <select
+              value={teamId ?? ''}
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
+                transition-all duration-300
+                focus:border-primary
+                focus:shadow-(--shadow)"
+              style={{
+                background: 'var(--surface-input)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="">팀</option>
+              {teams.map((item) => (
+                <option key={item.teamId} value={item.teamId}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="h-14 w-px bg-border" />
+
+            <label className="typo-semibold-18 text-(--text-primary)">
+              팀 멤버 선택
+            </label>
+
+            <select
+              value={resolvedMemberId}
+              onChange={(e) => setSelectedMemberId(e.target.value)}
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
+                transition-all duration-300
+                focus:border-primary
+                focus:shadow-(--shadow)"
+              style={{
+                background: 'var(--surface-input)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="">팀 멤버</option>
+              {teamMembers.map((item) => (
+                <option key={item.userId} value={item.userId}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="h-px w-full bg-border" />

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   useGetTeams,
+  useGetTeamsTeamId,
   usePostIssuesSuggest,
   usePostTeamsTeamIdIssues,
 } from '@/api/generated';
@@ -25,11 +26,37 @@ function IssueCreate() {
     'UNSOLVED',
   );
   const [visibility, setVisibility] = useState<'public' | 'private'>('private');
+  const [selectedTeamId, setSelectedTeamId] = useState(teamId ?? '');
+  const [selectedMemberId, setSelectedMemberId] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const isTagComposingRef = useRef(false);
 
   const teams = useMemo(() => teamsResponse?.data ?? [], [teamsResponse?.data]);
-  const resolvedTeamId = teamId || teams[0]?.teamId || '';
+
+  const resolvedTeamId = selectedTeamId || teamId || teams[0]?.teamId || '';
+
+  const { data: selectedTeamDetail } = useGetTeamsTeamId(resolvedTeamId, {
+    query: {
+      enabled: Boolean(resolvedTeamId),
+    },
+  });
+
+  const teamMembers = useMemo(
+    () => selectedTeamDetail?.members ?? [],
+    [selectedTeamDetail?.members],
+  );
+
+  const resolvedMemberId = useMemo(() => {
+    if (teamMembers.length === 0) return '';
+
+    const hasSelectedMember = teamMembers.some(
+      (member) => member.userId === selectedMemberId,
+    );
+
+    return hasSelectedMember
+      ? selectedMemberId
+      : (teamMembers[0]?.userId ?? '');
+  }, [selectedMemberId, teamMembers]);
 
   const normalizeTag = (value: string) =>
     value.normalize('NFC').trim().replace(/\s+/g, ' ');
@@ -198,6 +225,12 @@ function IssueCreate() {
 
   const handleCancel = () => {
     navigate(-1);
+  };
+
+  const handleChangeTeam = (nextTeamId: string) => {
+    setSelectedTeamId(nextTeamId);
+    setSelectedMemberId('');
+    navigate(`/teams/${nextTeamId}/issues/new`, { replace: true });
   };
 
   return (
@@ -612,6 +645,59 @@ function IssueCreate() {
                 </p>
               </button>
             </div>
+          </div>
+
+          <div className="h-px w-full bg-border" />
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_1px_auto_minmax(0,1fr)] items-center gap-6">
+            <label className="typo-semibold-18 text-(--text-primary)">
+              팀 선택
+            </label>
+
+            <select
+              value={resolvedTeamId}
+              onChange={(e) => handleChangeTeam(e.target.value)}
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
+                  transition-all duration-300
+                  focus:border-primary
+                  focus:shadow-(--shadow)"
+              style={{
+                background: 'var(--surface-input)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="">팀</option>
+              {teams.map((item) => (
+                <option key={item.teamId} value={item.teamId}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="h-14 w-px bg-border" />
+
+            <label className="typo-semibold-18 text-(--text-primary)">
+              팀 멤버 선택
+            </label>
+
+            <select
+              value={resolvedMemberId}
+              onChange={(e) => setSelectedMemberId(e.target.value)}
+              className="h-14 w-full cursor-pointer rounded-sm border border-border px-4 typo-regular-16 outline-none
+                  transition-all duration-300
+                  focus:border-primary
+                  focus:shadow-(--shadow)"
+              style={{
+                background: 'var(--surface-input)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="">팀 멤버</option>
+              {teamMembers.map((item) => (
+                <option key={item.userId} value={item.userId}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="h-px w-full bg-border" />
