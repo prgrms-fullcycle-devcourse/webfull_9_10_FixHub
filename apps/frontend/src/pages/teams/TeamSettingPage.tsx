@@ -627,6 +627,17 @@ export default function TeamSettingPage() {
               </div>
             </div>
           </section>
+
+          {/* 탈퇴/삭제 버튼 */}
+          <div className="pt-6 flex justify-end gap-4 border-t border-white/50">
+            <div className="flex gap-4">
+              <TeamExitButton
+                isLeader={isLeader}
+                // onLeave={handleLeaveTeam}
+                // onDelete={handleDeleteTeam}
+              />
+            </div>
+          </div>
         </div>
       </div>
       <CommonModal
@@ -742,5 +753,26 @@ function NotificationSettingItem({
         }}
       />
     </div>
+  );
+}
+
+interface TeamExitButtonProps {
+  isLeader: boolean;
+  onLeave?: () => void;
+  onDelete?: () => void;
+}
+
+function TeamExitButton({ isLeader, onLeave, onDelete }: TeamExitButtonProps) {
+  return (
+    <button
+      onClick={isLeader ? onDelete : onLeave}
+      className="py-[18px] px-[32px] h-15 rounded-sm typo-regular-20 cursor-pointer"
+      style={{
+        background: 'var(--status-unsaved)',
+        color: 'var(--text-primary)',
+      }}
+    >
+      {isLeader ? '팀 삭제하기' : '탈퇴하기'}
+    </button>
   );
 }
