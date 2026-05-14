@@ -1078,6 +1078,8 @@ export type GetTeamsTeamIdIssuesIssueId200 = {
   tag: string[];
   author: string;
   authorId: string;
+  /** @nullable */
+  authorProfileImg: string | null;
   isAuthor: boolean;
   createdAt: string;
   errorLog: string;
