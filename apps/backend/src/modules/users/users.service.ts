@@ -90,6 +90,7 @@ export async function getMyProfile(
     totalScore,
     issueCount: user.errorIssues.length,
     solvedCount,
+    provider: user.provider,
   };
 }
 

@@ -45,7 +45,8 @@ const KEYS = [
 type Key = (typeof KEYS)[number];
 
 function toPlainSummary(content: string) {
-  return content
+  const plain = content
+    .replace(/!\[(.*?)\]\(.*?\)/g, ' ')
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/`([^`]+)`/g, '$1')
     .replace(/^#{1,6}\s+/gm, '')
@@ -58,8 +59,9 @@ function toPlainSummary(content: string) {
     .replace(/\[(.*?)\]\(.*?\)/g, '$1')
     .replace(/\n+/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 120);
+    .trim();
+
+  return plain.slice(0, 120);
 }
 
 function parseSearchQuery(input: string) {

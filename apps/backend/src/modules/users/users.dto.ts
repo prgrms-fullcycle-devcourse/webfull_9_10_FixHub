@@ -36,6 +36,7 @@ export const GetMyProfileResponseSchema = z.object({
   totalScore: z.number().openapi({ example: 1240 }),
   issueCount: z.number().openapi({ example: 17 }),
   solvedCount: z.number().openapi({ example: 42 }),
+  provider: z.string().openapi({ example: 'github' }),
 });
 
 export type GetMyProfileResponseDto = z.infer<
