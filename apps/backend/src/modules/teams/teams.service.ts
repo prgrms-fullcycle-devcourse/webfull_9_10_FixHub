@@ -220,6 +220,7 @@ export async function getTeamDetail(userId: string, teamId: string) {
           user: {
             select: {
               name: true,
+              profileImg: true,
             },
           },
         },
@@ -263,6 +264,7 @@ export async function getTeamDetail(userId: string, teamId: string) {
     members: team.teamMembers.map((member) => ({
       userId: member.userId,
       name: member.user.name,
+      profileImgUrl: member.user.profileImg,
       role: member.role,
       joinedAt: member.joinedAt?.toISOString() ?? null,
       score: member.score ?? 0,
@@ -318,6 +320,7 @@ export async function getTeamSettings(userId: string, teamId: string) {
           user: {
             select: {
               name: true,
+              profileImg: true,
             },
           },
         },
@@ -373,6 +376,7 @@ export async function getTeamSettings(userId: string, teamId: string) {
     members: team.teamMembers.map((member) => ({
       userId: member.userId,
       name: member.user.name,
+      profileImgUrl: member.user.profileImg,
       role: member.role,
       joinedAt: member.joinedAt?.toISOString() ?? null,
       score: member.score ?? 0,
@@ -430,6 +434,7 @@ export async function getTeamMembers(userId: string, teamId: string) {
   const data = members.map((member) => ({
     userId: member.userId,
     name: member.user.name,
+    profileImgUrl: member.user.profileImg,
     role: member.role,
     joinedAt: member.joinedAt?.toISOString() ?? null,
     score: member.score,

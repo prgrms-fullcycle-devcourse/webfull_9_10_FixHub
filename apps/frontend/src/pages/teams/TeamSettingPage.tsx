@@ -492,6 +492,7 @@ export default function TeamSettingPage() {
                         name: member.name,
                       });
                     }}
+                    profileImg={member.profileImgUrl}
                     {...member}
                   />
                 ))}
@@ -800,6 +801,7 @@ export default function TeamSettingPage() {
 type MemberListItemProps = {
   isLeader: boolean;
   name: string;
+  profileImg: string;
   role: string;
   score: number;
   joinedAt: string;
@@ -810,6 +812,7 @@ type MemberListItemProps = {
 function MemberListItem({
   isLeader,
   name,
+  profileImg,
   role,
   score,
   joinedAt,
@@ -821,7 +824,13 @@ function MemberListItem({
       <div className="flex items-center gap-[16px]">
         <div className="flex gap-10 items-center">
           <div className="flex gap-5 items-center">
-            <div className="w-16 h-16 bg-gray-400 rounded-full" />
+            <div className="w-16 h-16 bg-gray-400 rounded-full overflow-hidden">
+              <img
+                src={profileImg ?? ''}
+                alt={name ?? '프로필'}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div className="space-y-1">
               <div className="space-x-3">
                 <span className="typo-bold-20">{name}</span>

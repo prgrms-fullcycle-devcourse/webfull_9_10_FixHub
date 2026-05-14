@@ -42,6 +42,7 @@ export const GetTeamDetailResponseSchema = z.object({
     z.object({
       userId: z.uuidv7(),
       name: z.string(),
+      profileImgUrl: z.string(),
       role: z.enum(['LEADER', 'MEMBER']),
       joinedAt: z.iso.datetime(),
       score: z.number(),
@@ -59,6 +60,7 @@ export const GetTeamMembersResponseSchema = z.object({
     z.object({
       userId: z.uuidv7(),
       name: z.string(),
+      profileImgUrl: z.string(),
       role: z.enum(['LEADER', 'MEMBER']),
       joinedAt: z.iso.datetime().nullable(),
       score: z.number(),
@@ -83,6 +85,7 @@ export const GetTeamSettingsResponseSchema = z.object({
     z.object({
       userId: z.uuidv7(),
       name: z.string(),
+      profileImgUrl: z.string(),
       role: z.enum(['LEADER', 'MEMBER']),
       joinedAt: z.iso.datetime(),
       score: z.number(),

@@ -502,6 +502,7 @@ export const GetTeamsTeamId200MembersItemRole = {
 export type GetTeamsTeamId200MembersItem = {
   userId: string;
   name: string;
+  profileImgUrl: string;
   role: GetTeamsTeamId200MembersItemRole;
   joinedAt: string;
   score: number;
@@ -841,6 +842,7 @@ export const GetTeamsTeamIdSettings200MembersItemRole = {
 export type GetTeamsTeamIdSettings200MembersItem = {
   userId: string;
   name: string;
+  profileImgUrl: string;
   role: GetTeamsTeamIdSettings200MembersItemRole;
   joinedAt: string;
   score: number;
@@ -895,6 +897,7 @@ export const GetTeamsTeamIdMembers200DataItemRole = {
 export type GetTeamsTeamIdMembers200DataItem = {
   userId: string;
   name: string;
+  profileImgUrl: string;
   role: GetTeamsTeamIdMembers200DataItemRole;
   /** @nullable */
   joinedAt: string | null;
