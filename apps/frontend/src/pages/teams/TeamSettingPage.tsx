@@ -829,7 +829,7 @@ function MemberListItem({
               </div>
               <div>
                 <span className="typo-regular-16 text-[var(--text-muted)]">
-                  {joinedAt} 가입
+                  {joinedAt ? `${joinedAt.split('T')[0]} 가입` : '가입'}
                 </span>
               </div>
             </div>
