@@ -78,6 +78,10 @@ export default function TeamSettingPage() {
     userId: string;
     name: string;
   } | null>(null);
+  const [selectedNewLeader, setSelectedNewLeader] = useState<{
+    userId: string;
+    name: string;
+  } | null>(null);
   const [isTeamLeaveModalOpen, setIsTeamLeaveModalOpen] = useState(false);
   const [isTeamDeleteModalOpen, setIsTeamDeleteModalOpen] = useState(false);
 
@@ -151,6 +155,8 @@ export default function TeamSettingPage() {
   } = usePatchTeamsTeamId({
     mutation: {
       onSuccess: () => {
+        setSelectedNewLeader(null);
+
         queryClient.invalidateQueries({
           queryKey: getGetTeamsTeamIdSettingsQueryKey(teamId ?? ''),
         });
@@ -263,6 +269,16 @@ export default function TeamSettingPage() {
     updateTeam({
       teamId: teamId,
       data: payload,
+    });
+  };
+
+  const handleTransferLeadership = (newOwnerId: string) => {
+    if (!isLeader) return alert('변경 권한이 없습니다.');
+    if (!teamId) return console.error('teamId를 가져올 수 없습니다.');
+
+    updateTeam({
+      teamId: teamId,
+      data: { ownerId: newOwnerId },
     });
   };
 
@@ -466,6 +482,12 @@ export default function TeamSettingPage() {
                     isLeader={isLeader}
                     onKick={() => {
                       setSelectedKickMember({
+                        userId: member.userId,
+                        name: member.name,
+                      });
+                    }}
+                    onTransferLeadership={() => {
+                      setSelectedNewLeader({
                         userId: member.userId,
                         name: member.name,
                       });
@@ -702,6 +724,8 @@ export default function TeamSettingPage() {
           </div>
         </div>
       </div>
+
+      {/* 팀원 내보내기 */}
       <CommonModal
         isOpen={!!selectedKickMember}
         title="팀원 내보내기"
@@ -730,6 +754,32 @@ export default function TeamSettingPage() {
           });
         }}
       />
+
+      {/* 팀원에게 리더 위임하기 */}
+      <CommonModal
+        isOpen={!!selectedNewLeader}
+        title="리더 위임하기"
+        description={
+          <div>
+            <p className="text-center leading-relaxed typo-regular-16">
+              <span className="font-bold">{selectedNewLeader?.name}</span>
+              님을 리더로 변경하시겠습니까?
+            </p>
+            {updateTeamError instanceof Error && (
+              <p className="pt-4 text-[var(--status-error)] text-sm text-center typo-regular-14">
+                리더 변경에 실패했습니다. 다시 시도해주세요.
+              </p>
+            )}
+          </div>
+        }
+        confirmText="리더 위임"
+        onClose={() => setSelectedNewLeader(null)}
+        onConfirm={() => {
+          if (!selectedNewLeader) return;
+
+          handleTransferLeadership(selectedNewLeader.userId);
+        }}
+      />
       <TeamLeaveModal
         isOpen={isTeamLeaveModalOpen}
         deleteTeam={() => setIsTeamLeaveModalOpen(false)}
@@ -754,6 +804,7 @@ type MemberListItemProps = {
   score: number;
   joinedAt: string;
   onKick: () => void;
+  onTransferLeadership: () => void;
 };
 
 function MemberListItem({
@@ -763,6 +814,7 @@ function MemberListItem({
   score,
   joinedAt,
   onKick,
+  onTransferLeadership,
 }: MemberListItemProps) {
   return (
     <div className="flex items-center justify-between px-10 py-5 rounded-lg">
@@ -786,18 +838,27 @@ function MemberListItem({
       </div>
       <div className="space-x-4">
         {role === 'LEADER' && (
-          <span className="rounded-sm bg-[#544777] px-2 py-1 typo-regular-16">
+          <span className="rounded-sm bg-[var(--color-gray-600)] px-2 py-1 typo-regular-16">
             팀장
           </span>
         )}
 
         {role !== 'LEADER' && isLeader && (
-          <button
-            onClick={onKick}
-            className="rounded-sm bg-[var(--status-unsaved)] px-2 py-1 typo-regular-16 cursor-pointer"
-          >
-            내보내기
-          </button>
+          <>
+            <button
+              onClick={onTransferLeadership}
+              className="rounded-sm bg-[var(--color-gray-600)] px-2 py-1 typo-regular-16 cursor-pointer"
+            >
+              리더 위임
+            </button>
+
+            <button
+              onClick={onKick}
+              className="rounded-sm bg-[var(--status-unsaved)] px-2 py-1 typo-regular-16 cursor-pointer"
+            >
+              내보내기
+            </button>
+          </>
         )}
       </div>
     </div>
