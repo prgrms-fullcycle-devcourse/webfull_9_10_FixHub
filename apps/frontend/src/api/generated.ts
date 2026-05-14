@@ -598,6 +598,37 @@ export type PatchTeamsTeamId404 = {
   error: PatchTeamsTeamId404Error;
 };
 
+export type DeleteTeam200 = {
+  deletedTeamId: string;
+};
+
+export type DeleteTeam401Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeam401 = {
+  error: DeleteTeam401Error;
+};
+
+export type DeleteTeam403Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeam403 = {
+  error: DeleteTeam403Error;
+};
+
+export type DeleteTeam404Error = {
+  code: string;
+  message: string;
+};
+
+export type DeleteTeam404 = {
+  error: DeleteTeam404Error;
+};
+
 export type GetTeamsTeamIdSlackConnect401Error = {
   code: string;
   message: string;
@@ -984,6 +1015,28 @@ export type DeleteTeamMember404Error = {
 
 export type DeleteTeamMember404 = {
   error: DeleteTeamMember404Error;
+};
+
+export type LeaveTeam200 = {
+  deletedMemberId: string;
+};
+
+export type LeaveTeam401Error = {
+  code: string;
+  message: string;
+};
+
+export type LeaveTeam401 = {
+  error: LeaveTeam401Error;
+};
+
+export type LeaveTeam404Error = {
+  code: string;
+  message: string;
+};
+
+export type LeaveTeam404 = {
+  error: LeaveTeam404Error;
 };
 
 export type GetIssuesSearchParams = {
@@ -2958,6 +3011,93 @@ export const usePatchTeamsTeamId = <
 };
 
 /**
+ * 팀장이 팀을 삭제합니다.
+ * @summary 팀 삭제
+ */
+export const deleteTeam = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DeleteTeam200>(
+    { url: `/teams/${teamId}`, method: 'DELETE', signal },
+    options,
+  );
+};
+
+export const getDeleteTeamMutationOptions = <
+  TError = ErrorType<DeleteTeam401 | DeleteTeam403 | DeleteTeam404>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTeam>>,
+    TError,
+    { teamId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTeam>>,
+  TError,
+  { teamId: string },
+  TContext
+> => {
+  const mutationKey = ['deleteTeam'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTeam>>,
+    { teamId: string }
+  > = (props) => {
+    const { teamId } = props ?? {};
+
+    return deleteTeam(teamId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTeamMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTeam>>
+>;
+
+export type DeleteTeamMutationError = ErrorType<
+  DeleteTeam401 | DeleteTeam403 | DeleteTeam404
+>;
+
+/**
+ * @summary 팀 삭제
+ */
+export const useDeleteTeam = <
+  TError = ErrorType<DeleteTeam401 | DeleteTeam403 | DeleteTeam404>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteTeam>>,
+      TError,
+      { teamId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTeam>>,
+  TError,
+  { teamId: string },
+  TContext
+> => {
+  return useMutation(getDeleteTeamMutationOptions(options), queryClient);
+};
+
+/**
  * 로그인한 사용자를 Slack OAuth 승인 화면으로 이동시켜 Incoming Webhook 연동을 시작합니다.
  * @summary Slack 연동 시작
  */
@@ -4370,6 +4510,91 @@ export const useDeleteTeamMember = <
   TContext
 > => {
   return useMutation(getDeleteTeamMemberMutationOptions(options), queryClient);
+};
+
+/**
+ * 현재 로그인한 사용자가 팀에서 탈퇴합니다.
+ * @summary 팀 탈퇴
+ */
+export const leaveTeam = (
+  teamId: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<LeaveTeam200>(
+    { url: `/teams/${teamId}/leave`, method: 'DELETE', signal },
+    options,
+  );
+};
+
+export const getLeaveTeamMutationOptions = <
+  TError = ErrorType<LeaveTeam401 | LeaveTeam404>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof leaveTeam>>,
+    TError,
+    { teamId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof leaveTeam>>,
+  TError,
+  { teamId: string },
+  TContext
+> => {
+  const mutationKey = ['leaveTeam'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof leaveTeam>>,
+    { teamId: string }
+  > = (props) => {
+    const { teamId } = props ?? {};
+
+    return leaveTeam(teamId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LeaveTeamMutationResult = NonNullable<
+  Awaited<ReturnType<typeof leaveTeam>>
+>;
+
+export type LeaveTeamMutationError = ErrorType<LeaveTeam401 | LeaveTeam404>;
+
+/**
+ * @summary 팀 탈퇴
+ */
+export const useLeaveTeam = <
+  TError = ErrorType<LeaveTeam401 | LeaveTeam404>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof leaveTeam>>,
+      TError,
+      { teamId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof leaveTeam>>,
+  TError,
+  { teamId: string },
+  TContext
+> => {
+  return useMutation(getLeaveTeamMutationOptions(options), queryClient);
 };
 
 /**

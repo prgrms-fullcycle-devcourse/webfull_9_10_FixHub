@@ -1,15 +1,18 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck, FilePlus2, MessageCircle, Reply } from 'lucide-react';
 
 import Toggle from '@/components/ui/Toogle';
 import {
   getGetSlackNotificationSettingsQueryKey,
+  getGetTeamsQueryKey,
   getGetTeamsTeamIdSettingsQueryKey,
+  useDeleteTeam,
   useDeleteTeamMember,
   useGetSlackNotificationSettings,
   useGetTeamsTeamIdSettings,
+  useLeaveTeam,
   usePatchTeamsTeamId,
   useSendSlackTestMessage,
   useUpdateSlackNotificationSettings,
@@ -75,10 +78,14 @@ export default function TeamSettingPage() {
     userId: string;
     name: string;
   } | null>(null);
+  const [isTeamLeaveModalOpen, setIsTeamLeaveModalOpen] = useState(false);
+  const [isTeamDeleteModalOpen, setIsTeamDeleteModalOpen] = useState(false);
 
   const initializedRef = useRef(false); // 초기화 여부 기억
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
+  // 팀 세팅 페이지 초기 데이터 가져오기
   const {
     data: teamSettings,
     isLoading: isTeamSettingsLoading,
@@ -92,6 +99,7 @@ export default function TeamSettingPage() {
     },
   });
 
+  // 슬랙 세팅 가져오기
   const {
     data: slackNotificationSettings,
     isLoading: isSlackNotificationSettingsLoading,
@@ -105,6 +113,7 @@ export default function TeamSettingPage() {
     },
   });
 
+  // 팀원 내보내기
   const { mutate: deleteTeamMember, error: deletingMemberError } =
     useDeleteTeamMember({
       mutation: {
@@ -145,6 +154,46 @@ export default function TeamSettingPage() {
         queryClient.invalidateQueries({
           queryKey: getGetTeamsTeamIdSettingsQueryKey(teamId ?? ''),
         });
+      },
+    },
+  });
+
+  // 팀 탈퇴하기
+  const { mutate: leaveTeam } = useLeaveTeam({
+    mutation: {
+      onSuccess: async () => {
+        alert('팀 탈퇴가 완료되었습니다.');
+
+        setIsTeamLeaveModalOpen(false);
+
+        await queryClient.invalidateQueries({
+          queryKey: getGetTeamsQueryKey(),
+        });
+
+        navigate('/');
+      },
+      onError: () => {
+        alert('팀 탈퇴에 실패했습니다.');
+      },
+    },
+  });
+
+  // 팀 삭제하기
+  const { mutate: deleteTeam } = useDeleteTeam({
+    mutation: {
+      onSuccess: async () => {
+        alert('팀 삭제가 완료되었습니다.');
+
+        setIsTeamDeleteModalOpen(false);
+
+        await queryClient.invalidateQueries({
+          queryKey: getGetTeamsQueryKey(),
+        });
+
+        navigate('/');
+      },
+      onError: () => {
+        alert('팀 삭제에 실패했습니다. 다시 시도해주세요.');
       },
     },
   });
@@ -215,6 +264,19 @@ export default function TeamSettingPage() {
       teamId: teamId,
       data: payload,
     });
+  };
+
+  const handleLeaveTeam = () => {
+    if (!teamId) return;
+
+    leaveTeam({ teamId });
+  };
+
+  const handleDeleteTeam = () => {
+    if (!teamId) return;
+    if (!isLeader) return alert('권한이 존재하지 않습니다.');
+
+    deleteTeam({ teamId });
   };
 
   const handleToggleSlackEvent = (eventId: SlackNotificationEventId) => {
@@ -633,8 +695,8 @@ export default function TeamSettingPage() {
             <div className="flex gap-4">
               <TeamExitButton
                 isLeader={isLeader}
-                // onLeave={handleLeaveTeam}
-                // onDelete={handleDeleteTeam}
+                onLeave={() => setIsTeamLeaveModalOpen(true)}
+                onDelete={() => setIsTeamDeleteModalOpen(true)}
               />
             </div>
           </div>
@@ -667,6 +729,19 @@ export default function TeamSettingPage() {
             userId: selectedKickMember.userId,
           });
         }}
+      />
+      <TeamLeaveModal
+        isOpen={isTeamLeaveModalOpen}
+        deleteTeam={() => setIsTeamLeaveModalOpen(false)}
+        leaveTeam={() => handleLeaveTeam()}
+        teamName={teamName}
+      />
+
+      <TeamDeleteModal
+        isOpen={isTeamDeleteModalOpen}
+        onclose={() => setIsTeamDeleteModalOpen(false)}
+        deleteTeam={() => handleDeleteTeam()}
+        teamName={teamName}
       />
     </main>
   );
@@ -774,5 +849,81 @@ function TeamExitButton({ isLeader, onLeave, onDelete }: TeamExitButtonProps) {
     >
       {isLeader ? '팀 삭제하기' : '탈퇴하기'}
     </button>
+  );
+}
+
+interface TeamLeaveModalProps {
+  isOpen: boolean;
+  deleteTeam: () => void;
+  leaveTeam: () => void;
+  teamName: string;
+}
+
+function TeamLeaveModal({
+  isOpen,
+  deleteTeam,
+  leaveTeam,
+  teamName,
+}: TeamLeaveModalProps) {
+  return (
+    <CommonModal
+      isOpen={isOpen}
+      title="탈퇴하기"
+      description={
+        <div>
+          <p className="text-center leading-relaxed typo-regular-16">
+            <span className="font-bold">{teamName}</span>
+            에서 나가시겠습니까?
+            <br />
+            리더가 초대하기 전까지 다시 가입할 수 없습니다.
+          </p>
+        </div>
+      }
+      confirmText="탈퇴하기"
+      onClose={() => deleteTeam()}
+      onConfirm={() => {
+        if (!isOpen) return;
+
+        leaveTeam();
+      }}
+    />
+  );
+}
+
+interface TeamDeleteModalProps {
+  isOpen: boolean;
+  onclose: () => void;
+  deleteTeam: () => void;
+  teamName: string;
+}
+
+function TeamDeleteModal({
+  isOpen,
+  onclose,
+  deleteTeam,
+  teamName,
+}: TeamDeleteModalProps) {
+  return (
+    <CommonModal
+      isOpen={isOpen}
+      title="탈퇴하기"
+      description={
+        <div>
+          <p className="text-center leading-relaxed typo-regular-16">
+            <span className="font-bold">{teamName}</span>
+            를 삭제하시겠습니까?
+            <br />
+            삭제된 팀은 되돌릴 수 없습니다.
+          </p>
+        </div>
+      }
+      confirmText="삭제하기"
+      onClose={() => onclose()}
+      onConfirm={() => {
+        if (!isOpen) return;
+
+        deleteTeam();
+      }}
+    />
   );
 }
