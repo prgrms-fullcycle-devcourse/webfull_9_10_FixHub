@@ -15,6 +15,7 @@ import {
   inviteTeamMembers,
   deleteTeamMember,
   leaveTeam,
+  deleteTeam,
 } from './teams.controller.js';
 import {
   SlackNotificationSettingsParamsSchema,
@@ -54,4 +55,5 @@ router.get('/:teamId/members', authenticate, getTeamMembers); // 팀원 목록 �
 router.post('/:teamId/members', authenticate, inviteTeamMembers); // 팀원 초대
 router.delete('/:teamId/members/:userId', authenticate, deleteTeamMember); // 팀원 내보내기
 router.delete('/:teamId/leave', authenticate, leaveTeam); // 팀 탈퇴
+router.delete('/:teamId', authenticate, deleteTeam); // 팀 삭제
 export default router;

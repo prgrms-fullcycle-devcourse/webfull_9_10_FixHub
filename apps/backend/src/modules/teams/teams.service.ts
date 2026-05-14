@@ -882,3 +882,37 @@ export async function leaveTeam(userId: string, teamId: string) {
     deletedMemberId: deletedMember.userId,
   };
 }
+
+// 팀 삭제
+export async function deleteTeam(userId: string, teamId: string) {
+  const teamMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!teamMember) {
+    throw Errors.NOT_FOUND;
+  }
+
+  if (teamMember.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (teamMember.role !== 'LEADER') {
+    throw Errors.FORBIDDEN;
+  }
+
+  const deletedTeam = await prisma.team.delete({
+    where: {
+      id: teamId,
+    },
+  });
+
+  return {
+    deletedTeamId: deletedTeam.id,
+  };
+}
