@@ -1195,6 +1195,7 @@ export type GetMyProfile200 = {
   totalScore: number;
   issueCount: number;
   solvedCount: number;
+  provider: string;
 };
 
 export type GetMyProfile401Error = {
