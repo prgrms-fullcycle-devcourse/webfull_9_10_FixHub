@@ -250,23 +250,76 @@ export default function MyPage() {
                       >
                         ‹
                       </button>
-                      {Array.from(
-                        { length: totalScorePages },
-                        (_, i) => i + 1,
-                      ).map((p) => (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setScorePage(p)}
-                          className={`h-8 w-8 cursor-pointer rounded-sm border typo-regular-14 ${
-                            scorePage === p
-                              ? 'border-primary bg-primary text-(--text-inverse)'
-                              : 'border-border text-(--text-primary) hover:bg-(--surface-selected)'
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      ))}
+                      {(() => {
+                        const WINDOW = 10;
+                        const half = Math.floor(WINDOW / 2);
+                        let start = Math.max(1, scorePage - half);
+                        let end = start + WINDOW - 1;
+                        if (end > totalScorePages) {
+                          end = totalScorePages;
+                          start = Math.max(1, end - WINDOW + 1);
+                        }
+                        const pages = [];
+                        if (start > 1) {
+                          pages.push(
+                            <button
+                              key={1}
+                              type="button"
+                              onClick={() => setScorePage(1)}
+                              className="h-8 w-8 cursor-pointer rounded-sm border border-border typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
+                            >
+                              1
+                            </button>,
+                          );
+                          if (start > 2)
+                            pages.push(
+                              <span
+                                key="s-ellipsis"
+                                className="px-1 typo-regular-14 text-(--text-secondary)"
+                              >
+                                …
+                              </span>,
+                            );
+                        }
+                        for (let p = start; p <= end; p++) {
+                          pages.push(
+                            <button
+                              key={p}
+                              type="button"
+                              onClick={() => setScorePage(p)}
+                              className={`h-8 w-8 cursor-pointer rounded-sm border typo-regular-14 ${
+                                scorePage === p
+                                  ? 'border-primary bg-primary text-(--text-inverse)'
+                                  : 'border-border text-(--text-primary) hover:bg-(--surface-selected)'
+                              }`}
+                            >
+                              {p}
+                            </button>,
+                          );
+                        }
+                        if (end < totalScorePages) {
+                          if (end < totalScorePages - 1)
+                            pages.push(
+                              <span
+                                key="e-ellipsis"
+                                className="px-1 typo-regular-14 text-(--text-secondary)"
+                              >
+                                …
+                              </span>,
+                            );
+                          pages.push(
+                            <button
+                              key={totalScorePages}
+                              type="button"
+                              onClick={() => setScorePage(totalScorePages)}
+                              className="h-8 w-8 cursor-pointer rounded-sm border border-border typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
+                            >
+                              {totalScorePages}
+                            </button>,
+                          );
+                        }
+                        return pages;
+                      })()}
                       <button
                         type="button"
                         onClick={() => setScorePage((p) => p + 1)}
