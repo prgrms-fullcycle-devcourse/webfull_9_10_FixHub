@@ -189,3 +189,12 @@ export const DeleteTeamMemberParamsSchema = z.object({
 export const DeleteTeamMemberResponseSchema = z.object({
   deletedMemberId: z.uuidv7(),
 });
+
+// 팀 탈퇴
+export const LeaveTeamParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export const LeaveTeamResponseSchema = z.object({
+  deletedMemberId: z.uuidv7(),
+});

@@ -22,6 +22,8 @@ import {
   InviteTeamMembersResponseSchema,
   DeleteTeamMemberParamsSchema,
   DeleteTeamMemberResponseSchema,
+  LeaveTeamParamsSchema,
+  LeaveTeamResponseSchema,
 } from './teams.dto.js';
 
 export const ErrorResponseSchema = z.object({
@@ -695,6 +697,45 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       404: {
         description: '팀원 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀 탈퇴
+  registry.registerPath({
+    method: 'delete',
+    path: '/teams/{teamId}/leave',
+    operationId: 'leaveTeam',
+    tags: ['Teams'],
+    summary: '팀 탈퇴',
+    description: '현재 로그인한 사용자가 팀에서 탈퇴합니다.',
+    request: {
+      params: LeaveTeamParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '팀 탈퇴 성공',
+        content: {
+          'application/json': {
+            schema: LeaveTeamResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀 멤버 정보 없음',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,

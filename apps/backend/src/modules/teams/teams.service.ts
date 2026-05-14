@@ -849,3 +849,36 @@ export async function deleteTeamMember(
     deletedMemberId: deletedMember.userId,
   };
 }
+
+// 팀 탈퇴
+export async function leaveTeam(userId: string, teamId: string) {
+  const teamMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!teamMember) {
+    throw Errors.NOT_FOUND;
+  }
+
+  if (teamMember.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  const deletedMember = await prisma.teamMember.delete({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  return {
+    deletedMemberId: deletedMember.userId,
+  };
+}

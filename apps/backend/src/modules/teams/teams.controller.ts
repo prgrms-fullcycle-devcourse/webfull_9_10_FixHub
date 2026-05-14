@@ -7,6 +7,7 @@ import {
   UpdateTeamBodySchema,
   InviteTeamMembersBodySchema,
   DeleteTeamMemberParamsSchema,
+  LeaveTeamParamsSchema,
 } from './teams.dto.js';
 import { Errors } from '../../common/errors/AppError.js';
 import {
@@ -24,6 +25,7 @@ import {
   updateTeam as updateTeamService,
   inviteTeamMembers as inviteTeamMembersService,
   deleteTeamMember as deleteTeamMemberService,
+  leaveTeam as leaveTeamService,
 } from './teams.service.js';
 import { AuthRequest } from '../../common/middlewares/authenticate.js';
 
@@ -305,6 +307,30 @@ export async function deleteTeamMember(
     const { teamId, userId } = parsedParams.data;
 
     const response = await deleteTeamMemberService(requesterId, teamId, userId);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// 팀 탈퇴
+export async function leaveTeam(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const parsedParams = LeaveTeamParamsSchema.safeParse(req.params);
+
+  if (!parsedParams.success) {
+    return next(Errors.VALIDATION_ERROR);
+  }
+
+  try {
+    const userId = (req as AuthRequest).userId;
+    const { teamId } = parsedParams.data;
+
+    const response = await leaveTeamService(userId, teamId);
 
     return res.status(200).json(response);
   } catch (error) {
