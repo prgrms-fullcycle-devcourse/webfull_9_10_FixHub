@@ -906,7 +906,7 @@ function TeamDeleteModal({
   return (
     <CommonModal
       isOpen={isOpen}
-      title="탈퇴하기"
+      title="삭제하기"
       description={
         <div>
           <p className="text-center leading-relaxed typo-regular-16">
