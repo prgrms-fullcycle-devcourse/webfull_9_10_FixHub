@@ -116,7 +116,8 @@ export async function getIssueDetail(
   }
 
   try {
-    const userId = (req as AuthRequest).userId;
+    // authenticate 미들웨어 없이 호출되므로 비로그인 시 userId는 undefined
+    const userId = (req as AuthRequest).userId as string | undefined;
     const response = await getIssueDetailService(userId, parsedParams.data);
 
     return res.status(200).json(response);
