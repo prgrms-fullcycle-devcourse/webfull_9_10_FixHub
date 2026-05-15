@@ -3,12 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { AxiosError } from 'axios';
 
-import {
-  getGetTeamsQueryKey,
-  usePostTeams,
-  type PostTeamsBody,
-  type PostTeamsMutationResult,
-} from '@/api/generated';
+import { getGetTeamsQueryKey, usePostTeams } from '@/api/generated';
 
 export default function CreateTeamPage() {
   const [teamName, setTeamName] = useState('');
@@ -21,44 +16,26 @@ export default function CreateTeamPage() {
   // 팀 생성 mutation
   const { mutate: createTeam, isPending } = usePostTeams({
     mutation: {
-      mutationFn: async (variables: {
-        data?: PostTeamsBody;
-      }): Promise<PostTeamsMutationResult> => {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teams`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(variables.data),
+      onSuccess: (team) => {
+        queryClient.invalidateQueries({
+          queryKey: getGetTeamsQueryKey(),
         });
 
-        if (!res.ok) {
-          const error = await res.json().catch(() => ({}));
-          throw error;
-        }
+        alert('팀 생성이 완료되었습니다.');
 
-        return res.json();
+        navigate(`/teams/${team.teamId}`);
       },
 
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetTeamsQueryKey() });
-
-        // TODO: 생성된 팀 페이지로 이동
-        // navigate(`/teams/${team.teamId}`);
-        alert(`팀 생성이 완료되었습니다.`);
-        navigate(`/`);
-      },
       onError: (error: AxiosError<{ error: { message: string } }>) => {
         const message =
           error?.response?.data?.error?.message ?? '팀 생성에 실패했습니다.';
+
         alert(message);
       },
     },
   });
 
   const handleSubmit = () => {
-    // TODO: 향후 생성완료/에러에 대한 UI가 필요
     if (!teamName.trim()) {
       alert('팀 이름을 입력해주세요.');
       return;
@@ -161,13 +138,11 @@ export default function CreateTeamPage() {
         </div>
 
         {/* 하단 버튼 */}
-        <div
-          className="pt-6 flex justify-end gap-4 border-t border-white/50"
-          // style={{ borderTop: '1px solid var(--color-white)' }}
-        >
+        <div className="pt-6 flex justify-end gap-4 border-t border-white/50">
           <div className="flex gap-4">
             <button
               className="py-[18px] px-[32px] h-15 rounded-sm typo-regular-20 cursor-pointer"
+              onClick={() => navigate(-1)}
               style={{
                 background: 'var(--background)',
                 color: 'var(--text-primary)',

@@ -22,6 +22,10 @@ import {
   InviteTeamMembersResponseSchema,
   DeleteTeamMemberParamsSchema,
   DeleteTeamMemberResponseSchema,
+  LeaveTeamParamsSchema,
+  LeaveTeamResponseSchema,
+  DeleteTeamParamsSchema,
+  DeleteTeamResponseSchema,
 } from './teams.dto.js';
 
 export const ErrorResponseSchema = z.object({
@@ -695,6 +699,92 @@ export function registerTeamsSwagger(registry: OpenAPIRegistry) {
       },
       404: {
         description: '팀원 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀 탈퇴
+  registry.registerPath({
+    method: 'delete',
+    path: '/teams/{teamId}/leave',
+    operationId: 'leaveTeam',
+    tags: ['Teams'],
+    summary: '팀 탈퇴',
+    description: '현재 로그인한 사용자가 팀에서 탈퇴합니다.',
+    request: {
+      params: LeaveTeamParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '팀 탈퇴 성공',
+        content: {
+          'application/json': {
+            schema: LeaveTeamResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀 멤버 정보 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // 팀 삭제
+  registry.registerPath({
+    method: 'delete',
+    path: '/teams/{teamId}',
+    operationId: 'deleteTeam',
+    tags: ['Teams'],
+    summary: '팀 삭제',
+    description: '팀장이 팀을 삭제합니다.',
+    request: {
+      params: DeleteTeamParamsSchema,
+    },
+    responses: {
+      200: {
+        description: '팀 삭제 성공',
+        content: {
+          'application/json': {
+            schema: DeleteTeamResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: '인증 필요',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      403: {
+        description: '권한 없음',
+        content: {
+          'application/json': {
+            schema: ErrorResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: '팀 없음',
         content: {
           'application/json': {
             schema: ErrorResponseSchema,

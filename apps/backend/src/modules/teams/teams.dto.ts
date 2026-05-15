@@ -42,6 +42,7 @@ export const GetTeamDetailResponseSchema = z.object({
     z.object({
       userId: z.uuidv7(),
       name: z.string(),
+      profileImgUrl: z.string(),
       role: z.enum(['LEADER', 'MEMBER']),
       joinedAt: z.iso.datetime(),
       score: z.number(),
@@ -59,6 +60,7 @@ export const GetTeamMembersResponseSchema = z.object({
     z.object({
       userId: z.uuidv7(),
       name: z.string(),
+      profileImgUrl: z.string(),
       role: z.enum(['LEADER', 'MEMBER']),
       joinedAt: z.iso.datetime().nullable(),
       score: z.number(),
@@ -83,6 +85,7 @@ export const GetTeamSettingsResponseSchema = z.object({
     z.object({
       userId: z.uuidv7(),
       name: z.string(),
+      profileImgUrl: z.string(),
       role: z.enum(['LEADER', 'MEMBER']),
       joinedAt: z.iso.datetime(),
       score: z.number(),
@@ -188,4 +191,22 @@ export const DeleteTeamMemberParamsSchema = z.object({
 
 export const DeleteTeamMemberResponseSchema = z.object({
   deletedMemberId: z.uuidv7(),
+});
+
+// 팀 탈퇴
+export const LeaveTeamParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export const LeaveTeamResponseSchema = z.object({
+  deletedMemberId: z.uuidv7(),
+});
+
+// 팀 삭제
+export const DeleteTeamParamsSchema = z.object({
+  teamId: z.uuidv7(),
+});
+
+export const DeleteTeamResponseSchema = z.object({
+  deletedTeamId: z.uuidv7(),
 });

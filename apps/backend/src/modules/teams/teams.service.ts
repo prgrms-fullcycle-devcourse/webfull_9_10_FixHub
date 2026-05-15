@@ -220,6 +220,7 @@ export async function getTeamDetail(userId: string, teamId: string) {
           user: {
             select: {
               name: true,
+              profileImg: true,
             },
           },
         },
@@ -263,6 +264,7 @@ export async function getTeamDetail(userId: string, teamId: string) {
     members: team.teamMembers.map((member) => ({
       userId: member.userId,
       name: member.user.name,
+      profileImgUrl: member.user.profileImg,
       role: member.role,
       joinedAt: member.joinedAt?.toISOString() ?? null,
       score: member.score ?? 0,
@@ -318,6 +320,7 @@ export async function getTeamSettings(userId: string, teamId: string) {
           user: {
             select: {
               name: true,
+              profileImg: true,
             },
           },
         },
@@ -373,6 +376,7 @@ export async function getTeamSettings(userId: string, teamId: string) {
     members: team.teamMembers.map((member) => ({
       userId: member.userId,
       name: member.user.name,
+      profileImgUrl: member.user.profileImg,
       role: member.role,
       joinedAt: member.joinedAt?.toISOString() ?? null,
       score: member.score ?? 0,
@@ -430,6 +434,7 @@ export async function getTeamMembers(userId: string, teamId: string) {
   const data = members.map((member) => ({
     userId: member.userId,
     name: member.user.name,
+    profileImgUrl: member.user.profileImg,
     role: member.role,
     joinedAt: member.joinedAt?.toISOString() ?? null,
     score: member.score,
@@ -847,5 +852,72 @@ export async function deleteTeamMember(
 
   return {
     deletedMemberId: deletedMember.userId,
+  };
+}
+
+// 팀 탈퇴
+export async function leaveTeam(userId: string, teamId: string) {
+  const teamMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!teamMember) {
+    throw Errors.NOT_FOUND;
+  }
+
+  if (teamMember.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  const deletedMember = await prisma.teamMember.delete({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  return {
+    deletedMemberId: deletedMember.userId,
+  };
+}
+
+// 팀 삭제
+export async function deleteTeam(userId: string, teamId: string) {
+  const teamMember = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId,
+      },
+    },
+  });
+
+  if (!teamMember) {
+    throw Errors.NOT_FOUND;
+  }
+
+  if (teamMember.status !== 'ACTIVE') {
+    throw Errors.FORBIDDEN;
+  }
+
+  if (teamMember.role !== 'LEADER') {
+    throw Errors.FORBIDDEN;
+  }
+
+  const deletedTeam = await prisma.team.delete({
+    where: {
+      id: teamId,
+    },
+  });
+
+  return {
+    deletedTeamId: deletedTeam.id,
   };
 }
