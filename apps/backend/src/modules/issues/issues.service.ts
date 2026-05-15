@@ -416,7 +416,7 @@ export async function getPublicIssues({ page, limit }: GetPublicIssuesQuery) {
 
 /* 이슈 상세 조회 */
 export async function getIssueDetail(
-  userId: string,
+  userId: string | undefined,
   { teamId, issueId }: GetIssueDetailParamsDto,
 ): Promise<GetIssueDetailResponseDto> {
   const issue = await prisma.errorIssue.findFirst({
@@ -438,6 +438,30 @@ export async function getIssueDetail(
   if (!issue) {
     console.error('getIssueDetail() - 이슈를 찾을 수 없습니다.');
     throw Errors.NOT_FOUND;
+  }
+
+  // 비공개 이슈 접근 권한 체크
+  if (!issue.isPublic) {
+    if (!userId) {
+      // 비로그인: 비공개 이슈 접근 불가
+      throw Errors.FORBIDDEN;
+    }
+
+    // 로그인 상태: 해당 팀의 멤버인지 확인
+    const teamMember = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!teamMember) {
+      // 팀 멤버가 아니면 비공개 이슈 접근 불가
+      throw Errors.FORBIDDEN;
+    }
   }
 
   const errorLog = issue.errorLogs
