@@ -31,7 +31,7 @@ router.get('/issues/feeds', getIssueFeeds);
 router.get('/issues/feeds/:teamId', getTeamIssueFeeds);
 
 /* 이슈 상세 조회 */
-router.get('/teams/:teamId/issues/:issueId', authenticate, getIssueDetail);
+router.get('/teams/:teamId/issues/:issueId', getIssueDetail);
 
 /* 이슈 등록 */
 router.post('/teams/:teamId/issues', authenticate, postIssue);
