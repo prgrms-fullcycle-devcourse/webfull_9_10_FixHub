@@ -30,6 +30,7 @@ type IssueCommentListProps = {
   comments: IssueCommentItem[];
   currentUserId: string;
   isIssueAuthor: boolean;
+  issueAuthorId: string;
 };
 
 function IssueCommentList({
@@ -37,6 +38,7 @@ function IssueCommentList({
   comments,
   currentUserId,
   isIssueAuthor,
+  issueAuthorId,
 }: IssueCommentListProps) {
   const queryClient = useQueryClient();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -307,6 +309,8 @@ function IssueCommentList({
                 editedCommentTexts[comment.id] ?? comment.text;
 
               const isCommentAuthor = comment.author.id === currentUserId;
+              const isCommentByIssueAuthor =
+                comment.author.id === issueAuthorId;
               const isSelectedComment =
                 comment.selected || adoptedCommentIds.includes(comment.id);
               const canAdoptComment = isIssueAuthor && !isCommentAuthor;
@@ -348,7 +352,7 @@ function IssueCommentList({
                           {comment.author.name}
                         </span>
 
-                        {comment.isReply && (
+                        {isCommentByIssueAuthor && (
                           <span className="rounded-sm bg-(--surface-tag) px-3 py-1 text-xs text-(--text-primary)">
                             작성자
                           </span>
