@@ -802,7 +802,13 @@ export async function uploadIssueImage(
 
   await fs.promises.writeFile(filepath, file.buffer);
 
+  const apiBaseUrl = process.env.OPENAPI_URL?.replace(/\/$/, '');
+
+  if (!apiBaseUrl) {
+    throw Errors.INTERNAL_SERVER_ERROR;
+  }
+
   return {
-    url: `http://localhost:3000/uploads/issues/${filename}`,
+    url: `${apiBaseUrl}/uploads/issues/${filename}`,
   };
 }

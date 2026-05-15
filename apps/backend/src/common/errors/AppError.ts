@@ -29,4 +29,9 @@ export const Errors = {
     '존재하지 않는 사용자입니다.',
     404,
   ),
+  INTERNAL_SERVER_ERROR: new AppError(
+    'INTERNAL_SERVER_ERROR',
+    '서버 오류가 발생했습니다.',
+    500,
+  ),
 } as const;
