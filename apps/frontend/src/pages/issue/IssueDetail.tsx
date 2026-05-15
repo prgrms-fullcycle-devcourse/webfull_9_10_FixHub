@@ -242,6 +242,7 @@ function IssueDetail() {
             currentUserId={currentUserId}
             isIssueAuthor={isIssueAuthor}
             issueId={issueId ?? ''}
+            issueAuthorId={issue.authorId}
           />
         )}
       </div>
