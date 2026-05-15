@@ -218,7 +218,11 @@ export default function TeamDetailPage() {
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.25, ease: 'easeOut' }}
                     >
-                      <RankingItem rank={idx + 1} {...member} />
+                      <RankingItem
+                        rank={idx + 1}
+                        profileImg={member.profileImgUrl}
+                        {...member}
+                      />
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -297,12 +301,20 @@ export default function TeamDetailPage() {
 type RankingItemProps = {
   rank: number;
   name: string;
+  profileImg: string;
   role: string;
   score: number;
   isMe?: boolean;
 };
 
-function RankingItem({ rank, name, role, score, isMe }: RankingItemProps) {
+function RankingItem({
+  rank,
+  name,
+  profileImg,
+  role,
+  score,
+  isMe,
+}: RankingItemProps) {
   return (
     <div
       className={`flex items-center justify-between px-10 py-5 rounded-lg 
@@ -314,7 +326,13 @@ function RankingItem({ rank, name, role, score, isMe }: RankingItemProps) {
 
         <div className="flex gap-10 items-center">
           <div className="flex gap-5 items-center">
-            <div className="w-16 h-16 bg-gray-400 rounded-full" />
+            <div className="w-16 h-16 bg-gray-400 rounded-full overflow-hidden">
+              <img
+                src={profileImg ?? ''}
+                alt={name ?? '프로필'}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <span className="typo-bold-20">
               {name}
               {isMe && ' (나)'}

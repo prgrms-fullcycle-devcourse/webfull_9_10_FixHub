@@ -90,6 +90,9 @@ export const GetIssueDetailResponseSchema = z.object({
   authorId: z
     .string()
     .openapi({ example: '019e01ab-d423-7766-bcd1-14742ce92467' }),
+  authorProfileImg: z.string().url().nullable().openapi({
+    example: 'https://avatars.githubusercontent.com/u/123456?v=4',
+  }),
   isAuthor: z.boolean().openapi({ example: true }),
   createdAt: z.string().openapi({ example: '2026-04-25T10:00:00.000Z' }),
   errorLog: z.string().openapi({

@@ -1,5 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { useLocation, useNavigate, matchPath } from 'react-router-dom';
+import {
+  useLocation,
+  useNavigate,
+  matchPath,
+  useMatch,
+} from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
 import HomeIcon from '@/assets/icons/home.svg';
@@ -61,30 +66,13 @@ export default function Sidebar() {
       !isMyPageActive &&
       isMatch('/teams/:teamId/issues/:issueId'));
 
+  const isTeamPageMatch = useMatch('/teams/:teamId/*');
   const isTeamCreationActive = isMatch('/teams/new');
 
+  const currentTeamId = isTeamPageMatch?.params.teamId;
+
   // 내가 속한 팀 조회 API
-  const {
-    data: teamsResponse,
-    isLoading,
-    isError,
-    error,
-  } = useGetTeams({
-    query: {
-      enabled: true,
-      queryFn: async () => {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/teams`, {
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          throw new Error('팀 목록 조회 실패');
-        }
-
-        return res.json();
-      },
-    },
-  });
+  const { data: teamsResponse, isLoading, isError, error } = useGetTeams();
 
   useEffect(() => {
     if (isError) {
@@ -189,6 +177,7 @@ export default function Sidebar() {
                   <SidebarItem
                     key={team.teamId}
                     icon={<TeamIcon />}
+                    active={currentTeamId === team.teamId}
                     label={team.name}
                     onClick={() => navigate(`/teams/${team.teamId}`)}
                   />

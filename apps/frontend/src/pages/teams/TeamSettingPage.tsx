@@ -1,15 +1,18 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck, FilePlus2, MessageCircle, Reply } from 'lucide-react';
 
 import Toggle from '@/components/ui/Toogle';
 import {
   getGetSlackNotificationSettingsQueryKey,
+  getGetTeamsQueryKey,
   getGetTeamsTeamIdSettingsQueryKey,
+  useDeleteTeam,
   useDeleteTeamMember,
   useGetSlackNotificationSettings,
   useGetTeamsTeamIdSettings,
+  useLeaveTeam,
   usePatchTeamsTeamId,
   useSendSlackTestMessage,
   useUpdateSlackNotificationSettings,
@@ -75,10 +78,18 @@ export default function TeamSettingPage() {
     userId: string;
     name: string;
   } | null>(null);
+  const [selectedNewLeader, setSelectedNewLeader] = useState<{
+    userId: string;
+    name: string;
+  } | null>(null);
+  const [isTeamLeaveModalOpen, setIsTeamLeaveModalOpen] = useState(false);
+  const [isTeamDeleteModalOpen, setIsTeamDeleteModalOpen] = useState(false);
 
   const initializedRef = useRef(false); // 초기화 여부 기억
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
+  // 팀 세팅 페이지 초기 데이터 가져오기
   const {
     data: teamSettings,
     isLoading: isTeamSettingsLoading,
@@ -92,6 +103,7 @@ export default function TeamSettingPage() {
     },
   });
 
+  // 슬랙 세팅 가져오기
   const {
     data: slackNotificationSettings,
     isLoading: isSlackNotificationSettingsLoading,
@@ -105,6 +117,7 @@ export default function TeamSettingPage() {
     },
   });
 
+  // 팀원 내보내기
   const { mutate: deleteTeamMember, error: deletingMemberError } =
     useDeleteTeamMember({
       mutation: {
@@ -142,9 +155,51 @@ export default function TeamSettingPage() {
   } = usePatchTeamsTeamId({
     mutation: {
       onSuccess: () => {
+        setSelectedNewLeader(null);
+
         queryClient.invalidateQueries({
           queryKey: getGetTeamsTeamIdSettingsQueryKey(teamId ?? ''),
         });
+      },
+    },
+  });
+
+  // 팀 탈퇴하기
+  const { mutate: leaveTeam } = useLeaveTeam({
+    mutation: {
+      onSuccess: async () => {
+        alert('팀 탈퇴가 완료되었습니다.');
+
+        setIsTeamLeaveModalOpen(false);
+
+        await queryClient.invalidateQueries({
+          queryKey: getGetTeamsQueryKey(),
+        });
+
+        navigate('/');
+      },
+      onError: () => {
+        alert('팀 탈퇴에 실패했습니다.');
+      },
+    },
+  });
+
+  // 팀 삭제하기
+  const { mutate: deleteTeam } = useDeleteTeam({
+    mutation: {
+      onSuccess: async () => {
+        alert('팀 삭제가 완료되었습니다.');
+
+        setIsTeamDeleteModalOpen(false);
+
+        await queryClient.invalidateQueries({
+          queryKey: getGetTeamsQueryKey(),
+        });
+
+        navigate('/');
+      },
+      onError: () => {
+        alert('팀 삭제에 실패했습니다. 다시 시도해주세요.');
       },
     },
   });
@@ -215,6 +270,29 @@ export default function TeamSettingPage() {
       teamId: teamId,
       data: payload,
     });
+  };
+
+  const handleTransferLeadership = (newOwnerId: string) => {
+    if (!isLeader) return alert('변경 권한이 없습니다.');
+    if (!teamId) return console.error('teamId를 가져올 수 없습니다.');
+
+    updateTeam({
+      teamId: teamId,
+      data: { ownerId: newOwnerId },
+    });
+  };
+
+  const handleLeaveTeam = () => {
+    if (!teamId) return;
+
+    leaveTeam({ teamId });
+  };
+
+  const handleDeleteTeam = () => {
+    if (!teamId) return;
+    if (!isLeader) return alert('권한이 존재하지 않습니다.');
+
+    deleteTeam({ teamId });
   };
 
   const handleToggleSlackEvent = (eventId: SlackNotificationEventId) => {
@@ -408,6 +486,13 @@ export default function TeamSettingPage() {
                         name: member.name,
                       });
                     }}
+                    onTransferLeadership={() => {
+                      setSelectedNewLeader({
+                        userId: member.userId,
+                        name: member.name,
+                      });
+                    }}
+                    profileImg={member.profileImgUrl}
                     {...member}
                   />
                 ))}
@@ -627,8 +712,21 @@ export default function TeamSettingPage() {
               </div>
             </div>
           </section>
+
+          {/* 탈퇴/삭제 버튼 */}
+          <div className="pt-6 flex justify-end gap-4 border-t border-white/50">
+            <div className="flex gap-4">
+              <TeamExitButton
+                isLeader={isLeader}
+                onLeave={() => setIsTeamLeaveModalOpen(true)}
+                onDelete={() => setIsTeamDeleteModalOpen(true)}
+              />
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* 팀원 내보내기 */}
       <CommonModal
         isOpen={!!selectedKickMember}
         title="팀원 내보내기"
@@ -657,6 +755,45 @@ export default function TeamSettingPage() {
           });
         }}
       />
+
+      {/* 팀원에게 리더 위임하기 */}
+      <CommonModal
+        isOpen={!!selectedNewLeader}
+        title="리더 위임하기"
+        description={
+          <div>
+            <p className="text-center leading-relaxed typo-regular-16">
+              <span className="font-bold">{selectedNewLeader?.name}</span>
+              님을 리더로 변경하시겠습니까?
+            </p>
+            {updateTeamError instanceof Error && (
+              <p className="pt-4 text-[var(--status-error)] text-sm text-center typo-regular-14">
+                리더 변경에 실패했습니다. 다시 시도해주세요.
+              </p>
+            )}
+          </div>
+        }
+        confirmText="리더 위임"
+        onClose={() => setSelectedNewLeader(null)}
+        onConfirm={() => {
+          if (!selectedNewLeader) return;
+
+          handleTransferLeadership(selectedNewLeader.userId);
+        }}
+      />
+      <TeamLeaveModal
+        isOpen={isTeamLeaveModalOpen}
+        deleteTeam={() => setIsTeamLeaveModalOpen(false)}
+        leaveTeam={() => handleLeaveTeam()}
+        teamName={teamName}
+      />
+
+      <TeamDeleteModal
+        isOpen={isTeamDeleteModalOpen}
+        onclose={() => setIsTeamDeleteModalOpen(false)}
+        deleteTeam={() => handleDeleteTeam()}
+        teamName={teamName}
+      />
     </main>
   );
 }
@@ -664,26 +801,36 @@ export default function TeamSettingPage() {
 type MemberListItemProps = {
   isLeader: boolean;
   name: string;
+  profileImg: string;
   role: string;
   score: number;
   joinedAt: string;
   onKick: () => void;
+  onTransferLeadership: () => void;
 };
 
 function MemberListItem({
   isLeader,
   name,
+  profileImg,
   role,
   score,
   joinedAt,
   onKick,
+  onTransferLeadership,
 }: MemberListItemProps) {
   return (
     <div className="flex items-center justify-between px-10 py-5 rounded-lg">
       <div className="flex items-center gap-[16px]">
         <div className="flex gap-10 items-center">
           <div className="flex gap-5 items-center">
-            <div className="w-16 h-16 bg-gray-400 rounded-full" />
+            <div className="w-16 h-16 bg-gray-400 rounded-full overflow-hidden">
+              <img
+                src={profileImg ?? ''}
+                alt={name ?? '프로필'}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div className="space-y-1">
               <div className="space-x-3">
                 <span className="typo-bold-20">{name}</span>
@@ -691,7 +838,7 @@ function MemberListItem({
               </div>
               <div>
                 <span className="typo-regular-16 text-[var(--text-muted)]">
-                  {joinedAt} 가입
+                  {joinedAt ? `${joinedAt.split('T')[0]} 가입` : '가입'}
                 </span>
               </div>
             </div>
@@ -700,18 +847,27 @@ function MemberListItem({
       </div>
       <div className="space-x-4">
         {role === 'LEADER' && (
-          <span className="rounded-sm bg-[#544777] px-2 py-1 typo-regular-16">
+          <span className="rounded-sm bg-[var(--color-gray-600)] px-2 py-1 typo-regular-16">
             팀장
           </span>
         )}
 
         {role !== 'LEADER' && isLeader && (
-          <button
-            onClick={onKick}
-            className="rounded-sm bg-[var(--status-unsaved)] px-2 py-1 typo-regular-16 cursor-pointer"
-          >
-            내보내기
-          </button>
+          <>
+            <button
+              onClick={onTransferLeadership}
+              className="rounded-sm bg-[var(--color-gray-600)] px-2 py-1 typo-regular-16 cursor-pointer"
+            >
+              리더 위임
+            </button>
+
+            <button
+              onClick={onKick}
+              className="rounded-sm bg-[var(--status-unsaved)] px-2 py-1 typo-regular-16 cursor-pointer"
+            >
+              내보내기
+            </button>
+          </>
         )}
       </div>
     </div>
@@ -742,5 +898,102 @@ function NotificationSettingItem({
         }}
       />
     </div>
+  );
+}
+
+interface TeamExitButtonProps {
+  isLeader: boolean;
+  onLeave?: () => void;
+  onDelete?: () => void;
+}
+
+function TeamExitButton({ isLeader, onLeave, onDelete }: TeamExitButtonProps) {
+  return (
+    <button
+      onClick={isLeader ? onDelete : onLeave}
+      className="py-[18px] px-[32px] h-15 rounded-sm typo-regular-20 cursor-pointer"
+      style={{
+        background: 'var(--status-unsaved)',
+        color: 'var(--text-primary)',
+      }}
+    >
+      {isLeader ? '팀 삭제하기' : '탈퇴하기'}
+    </button>
+  );
+}
+
+interface TeamLeaveModalProps {
+  isOpen: boolean;
+  deleteTeam: () => void;
+  leaveTeam: () => void;
+  teamName: string;
+}
+
+function TeamLeaveModal({
+  isOpen,
+  deleteTeam,
+  leaveTeam,
+  teamName,
+}: TeamLeaveModalProps) {
+  return (
+    <CommonModal
+      isOpen={isOpen}
+      title="탈퇴하기"
+      description={
+        <div>
+          <p className="text-center leading-relaxed typo-regular-16">
+            <span className="font-bold">{teamName}</span>
+            에서 나가시겠습니까?
+            <br />
+            리더가 초대하기 전까지 다시 가입할 수 없습니다.
+          </p>
+        </div>
+      }
+      confirmText="탈퇴하기"
+      onClose={() => deleteTeam()}
+      onConfirm={() => {
+        if (!isOpen) return;
+
+        leaveTeam();
+      }}
+    />
+  );
+}
+
+interface TeamDeleteModalProps {
+  isOpen: boolean;
+  onclose: () => void;
+  deleteTeam: () => void;
+  teamName: string;
+}
+
+function TeamDeleteModal({
+  isOpen,
+  onclose,
+  deleteTeam,
+  teamName,
+}: TeamDeleteModalProps) {
+  return (
+    <CommonModal
+      isOpen={isOpen}
+      title="삭제하기"
+      description={
+        <div>
+          <p className="text-center leading-relaxed typo-regular-16">
+            <span className="font-bold">{teamName}</span>
+            를 삭제하시겠습니까?
+            <br />
+            삭제된 팀은 되돌릴 수 없습니다.
+          </p>
+        </div>
+      }
+      confirmText="삭제하기"
+      onClose={() => onclose()}
+      onConfirm={() => {
+        if (!isOpen) return;
+
+        deleteTeam();
+      }}
+    />
   );
 }

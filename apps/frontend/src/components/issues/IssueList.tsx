@@ -157,27 +157,81 @@ export default function IssueList({
             type="button"
             onClick={() => setCurrentPage((prev) => prev - 1)}
             disabled={currentPage === 1}
-            className="cursor-pointer rounded-sm border border-border typo-regular-14 text-(--text-secondary) hover:bg-(--surface-selected) disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-8 w-8 cursor-pointer rounded-sm border border-border typo-regular-14 text-(--text-secondary) hover:bg-(--surface-selected) disabled:cursor-not-allowed disabled:opacity-50"
           >
             ‹
           </button>
 
-          {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-            (page) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`h-8 w-8 cursor-pointer rounded-sm border typo-regular-14 ${
-                  currentPage === page
-                    ? 'border-primary bg-primary text-(--text-inverse)'
-                    : 'border-border text-(--text-primary) hover:bg-(--surface-selected)'
-                }`}
-              >
-                {page}
-              </button>
-            ),
-          )}
+          {(() => {
+            const WINDOW = 10;
+            const half = Math.floor(WINDOW / 2);
+            let start = Math.max(1, currentPage - half);
+            let end = start + WINDOW - 1;
+            if (end > totalPages) {
+              end = totalPages;
+              start = Math.max(1, end - WINDOW + 1);
+            }
+            const pages = [];
+            if (start > 1) {
+              pages.push(
+                <button
+                  key={1}
+                  type="button"
+                  onClick={() => setCurrentPage(1)}
+                  className="h-8 w-8 cursor-pointer rounded-sm border border-border typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
+                >
+                  1
+                </button>,
+              );
+              if (start > 2)
+                pages.push(
+                  <span
+                    key="start-ellipsis"
+                    className="px-1 typo-regular-14 text-(--text-secondary)"
+                  >
+                    …
+                  </span>,
+                );
+            }
+            for (let p = start; p <= end; p++) {
+              pages.push(
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setCurrentPage(p)}
+                  className={`h-8 w-8 cursor-pointer rounded-sm border typo-regular-14 ${
+                    currentPage === p
+                      ? 'border-primary bg-primary text-(--text-inverse)'
+                      : 'border-border text-(--text-primary) hover:bg-(--surface-selected)'
+                  }`}
+                >
+                  {p}
+                </button>,
+              );
+            }
+            if (end < totalPages) {
+              if (end < totalPages - 1)
+                pages.push(
+                  <span
+                    key="end-ellipsis"
+                    className="px-1 typo-regular-14 text-(--text-secondary)"
+                  >
+                    …
+                  </span>,
+                );
+              pages.push(
+                <button
+                  key={totalPages}
+                  type="button"
+                  onClick={() => setCurrentPage(totalPages)}
+                  className="h-8 w-8 cursor-pointer rounded-sm border border-border typo-regular-14 text-(--text-primary) hover:bg-(--surface-selected)"
+                >
+                  {totalPages}
+                </button>,
+              );
+            }
+            return pages;
+          })()}
 
           <button
             type="button"

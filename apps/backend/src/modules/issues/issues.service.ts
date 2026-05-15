@@ -452,6 +452,7 @@ export async function getIssueDetail(
     tag: issue.tags.map((item) => item.tagName),
     author: issue.user.name,
     authorId: issue.userId,
+    authorProfileImg: issue.user.profileImg ?? null,
     isAuthor: issue.userId === userId,
     createdAt: issue.createdAt.toISOString(),
     errorLog,

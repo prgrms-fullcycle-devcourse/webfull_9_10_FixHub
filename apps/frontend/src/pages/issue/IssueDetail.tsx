@@ -179,7 +179,18 @@ function IssueDetail() {
 
         <div className="flex justify-between typo-regular-14 text-(--text-secondary)">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-full bg-(--surface-selected)" />
+            {issue.authorProfileImg ? (
+              <img
+                src={issue.authorProfileImg}
+                alt={`${issue.author} 프로필 이미지`}
+                className="h-11 w-11 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-(--surface-selected) typo-medium-16 text-(--text-primary)">
+                {issue.author.slice(0, 1)}
+              </div>
+            )}
+
             <span>{issue.author}</span>
           </div>
 
